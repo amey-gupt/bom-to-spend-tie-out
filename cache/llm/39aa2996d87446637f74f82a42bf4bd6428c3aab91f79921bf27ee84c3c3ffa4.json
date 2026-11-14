@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for a 1 quart bottle of air tool oil, a consumable/shop supply, and none of the five candidates is an oil or lubricant; the candidates are washers and a carbon brush.", "model": "claude-haiku-5-5", "input_tokens": 1358, "output_tokens": 91}

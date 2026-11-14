@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is packing tape (48 mm x 100 m, case of 36), which is not among the candidates; all candidates are cartons or a poly bag, and none describes tape.", "model": "claude-haiku-5-5", "input_tokens": 1382, "output_tokens": 82}

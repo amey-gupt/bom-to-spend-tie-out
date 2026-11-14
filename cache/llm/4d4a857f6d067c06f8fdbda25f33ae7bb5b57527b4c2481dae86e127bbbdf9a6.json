@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "Part number BTH-20640_A is an internal bit-holder number (with revision suffix) that matches none of the candidates, and no candidate bit holder is red ABS (BTH-20635 is orange, BTH-20624 is grey TPE, BTH-20629 is orange PA6-GF30).", "model": "claude-opus-5-5", "input_tokens": 1331, "output_tokens": 123}

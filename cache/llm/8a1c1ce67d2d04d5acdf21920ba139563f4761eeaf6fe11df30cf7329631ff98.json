@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "MCU-14997 is an internal MCU number that matches none of the candidates, and its 32-bit spec conflicts with both MCU candidates (14989 is 8-bit LQFP-32, 14994 is 8-bit QFN-28); the remaining candidates are PCBAs.", "model": "claude-opus-5-5", "input_tokens": 1401, "output_tokens": 118}

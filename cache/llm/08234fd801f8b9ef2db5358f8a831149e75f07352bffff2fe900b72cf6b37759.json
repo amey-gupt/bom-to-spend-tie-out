@@ -1,0 +1,1 @@
+{"part_number": "WSH-19110", "confidence": 0.85, "reason": "Purchase text 'WSHR THRUST M6 STAINLESS' matches WSH-19110 (thrust washer, M6, stainless), the part-number field WSH-91110 is a transposed form of WSH-19110, and the $0.0053 price exactly matches the confirmed Apex purchase price for that part.", "model": "claude-haiku-5-5", "input_tokens": 1345, "output_tokens": 134}

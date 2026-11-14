@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A label printer ribbon (110 mm x 300 m, $9.47) is a printing consumable, not a BOM part, and it matches none of the label or carton candidates by description or size.", "model": "claude-opus-5-5", "input_tokens": 1324, "output_tokens": 83}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is thermal paste in a 30 G syringe, a consumable, and none of the five candidates is a thermal paste; all are silicone insulation pads or a warning label.", "model": "claude-haiku-5-5", "input_tokens": 1401, "output_tokens": 83}

@@ -1,0 +1,1 @@
+{"part_number": "SPR-38627", "confidence": 0.82, "reason": "Description D8 L10 1.0 mm wire matches only SPR-38627 (same supplier, Precision Wireform; $0.0524 vs $0.0650 is within normal variation), and part number SPR-38672 looks like a transposition typo of 38627 rather than a separate internal part.", "model": "claude-opus-5-5", "input_tokens": 1464, "output_tokens": 125}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "No candidate is an M4 x 12 stainless socket cap screw: the two M4 candidates (SCR-66772, SCR-66822) are M4 x 20, and the others are M2.5 or M5, and the purchase part number SCR-66848 is in the same family but matches no candidate.", "model": "claude-haiku-5-5", "input_tokens": 1391, "output_tokens": 247}

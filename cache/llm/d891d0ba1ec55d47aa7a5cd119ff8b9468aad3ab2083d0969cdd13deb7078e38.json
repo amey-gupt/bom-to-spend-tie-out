@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a stackable bin measuring 11 x 16 in (about 279 x 406 mm), which matches none of the candidate cartons (320x100x260, 560x330x270, 400x300x280 mm), and the $6.54 price is far above the roughly $0.55 to $0.77 confirmed carton prices.", "model": "claude-haiku-5-5", "input_tokens": 1350, "output_tokens": 284}

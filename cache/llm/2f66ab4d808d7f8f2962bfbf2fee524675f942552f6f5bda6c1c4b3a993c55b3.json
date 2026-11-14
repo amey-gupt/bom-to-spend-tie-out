@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The only candidate matching 30x50 mm is LBL-74774, but it is a Warning label while the purchase line says RATING, and its $0.0216 confirmed price is about 2x the $0.0101 purchase price; the other four candidates conflict on dimensions.", "model": "claude-haiku-5-5", "input_tokens": 1333, "output_tokens": 497}

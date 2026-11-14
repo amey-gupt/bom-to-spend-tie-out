@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a fast charger, which is a charger and not a BOM part, and none of the five candidates is a charger; the service-type PO from a service-parts supplier reinforces that it is an external accessory.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 91}

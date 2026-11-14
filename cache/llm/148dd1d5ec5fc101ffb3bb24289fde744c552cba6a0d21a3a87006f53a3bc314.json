@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.3, "reason": "The purchase line specifies M6 x 16 Torx pan head stainless screw, but no candidate matches: SCR-66809 is M6 x 16 but a self-tapping type, and SCR-66741 is Torx pan head but M3 x 16, so the size conflicts.", "model": "claude-haiku-5-5", "input_tokens": 1398, "output_tokens": 115}

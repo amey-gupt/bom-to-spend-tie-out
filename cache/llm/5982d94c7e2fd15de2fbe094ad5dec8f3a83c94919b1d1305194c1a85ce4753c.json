@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is copy paper, a shop supply bought from SafetyFirst Direct at $44.33 per case, which is not a packaging carton and matches none of the five candidate cartons' descriptions or prices.", "model": "claude-haiku-5-5", "input_tokens": 1351, "output_tokens": 172}

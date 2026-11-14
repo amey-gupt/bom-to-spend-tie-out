@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a service-type gearbox assembly (SVC-71009, PO type service), and none of the five candidates is a gearbox; the candidates are battery housings, a motor, and a trigger switch, so no BOM part matches.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 101}

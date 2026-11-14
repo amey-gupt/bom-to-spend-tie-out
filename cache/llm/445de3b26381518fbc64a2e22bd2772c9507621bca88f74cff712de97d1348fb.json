@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies 40V 60A TO-220, but the closest TO-220 40V candidates are FET-20825 at 80A and FET-20827 at 100A, so the current rating conflicts with both, and EC6534-92 is not a number from this family.", "model": "claude-haiku-5-5", "input_tokens": 1426, "output_tokens": 271}

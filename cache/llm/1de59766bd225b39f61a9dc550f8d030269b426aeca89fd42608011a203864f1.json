@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is air tool oil, a shop consumable, and none of the five candidates is a lubricant; the washers and brush are unrelated, and the $10.92 unit price is far above any candidate's price.", "model": "claude-haiku-5-5", "input_tokens": 1367, "output_tokens": 91}

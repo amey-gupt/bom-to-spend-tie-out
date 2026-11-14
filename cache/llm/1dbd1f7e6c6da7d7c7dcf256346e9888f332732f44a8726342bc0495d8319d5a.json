@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase describes a 12V gearbox assembly on a service PO, but none of the candidates is a gearbox; they are battery housings, and the service/assembly nature points away from any BOM part here.", "model": "claude-haiku-5-5", "input_tokens": 1360, "output_tokens": 88}

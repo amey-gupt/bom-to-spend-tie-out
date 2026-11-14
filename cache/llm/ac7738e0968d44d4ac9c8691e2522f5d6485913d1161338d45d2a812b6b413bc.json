@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A 110 mm x 300 m label printer ribbon is a shop consumable, not a BOM part, and none of the candidates (labels and a carton) is a ribbon; the supplier part number 574104 matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1317, "output_tokens": 97}

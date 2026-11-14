@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for safety glasses, a personal protective equipment item from a safety supplier, and none of the candidates (lens, labels, grip, vent cover) is a safety glasses part, nor does the part number 841137 match any candidate family.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 105}

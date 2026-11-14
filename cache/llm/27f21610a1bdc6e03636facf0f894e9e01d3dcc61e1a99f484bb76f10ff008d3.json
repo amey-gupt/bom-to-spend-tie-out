@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a mold maintenance service (cavity polish) at $1294 with no part number, which is tooling upkeep rather than a BOM part, and no candidate (grips at ~$0.36-0.48, pulp trays at ~$0.18-0.39) matches.", "model": "claude-opus-5-5", "input_tokens": 1397, "output_tokens": 111}

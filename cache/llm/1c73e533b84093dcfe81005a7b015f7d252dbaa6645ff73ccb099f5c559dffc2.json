@@ -1,0 +1,1 @@
+{"part_number": "BRG-65712", "confidence": 0.7, "reason": "The purchase description 'BALL BEARING 6200 OPEN' exactly matches BRG-65712 (6200, open), the purchase part number BRG-6571 looks like a truncation of its number, and the $0.4861 price is close to its confirmed $0.4882, though the supplier differs.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 366}

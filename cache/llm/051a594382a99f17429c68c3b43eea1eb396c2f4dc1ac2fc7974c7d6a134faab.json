@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A first aid kit refill is a consumable/service item not matching any BOM part; none of the candidates are first aid supplies, and the $50.44 price is far above any candidate's per-unit cost.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 87}

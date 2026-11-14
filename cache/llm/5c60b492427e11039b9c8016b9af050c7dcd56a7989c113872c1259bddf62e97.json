@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.96, "reason": "The purchase line is a mold maintenance service (injection mold cavity polish) at $776.98 per unit, not a BOM part, and none of the candidates are grips or trays that such a service would relate to.", "model": "claude-haiku-5-5", "input_tokens": 1416, "output_tokens": 89}

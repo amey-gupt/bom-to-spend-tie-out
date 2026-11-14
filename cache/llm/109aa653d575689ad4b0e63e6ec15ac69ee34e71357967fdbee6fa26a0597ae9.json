@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.86, "reason": "The purchase line calls for an FKM 75 O-ring, ID 20 mm, 2 mm section; the only size match, ORG-40045, is NBR 70, a clear material conflict, and ORG-40036 is 12 mm ID, while the purchase part number 52952K972 matches no candidate family.", "model": "claude-haiku-5-5", "input_tokens": 1463, "output_tokens": 331}

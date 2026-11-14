@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The line specifies G25 grade and D3 (about 3 mm) diameter, but every steel-ball candidate is 5 or 6 mm, so the diameter conflicts with all of them, and the G100 ball from the same supplier conflicts on grade.", "model": "claude-haiku-5-5", "input_tokens": 1404, "output_tokens": 534}

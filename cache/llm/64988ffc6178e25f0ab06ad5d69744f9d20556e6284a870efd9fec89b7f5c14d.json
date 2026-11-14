@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line is a 10-pack of torque driver bits at $12.36 per unit, which is a shop tool and not a screw, and none of the five candidates is a bit or matches the purchased item.", "model": "claude-haiku-5-5", "input_tokens": 1419, "output_tokens": 88}

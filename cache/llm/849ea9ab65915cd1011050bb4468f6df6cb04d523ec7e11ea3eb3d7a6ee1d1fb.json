@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line specifies a 3 mm G25 steel ball, but the steel-ball candidates are 6 mm G25 (BAL-68336), 5 mm G25 (BAL-68329) and 5 mm G100 (BAL-68342), so each conflicts on diameter, and the part number BAL-6835 matches none of them.", "model": "claude-opus-5-5", "input_tokens": 1402, "output_tokens": 132}

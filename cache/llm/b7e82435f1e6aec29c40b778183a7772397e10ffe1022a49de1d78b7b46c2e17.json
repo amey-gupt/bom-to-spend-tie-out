@@ -1,0 +1,1 @@
+{"part_number": "RES-69290", "confidence": 0.8, "reason": "Description 100 ohm 0805 chip resistor matches only RES-69290, and the PO number RES-69209 looks like a digit transposition of RES-69290; every other candidate conflicts on resistance or package.", "model": "claude-opus-5-5", "input_tokens": 1410, "output_tokens": 98}

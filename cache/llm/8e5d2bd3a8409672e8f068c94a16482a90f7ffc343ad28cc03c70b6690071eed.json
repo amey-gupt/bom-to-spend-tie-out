@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies 60 A, but the only 40 V TO-220 candidates are FET-20825 (80 A) and FET-20827 (100 A), so the current rating conflicts with both, and the other candidates are PDFN, DPAK, or a battery PCBA.", "model": "claude-haiku-5-5", "input_tokens": 1423, "output_tokens": 283}

@@ -1,0 +1,1 @@
+{"part_number": "NPL-67926", "confidence": 0.9, "reason": "NPL-76926 is a digit transposition of NPL-67926, and the description (nameplate, yellow, ABS), supplier Greer and price $0.1450 vs $0.1459 all match that candidate.", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 98}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for a 3 mm G25 steel ball, but the only balls offered are 5 mm and 6 mm (BAL-68329 and BAL-68336 at G25, BAL-68342 at G100), so the diameter conflicts with every candidate.", "model": "claude-opus-5-5", "input_tokens": 1401, "output_tokens": 109}

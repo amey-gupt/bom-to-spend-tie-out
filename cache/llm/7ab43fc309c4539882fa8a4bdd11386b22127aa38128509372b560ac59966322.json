@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The PO calls for a 13 mm capacity chuck under part number CHK-47582, an internal number that matches no candidate; CHK-47572 is 10 mm capacity and CHK-47564 is 10 mm with a 1/2-20 thread, so both conflict on capacity.", "model": "claude-opus-5-5", "input_tokens": 1433, "output_tokens": 117}

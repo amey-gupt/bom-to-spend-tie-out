@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for copy paper (a shop supply), which is not a BOM carton part, and the $42.95 per-unit price is far above any candidate carton's cost, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1358, "output_tokens": 87}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for shop towels, a consumable, and none of the five candidates is a shop towel; all candidates are cartons used in packaging assemblies, and the $45.98 unit price is far above any carton's price.", "model": "claude-haiku-5-5", "input_tokens": 1357, "output_tokens": 94}

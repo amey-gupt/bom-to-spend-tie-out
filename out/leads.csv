@@ -1,0 +1,70 @@
+lead_type,part_number,description,related,detail,low_usd,high_usd
+spares_premium,CEL-64003,"Li-ion cell, 21700, 3.0 Ah",,spares at $6.7445 vs production at $3.2169 (+110%),154551.0,309101.0
+supplier_price_gap,MTR-75169,"Brushless motor, 400 W, 18 V",Nordlicht Antriebstechnik GmbH,Dunmore Electric Motor Co. at $11.3053; Nordlicht Antriebstechnik GmbH at $13.2798 (+17%),49540.0,99079.0
+spares_premium,MTR-75169,"Brushless motor, 400 W, 18 V",,spares at $23.1172 vs production at $11.8197 (+96%),37627.0,75253.0
+spares_premium,PCB-45440,"Motor controller PCBA, 18 V, 30 A",,spares at $15.1350 vs production at $8.2975 (+82%),28147.0,56293.0
+supplier_price_gap,RGR-62085,"Nylon ring gear, 54 teeth, 48 mm dia",Kessler Praezision GmbH; Lakeshore Powder Metal Inc.,"Ningbo Tianyu Gear Co., Ltd. at $1.5179; Kessler Praezision GmbH at $1.7595 (+16%); Lakeshore Powder Metal Inc. at $1.9567 (+29%)",15983.0,31966.0
+spares_premium,CHK-47564,"Metal sleeve keyless chuck, 10 mm capacity, 1/2-20 UNF",,spares at $9.3992 vs production at $5.2388 (+79%),15753.0,31507.0
+supplier_price_gap,ROT-73041,"Rotor assembly, 36 mm dia, 35 mm long",Dunmore Electric Motor Co.,Nordlicht Antriebstechnik GmbH at $3.0242; Dunmore Electric Motor Co. at $3.7800 (+25%),12902.0,25804.0
+supplier_price_gap,SPD-62936,"Output spindle, 1/2-20 UNF, 60 mm long",Lakeshore Powder Metal Inc.,Kessler Praezision GmbH at $2.4194; Lakeshore Powder Metal Inc. at $2.9272 (+21%),12767.0,25535.0
+spares_premium,CHK-47572,"Single sleeve keyless chuck, 10 mm capacity, 3/8-24 UNF",,spares at $8.9949 vs production at $4.7939 (+88%),11408.0,22816.0
+spares_premium,SWT-28086,"Variable speed trigger switch, 18 V, 16 A",,spares at $4.9164 vs production at $2.7850 (+77%),9198.0,18396.0
+spares_premium,MTR-75173,"Brushed motor, 400 W, 20 V",,spares at $16.8259 vs production at $9.0302 (+86%),8907.0,17813.0
+supplier_price_gap,CEL-63994,"Li-ion cell, 21700, 2.0 Ah",Voltera Cell Systems Inc.,"Shenzhen Brightcell Energy Co., Ltd. at $1.8942; Voltera Cell Systems Inc. at $2.1071 (+11%)",8273.0,16547.0
+supplier_price_gap,CEL-64007,"Li-ion cell, 18650, 2.0 Ah",Voltera Cell Systems Inc.,"Shenzhen Brightcell Energy Co., Ltd. at $1.6807; Voltera Cell Systems Inc. at $2.1637 (+29%)",7640.0,15280.0
+spares_premium,SWT-28080,"Variable speed trigger switch, 12 V, 24 A",,spares at $4.6201 vs production at $2.5342 (+82%),5361.0,10721.0
+supplier_price_gap,BMS-19537,"Battery management PCBA, 12 V, 30 A",Redfield Circuits Inc.,"Suntronix EMS Co., Ltd. at $2.4084; Redfield Circuits Inc. at $2.9918 (+24%)",5043.0,10087.0
+supplier_price_gap,RGR-62091,"Sintered ring gear, 45 teeth, 48 mm dia","Lakeshore Powder Metal Inc.; Ningbo Tianyu Gear Co., Ltd.","Kessler Praezision GmbH at $0.9037; Lakeshore Powder Metal Inc. at $1.1392 (+26%); Ningbo Tianyu Gear Co., Ltd. at $1.0131 (+12%)",4734.0,9469.0
+supplier_price_gap,PCB-45448,"Motor controller PCBA, 20 V, 20 A",Redfield Circuits Inc.,"Suntronix EMS Co., Ltd. at $8.4841; Redfield Circuits Inc. at $9.6808 (+14%)",4140.0,8279.0
+supplier_price_gap,STA-57659,"Wound stator, 42 mm dia, 30 mm long",Nordlicht Antriebstechnik GmbH,Dunmore Electric Motor Co. at $2.4719; Nordlicht Antriebstechnik GmbH at $2.7328 (+11%),3982.0,7963.0
+supplier_price_gap,BHL-55997,"Battery housing lower, 18 V, yellow","Dongguan Yusheng Plastics Co., Ltd.","Greer Injection Molding Inc. at $0.5827; Dongguan Yusheng Plastics Co., Ltd. at $0.7479 (+28%)",3518.0,7036.0
+spares_premium,BMS-19537,"Battery management PCBA, 12 V, 30 A",,spares at $4.4606 vs production at $2.5383 (+76%),3360.0,6720.0
+spares_premium,BMS-19554,"Battery management PCBA, 18 V, 40 A",,spares at $8.3183 vs production at $3.9238 (+112%),2979.0,5959.0
+spares_premium,PCB-45448,"Motor controller PCBA, 20 V, 20 A",,spares at $15.2020 vs production at $8.7461 (+74%),2973.0,5946.0
+spares_premium,BRS-17975,"Carbon brush, 6 x 9 x 14 mm",,spares at $0.3919 vs production at $0.1824 (+115%),2933.0,5867.0
+supplier_price_gap,FET-20827,"N-channel MOSFET, 40 V, 100 A, TO-220",Corvin Electronic Components Inc.,Pacific Rim Semiconductor Distribution LLC at $0.3855; Corvin Electronic Components Inc. at $0.4757 (+23%),2114.0,4229.0
+spares_premium,BMS-19562,"Battery management PCBA, 20 V, 40 A",,spares at $4.9127 vs production at $2.8089 (+75%),2113.0,4227.0
+duplicate_part,CLR-37713,"Torque clutch ring, 15-position",CLR-37722,CLR-37713 at $0.3584; CLR-37722 at $0.4144 (+16%),1911.0,3823.0
+supplier_price_gap,WHR-16757,"Wire harness, 14 AWG, 250 mm long",Cableworks de Mexico S.A. de C.V.,Ohio Valley Wire & Harness Inc. at $0.3789; Cableworks de Mexico S.A. de C.V. at $0.4248 (+12%),1784.0,3568.0
+supplier_price_gap,SPR-38647,"Compression spring, 10 mm dia, 20 mm long, 1.0 mm wire",Calloway Spring & Stamping Co.,Precision Wireform Inc. at $0.1006; Calloway Spring & Stamping Co. at $0.1267 (+26%),1630.0,3260.0
+supplier_price_gap,WSH-19129,"Flat washer, M4, zinc",Apex Screw & Rivet Corp.; Midwest Threaded Products LLC,Hanlon Fastener Supply Inc. at $0.0288; Apex Screw & Rivet Corp. at $0.0340 (+18%); Midwest Threaded Products LLC at $0.0365 (+27%),1490.0,2980.0
+spares_premium,BRS-17978,"Carbon brush, 6 x 6 x 12 mm",,spares at $0.4580 vs production at $0.2194 (+109%),1418.0,2835.0
+supplier_price_gap,WHR-16777,"Wire harness, 14 AWG, 120 mm long",Cableworks de Mexico S.A. de C.V.,Ohio Valley Wire & Harness Inc. at $0.3704; Cableworks de Mexico S.A. de C.V. at $0.4399 (+19%),1370.0,2741.0
+spares_premium,BMS-19545,"Battery management PCBA, 18 V, 20 A",,spares at $4.7754 vs production at $2.5744 (+85%),1157.0,2313.0
+supplier_price_gap,BCL-69304,"Belt clip, spring steel, 45 mm long",Precision Wireform Inc.,Calloway Spring & Stamping Co. at $0.2749; Precision Wireform Inc. at $0.3389 (+23%),1124.0,2249.0
+duplicate_part,WSH-19085,"Flat washer, M4, black oxide",WSH-19147,WSH-19085 at $0.0299; WSH-19147 at $0.0341 (+14%),1044.0,2089.0
+supplier_price_gap,LVR-69923,"Forward/reverse lever, black","Dongguan Yusheng Plastics Co., Ltd.","Moldeados Regiomontanos S.A. de C.V. at $0.1521; Dongguan Yusheng Plastics Co., Ltd. at $0.1967 (+29%)",975.0,1950.0
+supplier_price_gap,HSL-37888,"Housing shell left, grey, PA6-GF30",Moldeados Regiomontanos S.A. de C.V.,Greer Injection Molding Inc. at $1.3902; Moldeados Regiomontanos S.A. de C.V. at $1.6121 (+16%),963.0,1926.0
+supplier_price_gap,INS-43117,"Insulation pad, silicone foam, 60 x 20 mm","Hanbit Energy Solutions Co., Ltd.; Shenzhen Brightcell Energy Co., Ltd.","Voltera Cell Systems Inc. at $0.0593; Hanbit Energy Solutions Co., Ltd. at $0.0681 (+15%); Shenzhen Brightcell Energy Co., Ltd. at $0.0738 (+24%)",840.0,1680.0
+supplier_price_gap,SGR-63442,"Sintered sun gear, 9 teeth, module 0.6",Lakeshore Powder Metal Inc.,"Ningbo Tianyu Gear Co., Ltd. at $0.4229; Lakeshore Powder Metal Inc. at $0.4816 (+14%)",784.0,1569.0
+duplicate_part,TRY-61244,"Molded pulp tray, 300 x 90 x 70 mm",TRY-61253,TRY-61244 at $0.3384; TRY-61253 at $0.3867 (+14%),774.0,1549.0
+supplier_price_gap,CON-20082,"Wire-to-board connector, 6-position, 2.54 mm pitch",Eastgate Components Ltd.,Pacific Rim Semiconductor Distribution LLC at $0.1359; Eastgate Components Ltd. at $0.1576 (+16%),619.0,1238.0
+supplier_price_gap,CHK-47564,"Metal sleeve keyless chuck, 10 mm capacity, 1/2-20 UNF","Weihai Jinda Chuck Co., Ltd.","Rothmann Spanntechnik GmbH at $5.2331; Weihai Jinda Chuck Co., Ltd. at $5.5712 (+6%)",575.0,1150.0
+supplier_price_gap,VNT-77368,"Vent cover, teal, PA6-GF30",Greer Injection Molding Inc.; Moldeados Regiomontanos S.A. de C.V.,"Dongguan Yusheng Plastics Co., Ltd. at $0.0685; Greer Injection Molding Inc. at $0.0852 (+24%); Moldeados Regiomontanos S.A. de C.V. at $0.0879 (+28%)",542.0,1084.0
+supplier_price_gap,PIN-61268,"Hardened dowel pin, 2 x 10 mm",Midwest Threaded Products LLC,Hanlon Fastener Supply Inc. at $0.0293; Midwest Threaded Products LLC at $0.0360 (+23%),526.0,1052.0
+supplier_price_gap,BHL-56005,"Battery housing lower, 20 V, yellow",Moldeados Regiomontanos S.A. de C.V.,"Dongguan Yusheng Plastics Co., Ltd. at $0.8452; Moldeados Regiomontanos S.A. de C.V. at $0.9851 (+17%)",494.0,989.0
+duplicate_part,SCR-66781,"Socket cap screw, M2.5 x 8, stainless",SCR-66836,SCR-66781 at $0.0290; SCR-66836 at $0.0341 (+17%),475.0,951.0
+supplier_price_gap,SPR-38665,"Compression spring, 4 mm dia, 12 mm long, 0.8 mm wire",Calloway Spring & Stamping Co.,Precision Wireform Inc. at $0.0560; Calloway Spring & Stamping Co. at $0.0625 (+12%),475.0,949.0
+supplier_price_gap,RES-69295,"Shunt resistor, 10 ohm, 0805",Pacific Rim Semiconductor Distribution LLC,Corvin Electronic Components Inc. at $0.0202; Pacific Rim Semiconductor Distribution LLC at $0.0227 (+13%),464.0,928.0
+supplier_price_gap,SCR-66685,"Torx pan head screw, M4 x 8, zinc",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0111; Apex Screw & Rivet Corp. at $0.0122 (+10%),408.0,816.0
+supplier_price_gap,ORG-40036,"O-ring, 12 mm ID, 1.5 mm section, FKM 75",Calloway Spring & Stamping Co.,Precision Wireform Inc. at $0.0284; Calloway Spring & Stamping Co. at $0.0365 (+29%),392.0,785.0
+supplier_price_gap,SCR-66791,"Self-tapping screw, M4 x 16, zinc",Midwest Threaded Products LLC,Apex Screw & Rivet Corp. at $0.0286; Midwest Threaded Products LLC at $0.0355 (+24%),381.0,762.0
+supplier_price_gap,WSH-19144,"Spring washer, M3, stainless",Apex Screw & Rivet Corp.; Hanlon Fastener Supply Inc.,Midwest Threaded Products LLC at $0.0203; Apex Screw & Rivet Corp. at $0.0225 (+11%); Hanlon Fastener Supply Inc. at $0.0250 (+23%),376.0,752.0
+supplier_price_gap,NKS-29154,"Nickel strip, 8 mm wide, 0.15 mm thick","Hanbit Energy Solutions Co., Ltd.","Shenzhen Brightcell Energy Co., Ltd. at $0.0454; Hanbit Energy Solutions Co., Ltd. at $0.0527 (+16%)",363.0,725.0
+supplier_price_gap,CON-20091,"Wire-to-board connector, 2-position, 2.0 mm pitch",Pacific Rim Semiconductor Distribution LLC,Corvin Electronic Components Inc. at $0.0905; Pacific Rim Semiconductor Distribution LLC at $0.1128 (+25%),319.0,637.0
+supplier_price_gap,PIN-61271,"Hardened dowel pin, 5 x 20 mm",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0256; Apex Screw & Rivet Corp. at $0.0322 (+26%),315.0,629.0
+duplicate_part,SCR-66694,"Pan head screw, M4 x 20, stainless",SCR-66829,SCR-66694 at $0.0142; SCR-66829 at $0.0155 (+9%),276.0,551.0
+supplier_price_gap,SCR-66651,"Socket cap screw, M6 x 16, zinc",Apex Screw & Rivet Corp.; Midwest Threaded Products LLC,Hanlon Fastener Supply Inc. at $0.0190; Apex Screw & Rivet Corp. at $0.0222 (+17%); Midwest Threaded Products LLC at $0.0205 (+8%),259.0,517.0
+supplier_price_gap,TRG-48565,"Trigger, yellow, PC/ABS",Moldeados Regiomontanos S.A. de C.V.,"Dongguan Yusheng Plastics Co., Ltd. at $0.1268; Moldeados Regiomontanos S.A. de C.V. at $0.1430 (+13%)",245.0,490.0
+supplier_price_gap,SGR-63461,"Sintered sun gear, 12 teeth, module 0.8","Ningbo Tianyu Gear Co., Ltd.","Lakeshore Powder Metal Inc. at $0.2236; Ningbo Tianyu Gear Co., Ltd. at $0.2683 (+20%)",223.0,446.0
+duplicate_part,SCR-66713,"Self-tapping screw, M4 x 20, black oxide",SCR-66823,SCR-66713 at $0.0222; SCR-66823 at $0.0252 (+14%),195.0,390.0
+supplier_price_gap,BAL-68336,"Steel ball, 6 mm dia, G25",Tri-State Bearing & Drive Inc.,Brennan Industrial Supply LLC at $0.0188; Tri-State Bearing & Drive Inc. at $0.0230 (+22%),184.0,367.0
+supplier_price_gap,SGR-63446,"Sintered sun gear, 11 teeth, module 0.8",Lakeshore Powder Metal Inc.,"Ningbo Tianyu Gear Co., Ltd. at $0.2307; Lakeshore Powder Metal Inc. at $0.2819 (+22%)",157.0,315.0
+supplier_price_gap,SPR-38659,"Compression spring, 8 mm dia, 16 mm long, 0.5 mm wire",Calloway Spring & Stamping Co.,Precision Wireform Inc. at $0.0316; Calloway Spring & Stamping Co. at $0.0408 (+29%),142.0,284.0
+supplier_price_gap,CON-20105,"Wire-to-board connector, 3-position, 2.0 mm pitch",Pacific Rim Semiconductor Distribution LLC,Corvin Electronic Components Inc. at $0.1389; Pacific Rim Semiconductor Distribution LLC at $0.1634 (+18%),93.0,186.0
+duplicate_part,CON-20091,"Wire-to-board connector, 2-position, 2.0 mm pitch",CON-20113,CON-20091 at $0.0997; CON-20113 at $0.1041 (+4%),71.0,142.0
+supplier_price_gap,LBL-74773,"Barcode label, 25 x 25 mm",Palmetto Print & Label Inc.,Empaques del Norte S.A. de C.V. at $0.0233; Palmetto Print & Label Inc. at $0.0281 (+20%),52.0,105.0
+supplier_price_gap,SCR-66734,"Self-tapping screw, M4 x 12, zinc",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0185; Apex Screw & Rivet Corp. at $0.0226 (+22%),49.0,98.0
+supplier_price_gap,LBL-74779,"Rating label, 40 x 60 mm",Empaques del Norte S.A. de C.V.,Palmetto Print & Label Inc. at $0.0175; Empaques del Norte S.A. de C.V. at $0.0219 (+25%),49.0,97.0
+supplier_price_gap,WSH-19114,"Thrust washer, M8, zinc",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0052; Apex Screw & Rivet Corp. at $0.0067 (+29%),19.0,39.0
+duplicate_part,SCR-66772,"Socket cap screw, M4 x 20, stainless",SCR-66822,same description; no matched purchases on one of them yet,0.0,0.0

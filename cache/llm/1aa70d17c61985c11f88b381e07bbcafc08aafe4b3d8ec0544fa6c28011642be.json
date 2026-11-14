@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for cutting fluid in a 5-gallon pail, a consumable shop supply, and none of the five candidates (labels, washer, poly bag, vent cover) is a cutting fluid or any plausible BOM part for it.", "model": "claude-haiku-5-5", "input_tokens": 1396, "output_tokens": 103}

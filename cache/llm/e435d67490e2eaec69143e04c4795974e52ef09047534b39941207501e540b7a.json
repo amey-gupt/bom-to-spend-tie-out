@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The purchase line says ABS and the closest candidate HSL-37887 is PC/ABS, a material conflict under the attribute rule, and the part number HSL-37897 does not match it, so the line most likely belongs to a housing not in this BOM set.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 652}

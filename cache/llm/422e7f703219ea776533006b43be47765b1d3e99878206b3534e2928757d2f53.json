@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase is for a yellow battery latch, but the only latch candidate, LAT-54794, is black, which is a direct color conflict; the same LAT- family number LAT-54802 matches no candidate, pointing to a part from a BOM outside this set.", "model": "claude-haiku-5-5", "input_tokens": 1362, "output_tokens": 227}

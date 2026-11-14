@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is a no-clean flux pen, a shop supply consumable that matches none of the five candidates (carbon brush, brushed motor, washer, battery housing), and its price is far above every candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1380, "output_tokens": 97}

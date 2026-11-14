@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase is a soft red carrying case from an aftermarket supplier, and no candidate is a carrying case: the battery housing, cartons, poly bag and trigger are different parts, and the SVC prefix points to a service item outside the BOM set.", "model": "claude-haiku-5-5", "input_tokens": 1387, "output_tokens": 194}

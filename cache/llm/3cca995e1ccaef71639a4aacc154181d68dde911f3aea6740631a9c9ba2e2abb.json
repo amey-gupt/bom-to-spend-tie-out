@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The purchase line specifies D3 (3 mm diameter, per the D28=28 mm convention), which matches neither the 5 mm nor the 6 mm G25 candidates, and the 5 mm G100 candidate conflicts on grade (G25 vs G100).", "model": "claude-haiku-5-5", "input_tokens": 1401, "output_tokens": 414}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line describes a 250x350 mm poly bag, while the only poly bag candidate BAG-28614 is 300x400 mm, a clear dimensional conflict; the part number BAG28623-C is a close family number that matches no candidate, and the cartons are not poly bags.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 117}

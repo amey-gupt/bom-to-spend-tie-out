@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.82, "reason": "The purchase line says 16 AWG with L20 (20 mm long), but every candidate is a different length (80, 120, 160, 200 mm), and the 16 AWG candidates all conflict on length, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1355, "output_tokens": 275}

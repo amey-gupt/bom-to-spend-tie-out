@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A no-clean flux pen is a shop consumable, not a BOM part, and none of the candidates (brushes, motor, washer, housing) is a flux product.", "model": "claude-opus-5-5", "input_tokens": 1376, "output_tokens": 76}

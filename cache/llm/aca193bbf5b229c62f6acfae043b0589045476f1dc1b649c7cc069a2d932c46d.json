@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The PO line is a grey PC/ABS bit holder ('bit porta'), and no candidate is a bit holder: the nameplates, housing shells and vent cover are different parts, and supplier number bth-20646c matches none of them.", "model": "claude-opus-5-5", "input_tokens": 1357, "output_tokens": 100}

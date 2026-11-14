@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 20 mm ID seal ring in FKM 75, but the only candidate with a 20 mm ID (ORG-40045) is NBR 70, a material conflict, and the other O-ring (ORG-40036) is 12 mm ID, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1463, "output_tokens": 379}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.82, "reason": "The purchase specifies stage 1 with 4 pins, but no candidate matches: PCR-13098 is stage 1 with 3 pins, PCR-13101 and PCR-13108 are 4-pin but stages 2 and 3, and PCR-13104 is stage 3 with 5 pins; the MX-9042581 number is also outside the PCR family.", "model": "claude-haiku-5-5", "input_tokens": 1385, "output_tokens": 408}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "PO part number LAT-45809 is an internal battery-latch number that matches no candidate, and its teal color conflicts with the only latch candidate (LAT-54794, black); the housing candidates are different parts.", "model": "claude-opus-5-5", "input_tokens": 1367, "output_tokens": 92}

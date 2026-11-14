@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for a box of 200 earplugs, a shop/safety consumable with no match among the candidates, which are cartons, wire harnesses, and a poly bag; the part-number 755110 also does not correspond to any candidate.", "model": "claude-haiku-5-5", "input_tokens": 1390, "output_tokens": 103}

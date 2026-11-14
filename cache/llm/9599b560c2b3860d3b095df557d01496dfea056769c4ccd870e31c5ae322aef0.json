@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line specifies a 55 mm, 7-blade fan, but the 55 mm candidates have 11 blades (FAN-30248) or 9 blades (FAN-30241), FAN-30247 is 45 mm, and the HSK parts are heat sinks, so the blade count or diameter conflicts with every candidate.", "model": "claude-opus-5-5", "input_tokens": 1425, "output_tokens": 130}

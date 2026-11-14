@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line is for an open 698 bearing, but the only 698 candidate (BRG-65675) is ZZ-shielded, a clear conflict, and the purchase part number BRG-65737 is an internal number in the same family that matches none of the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1404, "output_tokens": 238}

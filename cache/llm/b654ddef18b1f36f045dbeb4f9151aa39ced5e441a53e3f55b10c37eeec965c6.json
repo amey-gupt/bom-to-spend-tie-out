@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a service kit (SVC-71013, 2 brushes plus springs, PO type service), which is not a BOM part, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1416, "output_tokens": 76}

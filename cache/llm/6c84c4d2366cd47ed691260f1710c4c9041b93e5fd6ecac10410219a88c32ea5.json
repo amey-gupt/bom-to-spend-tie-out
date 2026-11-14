@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for a 5-gallon pail of cutting fluid, a consumable/shop supply, and none of the candidates (labels, washer, poly bag, vent cover) match it; the $88.51 unit price also far exceeds any candidate's price.", "model": "claude-haiku-5-5", "input_tokens": 1386, "output_tokens": 108}

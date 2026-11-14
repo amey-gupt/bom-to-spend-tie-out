@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a 10-pack of torque driver bits at about $18.96 per unit, which is a tool rather than any Torx pan head screw or countersunk screw in the candidate BOM hardware assemblies, and no candidate description or price matches a driver bit.", "model": "claude-haiku-5-5", "input_tokens": 1413, "output_tokens": 111}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 698 open deep groove bearing; the only 698 candidate (BRG-65675) is ZZ-shielded, which conflicts with 'open', and no other candidate is size 698.", "model": "claude-opus-5-5", "input_tokens": 1401, "output_tokens": 93}

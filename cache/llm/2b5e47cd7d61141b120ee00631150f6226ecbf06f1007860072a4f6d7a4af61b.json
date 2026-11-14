@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase describes a handheld barcode scanner, a device, while all five candidates are labels or a carton used in packaging and housing assemblies, so no candidate is the same physical part.", "model": "claude-haiku-5-5", "input_tokens": 1331, "output_tokens": 85}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase specifies a 6 mm steel ball in G100 grade, but BAL-68342 is 5 mm G100, BAL-68336 is 6 mm G25, and BAL-68329 is 5 mm G25, so no candidate matches both stated attributes and the part number GV-1886041 matches no candidate.", "model": "claude-haiku-5-5", "input_tokens": 1389, "output_tokens": 347}

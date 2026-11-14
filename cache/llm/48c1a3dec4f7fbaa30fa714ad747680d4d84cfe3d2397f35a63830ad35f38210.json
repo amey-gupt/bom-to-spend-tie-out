@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a service-type 'GEARBOX ASSEMBLY' with SVC- prefix, which is a complete assembly/service item, and none of the candidates is a gearbox; the battery housings and motor are not the same physical part.", "model": "claude-haiku-5-5", "input_tokens": 1377, "output_tokens": 102}

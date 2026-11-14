@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Copy paper by the case is an office/shop supply rather than a BOM part, and its $44.33 price does not resemble any of the carton candidates (about $0.55\u2013$0.77).", "model": "claude-opus-5-5", "input_tokens": 1351, "output_tokens": 84}

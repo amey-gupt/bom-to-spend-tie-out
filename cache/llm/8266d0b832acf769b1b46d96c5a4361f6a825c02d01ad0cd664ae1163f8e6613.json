@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "PO number ECP-58920 is an internal motor end cap number that matches no candidate, and neither end cap fits: ECP-58913 is PBT-GF30 at 42 mm (conflicts with PA66-GF30, 50 mm) and ECP-58906 is die-cast aluminum (conflicts with PA66-GF30).", "model": "claude-opus-5-5", "input_tokens": 1389, "output_tokens": 136}

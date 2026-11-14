@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Shop towels are a shop supply/consumable from a safety supplier at $31 per case, not a BOM part, and no candidate carton matches the description.", "model": "claude-opus-5-5", "input_tokens": 1348, "output_tokens": 73}

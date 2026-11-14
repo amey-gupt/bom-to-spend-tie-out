@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A stackable 11 x 16 in bin bought from an industrial supplier at $9.66 is a shop supply, not a BOM part, and none of the candidate cartons is a bin: their sizes (e.g. 400 x 300 mm) and prices of about $0.55\u20130.77 do not match.", "model": "claude-opus-5-5", "input_tokens": 1350, "output_tokens": 121}

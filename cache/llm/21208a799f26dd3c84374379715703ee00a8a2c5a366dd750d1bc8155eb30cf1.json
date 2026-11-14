@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line describes an ultrasonic horn welding tip, which matches none of the candidates (washers, wound stators, and a compression spring), and no candidate BOM part is a welding tip.", "model": "claude-haiku-5-5", "input_tokens": 1403, "output_tokens": 87}

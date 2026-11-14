@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for stretch wrap (packaging material), which does not match any of the wire harness candidates, and no candidate shares its description or price profile.", "model": "claude-haiku-5-5", "input_tokens": 1389, "output_tokens": 73}

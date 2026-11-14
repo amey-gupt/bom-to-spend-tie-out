@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO line carries internal number NTC-13048 (100k ohm, B3950 NTC), which none of the candidates has; the only NTC candidate, NTC-13041, is 47k ohm and conflicts on resistance, and the rest are chip or shunt resistors.", "model": "claude-opus-5-5", "input_tokens": 1405, "output_tokens": 113}

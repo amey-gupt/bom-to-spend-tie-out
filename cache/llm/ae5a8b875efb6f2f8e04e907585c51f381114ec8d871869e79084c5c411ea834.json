@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a service housing kit with service PO type, which is not a BOM part, and its SVC- number matches no candidate; the candidate BHU-18894 fits the red 18 V description but the kit classification rules it out.", "model": "claude-haiku-5-5", "input_tokens": 1348, "output_tokens": 97}

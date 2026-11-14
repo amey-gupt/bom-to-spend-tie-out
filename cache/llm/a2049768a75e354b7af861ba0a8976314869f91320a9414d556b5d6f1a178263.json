@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a service-type carrying case (SVC. prefix, PO type service), which is an accessory rather than any BOM part; none of the candidates is a soft carrying case, and the nearest items are a battery housing, cartons, a poly bag and a trigger.", "model": "claude-haiku-5-5", "input_tokens": 1390, "output_tokens": 112}

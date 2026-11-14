@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line specifies a black TPE right housing shell (HSR-28972), but both same-family candidates are yellow (HSR-28957 in TPE, HSR-28958 in PC/ABS), so color conflicts rule them out, and the part number matches no candidate.", "model": "claude-haiku-5-5", "input_tokens": 1345, "output_tokens": 257}

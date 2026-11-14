@@ -1,0 +1,1 @@
+{"part_number": "HSR-28957", "confidence": 0.7, "reason": "The purchase text 'HSG SHL RH YELLOW TPE' matches HSR-28957 (housing shell right, yellow, TPE) on every stated attribute, while HSR-28958 is PC/ABS and GRP-62242 is a grip, and the purchase part number GV-2456351 does not identify any candidate.", "model": "claude-haiku-5-5", "input_tokens": 1356, "output_tokens": 350}

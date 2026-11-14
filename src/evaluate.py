@@ -230,6 +230,17 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
             print_outcomes(f"TUNE, rules + classifier + {model}", report["llm"][model]["tune"])
         scorer.llm_accept_conf, scorer.llm_reject_conf = accept_conf, reject_conf
 
+    # Full-pipeline results by noise style, for both splits (the app's evaluation tab reads this).
+    report["by_style"] = []
+    for split, split_mask in (("heldout", held), ("tune", tune)):
+        for col in ("id_style", "desc_style"):
+            for style_name in sorted(truth.loc[split_mask, col].unique()):
+                m = outcome_metrics(dec, truth, p, canon, split_mask & (truth[col] == style_name).to_numpy())
+                report["by_style"].append(dict(split=split, kind=col, style=style_name, lines=m["lines"], accept_share=m["accept_share"],
+                                               accept_precision=m["accept_precision"], recall=m["recall"], review_lines=m["review_lines"],
+                                               wrong_match_spend=m["wrong_match_spend"]))
+    report["total_lines"] = int(len(p))
+
     scorer.save()
     Path("out").mkdir(exist_ok=True)
     dec.insert(0, "po_id", p["po_id"])
@@ -295,9 +306,7 @@ def step4(data_dir: str | Path = "data", materiality: float | None = None):
         print(f"  {kind:<20} found {r['found']:>3}, planted {r['planted']:>3}: precision {r['precision']:.0%}, recall {r['recall']:.0%}{extra}; "
               f"range ${r['low_usd']:,.0f} to ${r['high_usd']:,.0f}")
 
-    Path("out").mkdir(exist_ok=True)
-    for name, df in (("lines", lines), ("allocation", alloc), ("product_cost", products), ("leads", leads)):
-        df.to_csv(f"out/{name}.csv", index=False)
+    allocate.write_outputs(inp, lines, alloc, products, leads)
     Path("out/eval_step4.json").write_text(json.dumps(report, indent=2, default=float))
     print("\nwrote out/eval_step4.json and the step-4 outputs")
     return report

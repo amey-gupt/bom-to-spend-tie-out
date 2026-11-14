@@ -1,0 +1,1 @@
+{"part_number": "CTN-23153", "confidence": 0.88, "reason": "The description 'CARON 560X330X270MM MASETR' (misspelled master carton) gives exactly the 560 x 330 x 270 mm of CTN-23153, and part number CTN-21353 reads as a digit-transposition typo of 23153; none of the other cartons match these dimensions.", "model": "claude-opus-5-5", "input_tokens": 1317, "output_tokens": 127}

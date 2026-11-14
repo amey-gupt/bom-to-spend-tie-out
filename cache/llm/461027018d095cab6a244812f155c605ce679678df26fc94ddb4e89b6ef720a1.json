@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The line is a 12V gearbox service assembly (complete assembly, service PO, $9.66), while every candidate is a battery housing half priced under $1.02, so none is the same part and assemblies are not BOM parts.", "model": "claude-opus-5-5", "input_tokens": 1360, "output_tokens": 95}

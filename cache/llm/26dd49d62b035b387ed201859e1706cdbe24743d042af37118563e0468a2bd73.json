@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line describes an ultrasonic welding tip, which matches none of the candidates (washers, wound stators, and a compression spring), and the $397 unit price is far above any candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 91}

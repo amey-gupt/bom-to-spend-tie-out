@@ -1,0 +1,1 @@
+{"part_number": "BMS-19537", "confidence": 0.25, "reason": "The description 'BATTERY MANAGEMENT PCB' fits all three Suntronix BMS candidates equally, with no voltage or amperage stated to separate them, so the choice rests only on BMS-19537 having the closest unit price to the $2.8064 warranty price.", "model": "claude-haiku-5-5", "input_tokens": 1359, "output_tokens": 554}

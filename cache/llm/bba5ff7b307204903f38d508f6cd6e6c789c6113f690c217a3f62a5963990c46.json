@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "A soft red carrying case appears on no candidate BOM (the candidates are cartons, a poly bag, a housing and a trigger), and the service PO with SVC part number points to an accessory or service item rather than a listed BOM part.", "model": "claude-opus-5-5", "input_tokens": 1380, "output_tokens": 99}

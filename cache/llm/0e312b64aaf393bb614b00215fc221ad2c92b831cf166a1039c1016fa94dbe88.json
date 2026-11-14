@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.72, "reason": "The PO part number NKS-29171 RC is an internal nickel-strip number that matches none of the candidates, which is strong evidence for 'none'; the 8 mm width and the price fit NKS-29154, but the thickness is truncated and cannot confirm it.", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 110}

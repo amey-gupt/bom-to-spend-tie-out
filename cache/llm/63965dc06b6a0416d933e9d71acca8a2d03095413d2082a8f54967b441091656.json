@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO's internal number RGR-62096 matches no candidate, and its sintered 57T, 44 mm ring gear conflicts with RGR-62091 (45T, 48 mm) and RGR-62085 (nylon, 54T, 48 mm), so it likely belongs to a product BOM not in this set.", "model": "claude-opus-5-5", "input_tokens": 1379, "output_tokens": 127}

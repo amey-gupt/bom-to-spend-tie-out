@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.62, "reason": "The purchase specifies 40V, 60A, TO-220, but the only TO-220 candidates are FET-20825 (80A) and FET-20827 (100A), so the stated 60A current rating conflicts with both, and the blank part number gives no other link.", "model": "claude-haiku-5-5", "input_tokens": 1421, "output_tokens": 367}

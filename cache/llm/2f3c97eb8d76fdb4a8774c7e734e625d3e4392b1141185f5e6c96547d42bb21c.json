@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The purchase describes a 250x350 mm poly bag, but the only poly bag candidate BAG-28614 is 300x400 mm, a clear dimension conflict, and the internal-looking number BAG28623 matches none of the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1366, "output_tokens": 214}

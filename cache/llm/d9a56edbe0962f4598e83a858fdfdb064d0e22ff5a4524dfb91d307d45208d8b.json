@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line 'Copy paper, case' at $53.18 per unit is copy paper, not a corrugated carton; none of the candidate cartons match that description or price, so no BOM part applies.", "model": "claude-haiku-5-5", "input_tokens": 1366, "output_tokens": 88}

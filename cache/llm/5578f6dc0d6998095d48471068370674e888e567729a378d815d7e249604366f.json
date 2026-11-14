@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line asks for a 4-position 30 A terminal block, and no candidate matches both: TRM-27420 is 40 A, TRM-27434 is 20 A, and TRM-27425 is 3-position; the internal number TRM-24740 also belongs to none of the candidates.", "model": "claude-opus-5-5", "input_tokens": 1393, "output_tokens": 116}

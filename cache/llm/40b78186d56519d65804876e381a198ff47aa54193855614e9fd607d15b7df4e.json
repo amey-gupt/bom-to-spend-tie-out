@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The purchase part number HSL-37897 does not match HSL-37887 exactly, and the purchase text says ABS while the closest candidate HSL-37887 is PC/ABS, so the material conflicts; the other candidates are right or teal or TPE or the wrong housing side.", "model": "claude-haiku-5-5", "input_tokens": 1380, "output_tokens": 500}

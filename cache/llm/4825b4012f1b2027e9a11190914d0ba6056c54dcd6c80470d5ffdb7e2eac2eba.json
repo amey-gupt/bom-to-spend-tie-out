@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a 2-brush service kit with springs, which is a service kit rather than a BOM part, and none of the candidates is a kit or a brush pair matching that description.", "model": "claude-haiku-5-5", "input_tokens": 1419, "output_tokens": 81}

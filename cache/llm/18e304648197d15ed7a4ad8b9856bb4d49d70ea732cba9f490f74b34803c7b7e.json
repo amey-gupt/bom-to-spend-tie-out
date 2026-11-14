@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line describes a compressed air filter element, a consumable, and none of the five candidates is a filter element; all candidates are compression springs, and the $72.73 unit price is far above any spring's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1415, "output_tokens": 93}

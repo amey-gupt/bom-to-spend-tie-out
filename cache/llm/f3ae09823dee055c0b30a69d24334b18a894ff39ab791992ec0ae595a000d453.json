@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase is a service housing kit (part-number field SVC-17063, PO type service), which is not a BOM part, and the $5.55 price is far above the $0.55-$1.01 candidate housing prices.", "model": "claude-haiku-5-5", "input_tokens": 1360, "output_tokens": 92}

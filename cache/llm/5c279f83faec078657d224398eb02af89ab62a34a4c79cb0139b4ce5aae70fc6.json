@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line asks for an orange PC/ABS nameplate, but every candidate nameplate conflicts on color (red, grey, yellow), and the only orange candidate is a bit holder in ABS; the part number 74835T841 matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1344, "output_tokens": 104}

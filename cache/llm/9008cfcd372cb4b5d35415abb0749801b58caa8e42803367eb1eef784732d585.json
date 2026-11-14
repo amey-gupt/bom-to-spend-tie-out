@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is a first aid kit refill sold by SafetyFirst Direct at about $39.60, which is a consumable/kit rather than any of the packaging labels, vent cover, or cartons on the BOM candidates.", "model": "claude-haiku-5-5", "input_tokens": 1351, "output_tokens": 98}

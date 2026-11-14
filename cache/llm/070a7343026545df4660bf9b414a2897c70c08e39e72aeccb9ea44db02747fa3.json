@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line is a 'SWITCH SERVICE KIT' with part-number field SVC 71022, which is a service kit rather than a BOM part, so per the rules it is not any of the candidate switches or housings.", "model": "claude-haiku-5-5", "input_tokens": 1395, "output_tokens": 95}

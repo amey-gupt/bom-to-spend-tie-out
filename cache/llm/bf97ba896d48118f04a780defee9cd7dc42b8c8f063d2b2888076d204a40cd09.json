@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line states a 300 W, 40 V brushed motor, but no candidate matches: MTR-75173 is 400 W/20 V, MTR-75169 is brushless 400 W/18 V, and MTR-75168 is 200 W/12 V, and the internal number MTR-75180 belongs to none of the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1369, "output_tokens": 281}

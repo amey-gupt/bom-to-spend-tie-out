@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line says D3 (3 mm diameter), which conflicts with every steel-ball candidate (5 mm or 6 mm), and the part number BAL-6835 matches no candidate and reads as a different internal number in the same family.", "model": "claude-haiku-5-5", "input_tokens": 1405, "output_tokens": 403}

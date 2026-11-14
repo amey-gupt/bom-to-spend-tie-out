@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a service-type carrying case (SVC prefix, PO type service) and none of the candidates is a carrying case; they are a housing, trigger, cartons and a poly bag, so none is the same physical part.", "model": "claude-haiku-5-5", "input_tokens": 1380, "output_tokens": 96}

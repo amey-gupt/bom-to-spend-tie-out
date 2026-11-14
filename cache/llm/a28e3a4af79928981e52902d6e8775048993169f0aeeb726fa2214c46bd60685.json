@@ -1,0 +1,1 @@
+{"part_number": "BMS-19537", "confidence": 0.25, "reason": "The purchase line gives no voltage or amperage, so it fits three Suntronix BMS candidates; the $2.7431 price is closest to BMS-19537's confirmed $2.6307 but also near BMS-19545's $2.5871, so this is a low-confidence pick.", "model": "claude-haiku-5-5", "input_tokens": 1357, "output_tokens": 480}

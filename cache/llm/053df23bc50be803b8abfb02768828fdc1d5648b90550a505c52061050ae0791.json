@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line asks for a 100 kOhm 0603 chip resistor, and no candidate has that value: the 0603 parts are 10k and 0.002 ohm, and the 100 ohm part is 0805.", "model": "claude-opus-5-5", "input_tokens": 1398, "output_tokens": 92}

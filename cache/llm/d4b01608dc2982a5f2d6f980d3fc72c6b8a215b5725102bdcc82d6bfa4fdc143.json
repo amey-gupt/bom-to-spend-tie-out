@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service housing kit (SVC- number, service PO, $5.55 versus about $0.86 for the closest 18 V red upper housing BHU-18894), and kits are not BOM parts.", "model": "claude-opus-5-5", "input_tokens": 1354, "output_tokens": 89}

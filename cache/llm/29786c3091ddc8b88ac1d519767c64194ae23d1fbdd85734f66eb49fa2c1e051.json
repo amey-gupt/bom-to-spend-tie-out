@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 6 mm G100 steel ball, but BAL-68342 is 5 mm G100, BAL-68336 is 6 mm G25, and BAL-68329 is 5 mm G25, so every candidate conflicts on diameter or grade.", "model": "claude-haiku-5-5", "input_tokens": 1383, "output_tokens": 281}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for stretch wrap (packaging material, 18 in x 1500 ft), which is a consumable and not any of the wire harness BOM parts listed as candidates.", "model": "claude-haiku-5-5", "input_tokens": 1403, "output_tokens": 83}

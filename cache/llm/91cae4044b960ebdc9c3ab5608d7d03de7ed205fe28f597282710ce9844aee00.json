@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A stackable storage bin from a safety/shop supplier at $6.54 is a shop supply, not a corrugated carton, so it does not match any candidate on description or price.", "model": "claude-opus-5-5", "input_tokens": 1350, "output_tokens": 81}

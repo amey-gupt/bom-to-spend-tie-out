@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for packing tape (48 mm x 100 m, case of 36), and none of the five candidates is tape; they are cartons and a poly bag, and the $58.76 per-unit price is far above any candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1386, "output_tokens": 104}

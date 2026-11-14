@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase part number SPD-62945 is not among the candidates and is a spindle-family number, indicating a BOM outside this set; the closest spindles are SPD-62933 (75 mm) and SPD-62936 (60 mm), neither matching the 82 mm length on the purchase line.", "model": "claude-haiku-5-5", "input_tokens": 1460, "output_tokens": 119}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The purchase line specifies 7 blades and 55 mm diameter, which matches neither FAN-30248 (11 blades) nor FAN-30241 (9 blades), and the part-number DY-743958 is not a candidate, so it points to an outside BOM part rather than any listed candidate.", "model": "claude-haiku-5-5", "input_tokens": 1414, "output_tokens": 120}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line calls for a 40 V, 60 A, TO-220 N-channel MOSFET, but no candidate is rated 60 A: FET-20825 is 80 A, FET-20827 is 100 A, FET-20824 is 100 A in PDFN, FET-20829 is 30 V DPAK, and BMS-19562 is a PCBA.", "model": "claude-opus-5-5", "input_tokens": 1425, "output_tokens": 144}

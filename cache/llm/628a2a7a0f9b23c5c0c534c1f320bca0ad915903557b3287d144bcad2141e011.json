@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line describes a red soft carrying case, a service-type accessory with a SVC- part number, which is not a BOM part; none of the five candidates (battery housing, poly bag, trigger, vent cover) is a carrying case.", "model": "claude-haiku-5-5", "input_tokens": 1361, "output_tokens": 102}

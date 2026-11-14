@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The purchase line says D3 (about 3 mm), which conflicts with both G25 candidates (BAL-68336 at 6 mm and BAL-68329 at 5 mm), and the part number BAL-6835 does not match any candidate exactly.", "model": "claude-haiku-5-5", "input_tokens": 1402, "output_tokens": 641}

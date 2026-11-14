@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line is a SERVICE KIT (PO type service, part field 'SVC 71022'), and service kits are not BOM parts, so none of the candidate switches or housings applies even though SWT-28086 matches the 18V description.", "model": "claude-haiku-5-5", "input_tokens": 1395, "output_tokens": 101}

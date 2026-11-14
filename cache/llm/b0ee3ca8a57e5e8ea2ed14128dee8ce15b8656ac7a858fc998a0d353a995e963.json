@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.72, "reason": "The line calls for steel balls D6 (6 mm) G100, but BAL-68342 is 5 mm G100 and BAL-68336 is 6 mm G25, so each candidate conflicts with one stated attribute, and the MX-7167090 number matches no candidate.", "model": "claude-haiku-5-5", "input_tokens": 1383, "output_tokens": 430}

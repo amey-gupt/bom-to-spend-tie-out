@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is a mold maintenance service (cavity polishing) at about $1294 per unit, not a physical BOM part, and none of the candidates are plastic grips or pulp trays that such a service would match.", "model": "claude-haiku-5-5", "input_tokens": 1397, "output_tokens": 92}

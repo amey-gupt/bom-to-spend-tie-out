@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a service-type carrying case with part number SVC.71042/A, which is an accessory/service item rather than any of the candidates, which are a battery housing, cartons, poly bag and trigger; none matches a soft red carrying case.", "model": "claude-haiku-5-5", "input_tokens": 1384, "output_tokens": 105}

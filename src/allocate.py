@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .normalize import Inputs, load_inputs, numbers_in
+from .normalize import Inputs, load_inputs, norm_desc, numbers_in
 
 MATERIALITY_USD = 25_000     # a Claude-accepted line above this goes to a person anyway
 PRICE_GAP_MIN = 0.05         # ignore supplier price differences smaller than this
@@ -24,9 +24,12 @@ LEAD_LOW = 0.5               # low end of every lead's range: half the gap close
 
 def load_lines(inp: Inputs, decisions_path: str | Path = "out/decisions.csv") -> pd.DataFrame:
     dec = pd.read_csv(decisions_path, dtype={"po_id": str}, keep_default_na=False)
-    cols = ["po_id", "po_date", "plant", "supplier", "supplier_key", "supplier_part_number", "item_description", "po_type",
+    cols = ["po_id", "po_date", "plant", "supplier", "supplier_key", "supplier_part_number", "item_description", "uom", "po_type",
             "base_qty", "unit_price_usd", "spend_usd"]
-    lines = inp.purchases[cols].merge(dec[["po_id", "decision", "source", "part", "prob", "llm_conf", "llm_reason"]], on="po_id", validate="1:1")
+    lines = inp.purchases[cols].merge(dec[["po_id", "decision", "source", "part", "prob", "llm_part", "llm_conf", "llm_reason"]], on="po_id", validate="1:1")
+    # the matcher's verdict before the materiality rule or any reviewer action; the app starts from these
+    lines["decision_pre"], lines["source_pre"] = lines["decision"], lines["source"]
+    lines["suggested_part"] = lines["llm_part"].where(lines["llm_part"] != "", lines["part"])
     date = pd.to_datetime(lines["po_date"])
     lines["quarter"] = date.dt.year.astype(str) + "Q" + date.dt.quarter.astype(str)
     return lines
@@ -73,17 +76,17 @@ def tie_out(lines: pd.DataFrame) -> pd.DataFrame:
 
 # ----------------------------------------------------------------- allocation
 
-def allocate(lines: pd.DataFrame, inp: Inputs) -> tuple[pd.DataFrame, pd.DataFrame]:
+def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split matched production spend across products by qty_per_unit x units_built in the purchase's quarter.
 
     Returns (allocation rows: product, quarter, part, spend; product table with estimated actual cost per unit
     beside the BOM standard cost).
     """
-    builds = inp.builds.copy()
+    builds = builds.copy()
     period = pd.to_datetime(builds["period"])
     builds["quarter"] = period.dt.year.astype(str) + "Q" + period.dt.quarter.astype(str)
     units_q = builds.groupby(["product_id", "quarter"])["units_built"].sum().rename("units").reset_index()
-    usage = inp.boms.groupby(["part_number", "product_id"])["qty_per_unit"].sum().reset_index()
+    usage = boms.groupby(["part_number", "product_id"])["qty_per_unit"].sum().reset_index()
 
     demand = usage.merge(units_q, on="product_id")
     demand["need"] = demand["qty_per_unit"] * demand["units"]
@@ -99,12 +102,12 @@ def allocate(lines: pd.DataFrame, inp: Inputs) -> tuple[pd.DataFrame, pd.DataFra
     rows["allocated_usd"] = rows["spend"] * weight / pd.Series(weight).groupby([rows["part_number"], rows["quarter"]]).transform("sum").to_numpy()
     alloc = rows[["product_id", "quarter", "part_number", "allocated_usd"]]
 
-    std = inp.boms.assign(c=inp.boms["qty_per_unit"] * inp.boms["std_cost"]).groupby("product_id")["c"].sum()
+    std = boms.assign(c=boms["qty_per_unit"] * boms["std_cost"]).groupby("product_id")["c"].sum()
     products = pd.DataFrame({
         "units_built": builds.groupby("product_id")["units_built"].sum(),
         "std_cost_per_unit": std,
         "allocated_production_spend_est": alloc.groupby("product_id")["allocated_usd"].sum(),
-    })
+    }).fillna({"allocated_production_spend_est": 0.0})
     products["actual_cost_per_unit_est"] = products["allocated_production_spend_est"] / products["units_built"]
     products["actual_vs_std"] = products["actual_cost_per_unit_est"] / products["std_cost_per_unit"] - 1
     return alloc, products.reset_index()
@@ -118,8 +121,10 @@ def _vwap(df: pd.DataFrame, by) -> pd.DataFrame:
     return g
 
 
-def find_leads(lines: pd.DataFrame, inp: Inputs) -> pd.DataFrame:
+def find_leads(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
     """Each lead carries a dollar range: LEAD_LOW of the gap closed, up to all of it."""
+    bom_parts = boms.drop_duplicates("part_number")[["part_number", "description"]].reset_index(drop=True)
+    bom_parts["desc_norm"] = bom_parts["description"].map(norm_desc)
     ok = lines[lines["decision"] == "accept"]
     prod, spares = ok[ok["bucket"] == "production"], ok[ok["bucket"] == "spares"]
     name = lines.groupby("supplier_key")["supplier"].agg(lambda s: s.value_counts().index[0])
@@ -141,8 +146,8 @@ def find_leads(lines: pd.DataFrame, inp: Inputs) -> pd.DataFrame:
                           gap_usd=gap))
 
     # 2. two internal part numbers for one physical part: same family, same words, same numbers
-    parts = inp.parts.assign(family=inp.parts["part_number"].str.split("-").str[0],
-                             words=inp.parts["desc_norm"].map(lambda d: frozenset(d.split())), nums=inp.parts["desc_norm"].map(numbers_in))
+    parts = bom_parts.assign(family=bom_parts["part_number"].str.split("-").str[0],
+                             words=bom_parts["desc_norm"].map(lambda d: frozenset(d.split())), nums=bom_parts["desc_norm"].map(numbers_in))
     price = _vwap(prod, "part")
     for _, g in parts.groupby(["family", "words", "nums"]):
         if len(g) < 2:
@@ -167,7 +172,7 @@ def find_leads(lines: pd.DataFrame, inp: Inputs) -> pd.DataFrame:
 
     out = pd.DataFrame(leads, columns=["lead_type", "part_number", "related", "detail", "gap_usd"])
     out["low_usd"], out["high_usd"] = (out["gap_usd"] * LEAD_LOW).round(0), out["gap_usd"].round(0)
-    desc = inp.parts.set_index("part_number")["description"]
+    desc = bom_parts.set_index("part_number")["description"]
     out.insert(2, "description", out["part_number"].map(desc))
     return out.drop(columns="gap_usd").sort_values("high_usd", ascending=False).reset_index(drop=True)
 
@@ -175,8 +180,17 @@ def find_leads(lines: pd.DataFrame, inp: Inputs) -> pd.DataFrame:
 def run(decisions_path: str | Path = "out/decisions.csv", data_dir: str | Path = "data", materiality: float = MATERIALITY_USD):
     inp = load_inputs(data_dir)
     lines = assign_buckets(apply_materiality(load_lines(inp, decisions_path), materiality))
-    alloc, products = allocate(lines, inp)
-    return inp, lines, alloc, products, find_leads(lines, inp)
+    alloc, products = allocate(lines, inp.boms, inp.builds)
+    return inp, lines, alloc, products, find_leads(lines, inp.boms)
+
+
+def write_outputs(inp: Inputs, lines, alloc, products, leads, out: str | Path = "out"):
+    """Everything the app needs, so it can run from out/ alone."""
+    out = Path(out)
+    out.mkdir(exist_ok=True)
+    for name, df in (("lines", lines), ("allocation", alloc), ("product_cost", products), ("leads", leads),
+                     ("bom", inp.boms), ("builds", inp.builds)):
+        df.to_csv(out / f"{name}.csv", index=False)
 
 
 if __name__ == "__main__":
@@ -185,11 +199,7 @@ if __name__ == "__main__":
     ap.add_argument("--materiality", type=float, default=MATERIALITY_USD, help="USD; Claude-accepted lines above this go to review")
     args = ap.parse_args()
     inp, lines, alloc, products, leads = run(materiality=args.materiality)
-    Path("out").mkdir(exist_ok=True)
-    lines.to_csv("out/lines.csv", index=False)
-    alloc.to_csv("out/allocation.csv", index=False)
-    products.to_csv("out/product_cost.csv", index=False)
-    leads.to_csv("out/leads.csv", index=False)
+    write_outputs(inp, lines, alloc, products, leads)
 
     t = tie_out(lines)
     print(f"tie-out rate {1 - t.at['unassigned', 'share']:.1%} of ${t['spend_usd'].sum():,.0f}")
@@ -206,4 +216,4 @@ if __name__ == "__main__":
     s = leads.groupby("lead_type").agg(leads=("part_number", "size"), low_usd=("low_usd", "sum"), high_usd=("high_usd", "sum"))
     print("\nleads (ranges, not booked savings)")
     print(s.to_string(formatters={"low_usd": "${:,.0f}".format, "high_usd": "${:,.0f}".format}))
-    print("wrote out/lines.csv, out/allocation.csv, out/product_cost.csv, out/leads.csv")
+    print("wrote out/lines.csv, allocation.csv, product_cost.csv, leads.csv, bom.csv, builds.csv")

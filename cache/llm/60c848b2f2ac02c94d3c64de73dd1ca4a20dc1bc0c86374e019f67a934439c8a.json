@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for a 55 mm fan with 7 blades, and no candidate matches: FAN-30248 has 11 blades, FAN-30241 has 9 blades (despite the same supplier, Dongguan Yusheng) and FAN-30247 is 45 mm, so the blade count conflicts with every 55 mm fan.", "model": "claude-opus-5-5", "input_tokens": 1422, "output_tokens": 134}

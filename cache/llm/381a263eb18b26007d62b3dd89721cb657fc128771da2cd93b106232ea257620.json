@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is floor marking tape, a shop supply, which matches none of the candidates (overmold grip, housing shell, nameplate, vent cover, trigger), and the $26 unit price is far above any candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1343, "output_tokens": 103}

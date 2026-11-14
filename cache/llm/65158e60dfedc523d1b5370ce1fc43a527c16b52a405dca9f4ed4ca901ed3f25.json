@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line specifies 10 teeth and module 0.5, but no candidate matches: the candidates are 14T, 12T, 11T and 13T at module 0.8 and 9T at module 0.6, and the part number SGR-36464 is not among them, so it likely belongs to a BOM outside this set.", "model": "claude-haiku-5-5", "input_tokens": 1417, "output_tokens": 255}

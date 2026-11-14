@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for a 3 mm G25 steel ball, while the candidate balls are 5 or 6 mm (and one is G100), and part number BAL-6835 looks like a truncated family number that matches none of the candidates.", "model": "claude-opus-5-5", "input_tokens": 1405, "output_tokens": 97}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line describes safety glasses, a PPE consumable rather than any of the five molded, label, or grip BOM parts, and the price of $2.76 far exceeds every candidate's unit cost.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 92}

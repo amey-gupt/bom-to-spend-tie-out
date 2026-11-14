@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line describes a stage-1, 4-pin planet carrier, and no candidate matches: PCR-13098 is stage 1 but has 3 pins, PCR-13101 and PCR-13108 have 4 pins but are stages 2 and 3, and MX-9042581 matches no candidate number.", "model": "claude-opus-5-5", "input_tokens": 1385, "output_tokens": 123}

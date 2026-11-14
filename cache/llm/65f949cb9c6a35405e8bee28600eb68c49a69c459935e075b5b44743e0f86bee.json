@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A handheld barcode scanner at $215.91 is shop equipment, not a BOM part; the candidates are barcode/rating labels and a carton priced in cents, and part number 879673 matches none of them.", "model": "claude-opus-5-5", "input_tokens": 1331, "output_tokens": 91}

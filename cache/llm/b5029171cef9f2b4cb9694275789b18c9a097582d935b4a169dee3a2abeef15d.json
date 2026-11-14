@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is for earplugs, a box of 200 consumable safety supplies, which matches none of the candidates (cartons, wire harnesses, and a poly bag), and the blank part number gives no link to any BOM part.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 97}

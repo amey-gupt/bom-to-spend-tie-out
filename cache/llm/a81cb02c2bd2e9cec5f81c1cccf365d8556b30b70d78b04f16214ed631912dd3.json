@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for a quart of air tool oil, a consumable/shop supply, and none of the five candidates is a lubricant; the washers and carbon brush are not oil, and the $11.11 unit price is far above any candidate's price.", "model": "claude-haiku-5-5", "input_tokens": 1367, "output_tokens": 103}

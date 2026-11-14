@@ -1,0 +1,1 @@
+{"part_number": "NPL-67926", "confidence": 0.88, "reason": "NPL-76926 is a likely digit transposition of NPL-67926, and that candidate matches on description (nameplate, yellow, ABS), supplier (Greer) and price ($0.1450 vs $0.1459); the other nameplates are the wrong color or material.", "model": "claude-opus-5-5", "input_tokens": 1368, "output_tokens": 117}

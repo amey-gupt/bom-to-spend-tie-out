@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for a 3 mm G25 steel ball, but the only steel-ball candidates are 5 mm or 6 mm diameter (and one is G100 grade), so the diameter conflicts with all of them; the bearings are a different part type.", "model": "claude-opus-5-5", "input_tokens": 1404, "output_tokens": 104}

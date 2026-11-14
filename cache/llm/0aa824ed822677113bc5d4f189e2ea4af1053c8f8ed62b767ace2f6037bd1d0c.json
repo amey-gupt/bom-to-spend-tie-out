@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The line is a T10 torque driver bit 10-pack, a shop tool/consumable at $12.36, not a screw; part number 156209 matches no candidate and no candidate is a driver bit.", "model": "claude-opus-5-5", "input_tokens": 1419, "output_tokens": 88}

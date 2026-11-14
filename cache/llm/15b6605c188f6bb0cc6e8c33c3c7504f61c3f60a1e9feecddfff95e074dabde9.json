@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a 'SWITCH SERVICE KIT' with service part number SVC 71022, and service kits are not BOM parts; although SWT-28086 (18 V trigger switch, $3.02) is the closest candidate, a kit is a separate item.", "model": "claude-opus-5-5", "input_tokens": 1395, "output_tokens": 108}

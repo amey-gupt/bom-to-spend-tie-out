@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line is for a box of 200 earplugs, a safety consumable/shop supply that does not match any candidate BOM part (cartons, wire harnesses, poly bag), and the $25.44 unit price is far above any candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 107}

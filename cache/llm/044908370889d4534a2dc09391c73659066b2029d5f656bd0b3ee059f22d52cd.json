@@ -1,0 +1,1 @@
+{"part_number": "BMS-19537", "confidence": 0.8, "reason": "The purchase line's 12V 30A battery management PCBA matches BMS-19537 exactly on voltage and current, the part number differs by one transposed digit (19357 vs 19537), and the price is consistent with a warranty buy from the same supplier.", "model": "claude-haiku-5-5", "input_tokens": 1376, "output_tokens": 111}

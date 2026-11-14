@@ -1,0 +1,1 @@
+{"part_number": "WHR-16755", "confidence": 0.8, "reason": "The description matches WHR-16755 exactly (18 AWG, 160 mm), while the other four candidates conflict on gauge or length; the purchase part-number field WHR-1675 looks like a truncated form of WHR-16755.", "model": "claude-haiku-5-5", "input_tokens": 1347, "output_tokens": 392}

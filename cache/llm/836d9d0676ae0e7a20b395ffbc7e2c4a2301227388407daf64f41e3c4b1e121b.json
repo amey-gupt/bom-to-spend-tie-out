@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "Purchase line is for box-of-200 earplugs, a shop/consumable item with no matching candidate; none of the candidates (cartons, wire harnesses, poly bag) describe earplugs, and the $25.12 unit price is far above any candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1390, "output_tokens": 113}

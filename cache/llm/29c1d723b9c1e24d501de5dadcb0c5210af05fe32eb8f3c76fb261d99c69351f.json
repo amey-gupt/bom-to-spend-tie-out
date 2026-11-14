@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is packing tape (48 mm x 100 m, case of 36), which does not match any of the candidates; all candidates are cartons or poly bags, and the $53.14 unit price is far above their confirmed prices.", "model": "claude-haiku-5-5", "input_tokens": 1395, "output_tokens": 97}

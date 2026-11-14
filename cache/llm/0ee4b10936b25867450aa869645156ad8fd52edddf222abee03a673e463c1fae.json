@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase specifies a 21-position (21P) torque clutch ring, but the candidate clutch rings are 15-, 18- and 24-position, so none matches the stated attribute, and the purchase part number MR5672-26 is not one of the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1370, "output_tokens": 233}

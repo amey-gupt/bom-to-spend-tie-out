@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 55 mm fan with 7 blades, but the only 55 mm candidates have 11 blades (FAN-30248) and 9 blades (FAN-30241), so the blade count conflicts with both, and the purchase part number GV-3250435 does not match the FAN- family.", "model": "claude-haiku-5-5", "input_tokens": 1415, "output_tokens": 249}

@@ -1,0 +1,1 @@
+{"part_number": "BRS-17978", "confidence": 0.88, "reason": "BRS-71978 is a digit transposition of BRS-17978, and the description (carbon brush, 6x6x12 mm) and supplier (Nordlicht) match; the $0.4865 price is about 1.4x the $0.3392 confirmed price, which fits a spares buy.", "model": "claude-opus-5-5", "input_tokens": 1402, "output_tokens": 123}

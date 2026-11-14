@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is a handheld barcode scanner, a capital device, while all five candidates are labels or a shipping carton; none is a scanner, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1315, "output_tokens": 81}

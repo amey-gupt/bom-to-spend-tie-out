@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is floor marking tape from a safety-supplies vendor, a shop supply that is not a molded plastic housing part, and none of the five candidates (grips, shells, nameplates, vent covers, triggers) match it.", "model": "claude-haiku-5-5", "input_tokens": 1357, "output_tokens": 99}

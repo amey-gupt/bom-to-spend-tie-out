@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A first aid kit refill is a consumable/service item, not any of the labels, vent cover, or cartons listed on the BOMs, and the $33 unit price is far above every candidate's confirmed price.", "model": "claude-haiku-5-5", "input_tokens": 1361, "output_tokens": 91}

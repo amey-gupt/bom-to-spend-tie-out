@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is for T10 torque driver bits (a 10-pack of shop tooling from SafetyFirst Direct at $16.42), which is a shop supply and not a BOM part; every candidate is a screw priced around $0.01\u20130.02.", "model": "claude-opus-5-5", "input_tokens": 1407, "output_tokens": 103}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "Purchase line describes safety glasses, a PPE consumable with no part number, and none of the five candidates (lens, labels, grip, vent cover) is a safety glasses part.", "model": "claude-haiku-5-5", "input_tokens": 1373, "output_tokens": 84}

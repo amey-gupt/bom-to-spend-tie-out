@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is a 5-gallon pail of cutting fluid, a shop consumable at $89.93, and none of the five candidates is a cutting fluid; they are labels, washers, a poly bag and a vent cover.", "model": "claude-haiku-5-5", "input_tokens": 1376, "output_tokens": 97}

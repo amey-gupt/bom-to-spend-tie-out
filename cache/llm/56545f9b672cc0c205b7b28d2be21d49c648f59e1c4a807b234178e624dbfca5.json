@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for copy paper, a shop supply, while all five candidates are shipping cartons; none of them can be the same physical part, and the $53.81 unit price also far exceeds any carton price.", "model": "claude-haiku-5-5", "input_tokens": 1358, "output_tokens": 91}

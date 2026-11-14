@@ -6,7 +6,24 @@ Links a manufacturer's bills of materials (BOMs) to its purchasing records using
 
 ## Status
 
-Steps 1 to 4 of 6 are done: the data generator, the matcher (rules, embeddings, calibrated classifier, Claude on the review band), and allocation with buckets and leads. The app is not built yet.
+Steps 1 to 5 of 6 are done: the data generator, the matcher (rules, embeddings, calibrated classifier, Claude on the review band), allocation with buckets and leads, and the app.
+
+## Run the app
+
+```
+uv sync
+uv run streamlit run app.py
+```
+
+Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys and starts in about a second. It has five tabs:
+
+- **Overview:** tie-out rate, the four buckets, and each stage from a plain part-number lookup to the full pipeline.
+- **Review queue:** uncertain lines, largest dollars first, with the suggested part, Claude's reason, and price and supplier evidence. Approve, reject or mark as not a BOM part; tie-out, buckets, product cost and leads update at once. The materiality slider is in the sidebar.
+- **Product cost:** BOM standard versus estimated actual per unit, and the parts driving the difference.
+- **Leads:** price differences shown as ranges, with the purchase lines behind each one. They are leads, not savings.
+- **Evaluation:** held-out versus tuning results, accuracy by noise style, Claude cost, and limits.
+
+Reviewer decisions last for the browser session only.
 
 ## Results so far (held-out noise styles, 1,669 lines, $9.8M, true tie-out rate 98.7%)
 
@@ -43,7 +60,7 @@ Leads against the planted findings: supplier price gaps 46 found for 45 planted 
 
 Product cost is an estimate: matched production spend is split across products by BOM quantity x units built per quarter, and shown beside the BOM standard cost.
 
-Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. Step 3 needs `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in the environment or in `.env.local` on the first run; every API response is cached under `cache/`.
+Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. To rebuild `out/` from scratch, step 3 needs `OPENAI_API_KEY` for the embeddings (in the environment or in `.env.local`); the embedding cache is not committed. Claude's responses are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
 
 ## Generate the data
 
@@ -84,5 +101,7 @@ src/score.py     pair features, calibrated classifier, accept / review / no matc
 src/adjudicate.py Claude on the review band: part or "none", confidence, one-sentence reason
 src/allocate.py  buckets, materiality rule, allocation to products, leads
 src/evaluate.py  trains and scores against data/truth/ (the only module that reads it)
+app.py           Streamlit app; reads out/ only
+out/             committed snapshot of results the app reads
 data/            generated CSVs
 ```

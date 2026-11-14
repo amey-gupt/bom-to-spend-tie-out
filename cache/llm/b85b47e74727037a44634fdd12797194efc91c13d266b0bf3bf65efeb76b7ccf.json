@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is an ESD wrist strap, a shop/safety supply rather than any of the five candidate BOM parts (collar, warranty card, E-clip, battery latch, belt clip), none of which matches the description.", "model": "claude-haiku-5-5", "input_tokens": 1391, "output_tokens": 98}

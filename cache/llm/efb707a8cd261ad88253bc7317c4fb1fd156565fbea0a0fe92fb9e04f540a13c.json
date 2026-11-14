@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a label printer ribbon (110 mm x 300 m consumable), which matches none of the candidates; they are barcode/rating labels and a master carton, and the ribbon is a shop consumable rather than a BOM part.", "model": "claude-haiku-5-5", "input_tokens": 1318, "output_tokens": 101}

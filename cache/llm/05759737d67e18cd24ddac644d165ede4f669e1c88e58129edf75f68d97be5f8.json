@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is a PO type 'service' charger (18V/4A) from an aftermarket supplier, and chargers are not BOM parts; none of the five candidates is a charger, and the part-number field SVC-70974 is a service code, not a candidate's number.", "model": "claude-haiku-5-5", "input_tokens": 1389, "output_tokens": 109}

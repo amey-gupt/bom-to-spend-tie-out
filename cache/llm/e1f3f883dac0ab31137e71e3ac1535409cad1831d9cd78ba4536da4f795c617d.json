@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for copy paper, which is a shop supply and not any of the packaging cartons listed on the BOMs, and the $48.38 price is far above every carton's confirmed unit price.", "model": "claude-haiku-5-5", "input_tokens": 1357, "output_tokens": 89}

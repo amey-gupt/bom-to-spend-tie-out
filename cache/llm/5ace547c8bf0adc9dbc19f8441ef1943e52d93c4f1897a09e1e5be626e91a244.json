@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies stage 1 with 4 pins, but the only stage 1 candidate (PCR-13098) has 3 pins, and the 4-pin candidates (PCR-13101, PCR-13108) are stage 2 and stage 3, so no candidate matches all stated attributes.", "model": "claude-haiku-5-5", "input_tokens": 1383, "output_tokens": 387}

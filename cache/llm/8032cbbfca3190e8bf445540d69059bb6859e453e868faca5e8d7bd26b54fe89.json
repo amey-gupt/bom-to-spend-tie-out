@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line is a fast charger, which is a charger rather than a BOM part and falls under the excluded category; none of the candidates is a charger, and no part number was given to link it to one.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 83}

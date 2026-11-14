@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a label printer ribbon (consumable shop supply, 110 mm x 300 m), which is not any of the candidate BOM parts; all candidates are labels, a rating label, or a carton.", "model": "claude-haiku-5-5", "input_tokens": 1311, "output_tokens": 91}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line specifies an M4x12 socket cap screw, but the only M4 socket cap candidates (SCR-66822 and SCR-66772) are M4x20, a clear length conflict, and the other candidates are M2.5 or pan head, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1396, "output_tokens": 338}

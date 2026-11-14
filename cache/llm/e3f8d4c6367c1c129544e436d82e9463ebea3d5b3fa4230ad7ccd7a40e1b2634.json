@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line describes a compressed air filter element, a consumable, and none of the five candidates is a compression spring of that kind; the part number 890264 matches no candidate and the price of $66.04 is far above any spring's cost.", "model": "claude-haiku-5-5", "input_tokens": 1421, "output_tokens": 97}

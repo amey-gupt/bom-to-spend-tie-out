@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line calls for a stackable bin measuring 11 x 16 in (about 279 x 406 mm), and none of the five candidate cartons matches that size or the bin type; the closest, CTN-23178 at 400 x 300 x 280 mm, still conflicts on both dimensions.", "model": "claude-haiku-5-5", "input_tokens": 1353, "output_tokens": 232}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is air tool oil, a shop consumable rather than any of the candidate washers or carbon brushes, and none of the candidates matches the oil description or the $12.74 unit price.", "model": "claude-haiku-5-5", "input_tokens": 1358, "output_tokens": 86}

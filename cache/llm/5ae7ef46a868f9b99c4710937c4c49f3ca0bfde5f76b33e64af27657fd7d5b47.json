@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line describes an ultrasonic welding horn tip, which matches none of the candidates (washers, stators, and a compression spring), and the candidates' prices are all far below the $588.36 line price.", "model": "claude-haiku-5-5", "input_tokens": 1391, "output_tokens": 90}

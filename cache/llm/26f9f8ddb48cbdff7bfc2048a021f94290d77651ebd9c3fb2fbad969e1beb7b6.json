@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 7-blade fan, but the 55 mm candidates have 11 blades (FAN-30248) and 9 blades (FAN-30241), and the 45 mm candidate (FAN-30247) has the wrong diameter, so no candidate matches all stated attributes.", "model": "claude-haiku-5-5", "input_tokens": 1422, "output_tokens": 361}

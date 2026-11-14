@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase is a first aid kit refill at $39.33 per unit, which is a service/consumable kit and does not match any candidate label, vent cover, or carton BOM part; none of the candidates describe first aid supplies.", "model": "claude-haiku-5-5", "input_tokens": 1362, "output_tokens": 96}

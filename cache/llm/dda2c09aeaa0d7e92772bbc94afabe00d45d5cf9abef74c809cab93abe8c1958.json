@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.96, "reason": "The line is a 12V gearbox service assembly (PS- service part number, service PO, $9.66), and assemblies are not BOM parts; it does not match any of the battery housing candidates either.", "model": "claude-opus-5-5", "input_tokens": 1363, "output_tokens": 86}

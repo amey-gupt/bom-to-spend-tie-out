@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is a freight expedite charge, which is a service rather than a physical BOM part, and none of the candidate cartons matches it, so the answer is none.", "model": "claude-haiku-5-5", "input_tokens": 1367, "output_tokens": 76}

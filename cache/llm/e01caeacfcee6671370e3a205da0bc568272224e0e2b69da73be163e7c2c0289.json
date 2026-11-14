@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is an M4x12 stainless socket cap screw with internal number SCR-66848, which matches no candidate; every candidate conflicts on length (M4x20) or diameter (M2.5x8), or on head type (pan head).", "model": "claude-opus-5-5", "input_tokens": 1396, "output_tokens": 100}

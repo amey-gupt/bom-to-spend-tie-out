@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase text 'GEARBOX ASSEMBLY 18V S' matches no candidate: none is a gearbox, the closest candidate MTR-75169 is a motor, and SVC-17009 is a service-style number with an assembly description, which is not a BOM part.", "model": "claude-haiku-5-5", "input_tokens": 1374, "output_tokens": 114}

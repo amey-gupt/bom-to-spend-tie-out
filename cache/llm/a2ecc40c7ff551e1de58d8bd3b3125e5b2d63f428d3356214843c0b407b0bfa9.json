@@ -1,0 +1,1 @@
+{"part_number": "BAL-68329", "confidence": 0.88, "reason": "Description 'D5 G25' matches only BAL-68329 (5 mm, G25), excluding BAL-68336 (6 mm) and BAL-68342 (G100); the part number BAL-6832 looks like a truncated BAL-68329, and the $0.0060 price is close to the confirmed $0.0050.", "model": "claude-opus-5-5", "input_tokens": 1390, "output_tokens": 134}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a service-type PO for a 'GEARBOX ASSEMBLY', which is a complete assembly rather than a BOM part, and none of the candidates is a gearbox; the battery housings and motor do not match the description.", "model": "claude-haiku-5-5", "input_tokens": 1371, "output_tokens": 101}

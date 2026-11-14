@@ -1,0 +1,98 @@
+{
+  "materiality_usd": 25000,
+  "bucket_accuracy_all lines": {
+    "by_spend": 0.9373548312810799,
+    "inferred_lines": 558,
+    "inferred_by_spend": 0.9702280514437027
+  },
+  "bucket_accuracy_held-out": {
+    "by_spend": 0.8271178985204204,
+    "inferred_lines": 222,
+    "inferred_by_spend": 0.9640065429645917
+  },
+  "buckets": {
+    "production": {
+      "tool_usd": 23970142.125028,
+      "truth_usd": 25592003.257032
+    },
+    "spares": {
+      "tool_usd": 1774105.2854999998,
+      "truth_usd": 1811707.0572159998
+    },
+    "warranty": {
+      "tool_usd": 332586.622708,
+      "truth_usd": 390454.105488
+    },
+    "unassigned": {
+      "tool_usd": 3237947.9350240002,
+      "truth_usd": 1520617.5485240002
+    }
+  },
+  "tie_out": 0.8895455562818163,
+  "true_tie_out": 0.948127959806407,
+  "review_lines": 80,
+  "review_spend": 1759130.0782,
+  "moved_by_materiality": 20,
+  "products": [
+    {
+      "product_id": "DR-12C",
+      "units_built": 74439,
+      "std_cost_per_unit": 76.3299,
+      "allocated_production_spend_est": 5269818.009372583,
+      "actual_cost_per_unit_est": 70.7937775812757,
+      "actual_vs_std": -0.07252888342214903
+    },
+    {
+      "product_id": "DR-18",
+      "units_built": 119858,
+      "std_cost_per_unit": 89.3522,
+      "allocated_production_spend_est": 10464551.095124528,
+      "actual_cost_per_unit_est": 87.30790681576973,
+      "actual_vs_std": -0.02287904700981358
+    },
+    {
+      "product_id": "DR-18H",
+      "units_built": 67354,
+      "std_cost_per_unit": 86.7204,
+      "allocated_production_spend_est": 5785913.8375395825,
+      "actual_cost_per_unit_est": 85.90304714700808,
+      "actual_vs_std": -0.00942515086406337
+    },
+    {
+      "product_id": "DR-20",
+      "units_built": 30633,
+      "std_cost_per_unit": 76.2253,
+      "allocated_production_spend_est": 2449859.1829913077,
+      "actual_cost_per_unit_est": 79.97451059286742,
+      "actual_vs_std": 0.04918590799731071
+    }
+  ],
+  "leads": {
+    "supplier_price_gap": {
+      "found": 46,
+      "planted": 45,
+      "precision": 0.9782608695652174,
+      "recall": 1.0,
+      "low_usd": 149317.0,
+      "high_usd": 298637.0
+    },
+    "duplicate_part": {
+      "found": 8,
+      "planted": 8,
+      "precision": 1.0,
+      "recall": 1.0,
+      "low_usd": 4746.0,
+      "high_usd": 9495.0
+    },
+    "spares_premium": {
+      "found": 15,
+      "planted": 15,
+      "precision": 1.0,
+      "recall": 1.0,
+      "low_usd": 287885.0,
+      "high_usd": 575767.0,
+      "planted_with_spares_bought": 15,
+      "recall_of_detectable": 1.0
+    }
+  }
+}

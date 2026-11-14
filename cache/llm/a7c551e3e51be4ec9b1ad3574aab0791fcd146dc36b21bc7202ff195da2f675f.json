@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Air tool oil (1 qt, $13.84 from SafetyFirst Direct) is a shop consumable, not a BOM part, and none of the candidates (washers, carbon brush) match the description.", "model": "claude-opus-5-5", "input_tokens": 1358, "output_tokens": 90}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for cutting fluid in a 5 gal pail, a consumable/shop supply that matches none of the candidates, which are labels, a washer, a poly bag, and a vent cover.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 89}

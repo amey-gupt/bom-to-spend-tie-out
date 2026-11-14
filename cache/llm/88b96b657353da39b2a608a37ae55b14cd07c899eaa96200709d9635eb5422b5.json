@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service gearbox assembly (SVC-17009, 'GEARBOX ASSEMBLY 18V S'), and complete assemblies and service kits are not BOM parts; none of the candidates is a gearbox, and the motor's similar price is coincidental.", "model": "claude-opus-5-5", "input_tokens": 1374, "output_tokens": 113}

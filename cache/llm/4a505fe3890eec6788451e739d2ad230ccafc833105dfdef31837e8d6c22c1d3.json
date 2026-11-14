@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is for injection mold maintenance (cavity polishing), a service not matching any molded grip or pulp tray BOM part, and the price of about $1485 is far above any candidate's unit cost.", "model": "claude-haiku-5-5", "input_tokens": 1409, "output_tokens": 91}

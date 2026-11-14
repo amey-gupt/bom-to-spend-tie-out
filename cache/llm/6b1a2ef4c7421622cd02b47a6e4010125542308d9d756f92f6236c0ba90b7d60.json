@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Safety glasses are shop supplies (PPE) rather than a BOM part, and no candidate matches: the lens LNS-58173 is a yellow ABS light lens priced at $0.04, versus clear-lens glasses at $4.39.", "model": "claude-opus-5-5", "input_tokens": 1380, "output_tokens": 104}

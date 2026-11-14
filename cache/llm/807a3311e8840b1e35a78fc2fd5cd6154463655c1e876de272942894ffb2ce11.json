@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A stackable 11 x 16 in bin at $8.42 is a shop supply (storage bin), not a corrugated carton; none of the candidate cartons match its type, its dimensions or its price.", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 88}

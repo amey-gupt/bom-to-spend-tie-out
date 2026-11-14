@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for cutting fluid, a consumable shop supply at $106.65 per 5-gallon pail, and none of the five candidates (warning labels, a washer, a poly bag, a vent cover) describe cutting fluid or match its price range.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 109}

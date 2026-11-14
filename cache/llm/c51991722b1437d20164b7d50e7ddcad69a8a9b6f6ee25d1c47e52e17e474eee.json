@@ -1,0 +1,1 @@
+{"part_number": "NKS-29161", "confidence": 0.4, "reason": "The 6 mm width matches NKS-29161 and NKS-29162, and the truncated 'THK0' most plausibly reads as 0.1 mm, which fits NKS-29161; the $0.0408 price is also far below NKS-29162's confirmed $0.0767, but the thickness is truncated, so confidence is low.", "model": "claude-haiku-5-5", "input_tokens": 1364, "output_tokens": 455}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line specifies a stage 1 carrier with 4 pins, but no candidate matches both: PCR-13098 is stage 1 with 3 pins, while PCR-13101 and PCR-13108 have 4 pins but are stages 2 and 3; supplier number GV-8892752 points to none of them.", "model": "claude-opus-5-5", "input_tokens": 1383, "output_tokens": 125}

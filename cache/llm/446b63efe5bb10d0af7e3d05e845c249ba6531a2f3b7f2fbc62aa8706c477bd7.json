@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "No candidate is a red overmold grip in ABS: GRP-62236 is black ABS, GRP-62242 is yellow TPE, GRP-62234 is grey PA6-GF30, and the red items (NPL-67932 nameplate, TRG-48567 trigger) are different part types.", "model": "claude-haiku-5-5", "input_tokens": 1373, "output_tokens": 242}

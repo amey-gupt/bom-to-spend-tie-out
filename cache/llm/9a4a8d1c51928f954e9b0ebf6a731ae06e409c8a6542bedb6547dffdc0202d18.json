@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line is for SHOP TOWELS, a consumable shop supply, and none of the five candidates is a shop towel; they are all cartons used in packaging assemblies.", "model": "claude-haiku-5-5", "input_tokens": 1348, "output_tokens": 82}

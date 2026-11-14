@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line is a bit holder ('BIT PORTA', part number BTH-20646 rev c), which matches the internal numbering style but none of the five candidates; the only grey PC/ABS candidates are a nameplate and a housing shell, which are different parts.", "model": "claude-opus-5-5", "input_tokens": 1360, "output_tokens": 288}

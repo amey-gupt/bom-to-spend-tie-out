@@ -1,0 +1,1 @@
+{"part_number": "SPR-38645", "confidence": 0.85, "reason": "The purchase text (D6, L20, 1.0 mm wire) matches SPR-38645 exactly on all stated dimensions, the part-number field SPR-3864 looks like a truncated SPR-38645, and the supplier is Calloway; the other candidates conflict on diameter or wire size.", "model": "claude-haiku-5-5", "input_tokens": 1410, "output_tokens": 276}
