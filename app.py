@@ -14,9 +14,27 @@ import json
 from datetime import date, timedelta
 from pathlib import Path
 
+import sys
+
 import altair as alt
 import pandas as pd
 import streamlit as st
+
+
+@st.cache_resource
+def _build() -> dict:
+    return {"stamp": None}
+
+
+# A host can swap in new code and results without restarting the process. When that happens the already-imported
+# src modules and the cached results are from the old version, which breaks the page (a lead without its owner,
+# a purchase line without its source row). So: when any file in src/ or out/ has changed, drop both and start clean.
+_stamp = max((f.stat().st_mtime for f in [*Path("src").glob("*.py"), *Path("out").glob("*")]), default=0)
+if _build()["stamp"] != _stamp:
+    for _name in [n for n in sys.modules if n == "src" or n.startswith("src.")]:
+        del sys.modules[_name]
+    st.cache_data.clear()
+    _build()["stamp"] = _stamp
 
 from src import adjudicate, allocate, crosswalk, mapping, match, pipeline, settings
 
@@ -261,6 +279,14 @@ with st.sidebar:
 xw = saved_load()
 rules = tuple(sorted((k, d, part) for k, (d, part) in crosswalk.as_rules(xw).items()))
 lines, alloc, products, leads = compute(base, bom, builds, float(materiality), rules, q_from, q_to)
+# Results held in a browser session from before an update may lack newer columns. Fill them, so an old session degrades instead of failing.
+for _col, _default in (("source_file", "purchase file"), ("source_row", "?")):
+    if _col not in lines:
+        lines[_col] = _default
+if "owner" not in leads:
+    leads["owner"] = leads["lead_type"].map(allocate.OWNER)
+if "check" not in leads:
+    leads["check"] = leads["lead_type"].map(allocate.CHECK)
 start_lines = compute(base, bom, builds, float(allocate.MATERIALITY_USD), (), q_from, q_to)[0]
 ref = reference(base)
 part_desc = bom.drop_duplicates("part_number").set_index("part_number")["description"]
