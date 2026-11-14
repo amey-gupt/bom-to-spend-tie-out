@@ -16,7 +16,7 @@ Steps 1 to 4 of 6 are done: the data generator, the matcher (rules, embeddings, 
 | Rules only | 34.4% | 100.0% | 40.0% | n/a | $0 |
 | Rules + embeddings, fixed threshold | 85.4% | 95.2% | 86.9% | n/a | $86,119 |
 | Rules + classifier | 77.7% | 100.0% | 87.0% | 287 lines, $2.23M | $0 |
-| Rules + classifier + Claude | 98.1% | 100.0% | 99.2% | 12 lines, $37K | $0 |
+| Rules + classifier + Claude | 98.0% | 100.0% | 99.1% | 13 lines, $48K | $0 |
 
 How the numbers are kept honest:
 
