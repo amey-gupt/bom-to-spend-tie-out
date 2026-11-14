@@ -282,8 +282,8 @@ with tab_overview:
         kinds = ["No wrong matches", "Wrong matches"]
         stages["kind"] = stages["wrong"].map(lambda w: kinds[1] if w > 0 else kinds[0])
         stages["label"] = [f"{t:.1%}" + (f"   {short(w)} wrong" if w > 0 else "") for t, w in zip(stages["tie_out"], stages["wrong"])]
-        bars = alt.Chart(stages).mark_bar(height=22, cornerRadiusEnd=4).encode(
-            y=alt.Y("stage:N", sort=None, title=None, axis=alt.Axis(labelLimit=360)),
+        bars = alt.Chart(stages).mark_bar(cornerRadiusEnd=4).encode(
+            y=alt.Y("stage:N", sort=None, title=None, axis=alt.Axis(labelLimit=360), scale=alt.Scale(paddingInner=0.3, paddingOuter=0.15)),
             x=alt.X("tie_out:Q", scale=alt.Scale(domain=[0, 1.12]), axis=alt.Axis(format="%", title="Spend tied out (held-out lines)", values=[0, .2, .4, .6, .8, 1])),
             color=alt.Color("kind:N", scale=alt.Scale(domain=kinds, range=[BLUE, ORANGE]), legend=alt.Legend(title=None, orient="top")),
             tooltip=[alt.Tooltip("stage:N", title="Stage"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
@@ -292,7 +292,7 @@ with tab_overview:
         labels = alt.Chart(stages).mark_text(align="left", dx=6, color="#0b0b0b").encode(y=alt.Y("stage:N", sort=None), x="tie_out:Q", text="label:N")
         truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
         rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
-        st.altair_chart((bars + labels + rule).properties(height=230), width="stretch")
+        st.altair_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
         st.caption(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}. Measured on {full['lines']:,} held-out purchase lines "
                    f"({short(full['spend'])}) written in styles never used to tune the matcher. Stage 4 ties less than stage 3 because it refuses "
                    "to guess: uncertain lines wait for review instead.")
@@ -339,8 +339,8 @@ with tab_review:
         with left:
             st.markdown(f"**{len(groups)} items** covering {len(queue)} lines, largest dollars first")
             picked = table(pd.DataFrame({
-                "": ["▶" if i == pos else "" for i in range(len(groups))], "Total": groups["spend"].map(short), "Lines": groups["lines"],
-                "Text on the PO": groups["item_description"], "Suggested part": groups["suggested"], "Why": groups["tag"]}),
+                "Open": ["▶" if i == pos else "" for i in range(len(groups))], "Total": groups["spend"].map(short), "Lines": groups["lines"],
+                "Why": groups["tag"], "Suggested part": groups["suggested"], "Text on the PO": groups["item_description"]}),
                 key=f"queue_{len(xw)}", select=True)
             if picked is not None and picked != pos:
                 st.session_state["review_pos"] = picked
@@ -410,14 +410,14 @@ with tab_cost:
     st.subheader("Parts cost per unit: standard versus estimated actual")
     cost = products.melt("product_id", ["std_cost_per_unit", "actual_cost_per_unit_est"], var_name="series", value_name="cost").dropna(subset=["cost"])
     cost["series"] = cost["series"].map({"std_cost_per_unit": "BOM standard", "actual_cost_per_unit_est": "Estimated actual"})
-    cost_bars = alt.Chart(cost).mark_bar(height=14, cornerRadiusEnd=3).encode(
-        y=alt.Y("product_id:N", title=None), yOffset=alt.YOffset("series:N", sort=["BOM standard", "Estimated actual"]),
+    cost_bars = alt.Chart(cost).mark_bar(cornerRadiusEnd=3).encode(
+        y=alt.Y("product_id:N", title=None, scale=alt.Scale(paddingInner=0.35, paddingOuter=0.15)), yOffset=alt.YOffset("series:N", sort=["BOM standard", "Estimated actual"]),
         x=alt.X("cost:Q", axis=alt.Axis(format="$.0f", title="Parts cost per unit built")),
         color=alt.Color("series:N", scale=alt.Scale(domain=["BOM standard", "Estimated actual"], range=[BLUE, AQUA]), legend=alt.Legend(title=None, orient="top")),
         tooltip=[alt.Tooltip("product_id:N", title="Product"), alt.Tooltip("series:N", title="Measure"), alt.Tooltip("cost:Q", title="Per unit", format="$.2f")])
     cost_labels = alt.Chart(cost).mark_text(align="left", dx=5, color="#0b0b0b").encode(
         y=alt.Y("product_id:N"), yOffset=alt.YOffset("series:N", sort=["BOM standard", "Estimated actual"]), x="cost:Q", text=alt.Text("cost:Q", format="$.2f"))
-    st.altair_chart((cost_bars + cost_labels).properties(height=44 * max(len(products), 1) + 40), width="stretch")
+    st.altair_chart((cost_bars + cost_labels).properties(height=alt.Step(20)), width="stretch")
     st.caption("Estimated: matched production spend is split across the products that use each part, by gross BOM quantity x units built in the "
                "purchase's quarter. Purchases show what was bought, not what was consumed. Lines waiting for a decision are not included yet.")
     st.dataframe(pd.DataFrame({
