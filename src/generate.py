@@ -129,7 +129,8 @@ def build_backbone(rng: random.Random) -> Backbone:
                     p = variants[vi]
                     q = (3 if prod.voltage == 12 else 5) if cat.key == "cell" else qty
                     bb.bom.append(dict(product_id=prod.product_id, assembly_id=assembly, part_number=p.part_number,
-                                       revision=p.revision, description=p.description, qty_per_unit=q, uom="EA"))
+                                       revision=p.revision, description=p.description, qty_per_unit=q, uom="EA",
+                                       std_cost=p.base_price))  # engineering's standard cost: set once, not updated as prices move
     for part in list(bb.parts.values()):
         source(part)
 

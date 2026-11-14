@@ -6,7 +6,7 @@ Links a manufacturer's bills of materials (BOMs) to its purchasing records using
 
 ## Status
 
-Steps 1 to 3 of 6 are done: the data generator, the rules + embedding matcher, and the calibrated classifier with three outcomes and Claude on the review band. Allocation, buckets, leads and the app are not built yet.
+Steps 1 to 4 of 6 are done: the data generator, the matcher (rules, embeddings, calibrated classifier, Claude on the review band), and allocation with buckets and leads. The app is not built yet.
 
 ## Results so far (held-out noise styles, 1,669 lines, $9.8M, true tie-out rate 98.7%)
 
@@ -27,7 +27,22 @@ How the numbers are kept honest:
 
 Embedding backends on the same held-out lines (rules + classifier, before Claude): OpenAI `text-embedding-3-small` puts the true part first for 95.6% of open lines and auto-accepts 79.3% of lines; local `all-MiniLM-L6-v2` gets 89.9% and 74.5%. Both reach 100% precision on accepted matches.
 
-Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3`. Step 3 needs `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in the environment or in `.env.local` on the first run; every API response is cached under `cache/`.
+## Buckets, product cost and leads (all 4,421 lines, $29.3M)
+
+| Bucket | Tool | Truth |
+|---|---|---|
+| Production | 81.8% | 87.3% |
+| Spares | 6.1% | 6.2% |
+| Warranty | 1.1% | 1.3% |
+| Unassigned | 11.0% | 5.2% |
+
+The tool reports an 89.0% tie-out rate against a true 94.8%. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 94.4% and the bucket is right for 99.1% of spend.
+
+Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15. Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
+
+Product cost is an estimate: matched production spend is split across products by BOM quantity x units built per quarter, and shown beside the BOM standard cost.
+
+Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. Step 3 needs `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in the environment or in `.env.local` on the first run; every API response is cached under `cache/`.
 
 ## Generate the data
 
@@ -39,7 +54,7 @@ The generator uses the standard library only, with a fixed seed, and gives the s
 
 | File | Contents |
 |---|---|
-| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models |
+| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models, with standard cost |
 | `data/builds.csv` | units built per product per month, Jan 2025 to Jun 2026 |
 | `data/purchases.csv` | purchase lines with noisy part numbers, descriptions, units and supplier names |
 | `data/supplier_xref.csv` | partial supplier-part-number crosswalk (about 40% coverage) |
@@ -66,6 +81,7 @@ src/normalize.py load exports; normalize part numbers, units, currency, text
 src/match.py     naive baseline, rules, embedding candidates (top 5)
 src/score.py     pair features, calibrated classifier, accept / review / no match
 src/adjudicate.py Claude on the review band: part or "none", confidence, one-sentence reason
+src/allocate.py  buckets, materiality rule, allocation to products, leads
 src/evaluate.py  trains and scores against data/truth/ (the only module that reads it)
 data/            generated CSVs
 ```

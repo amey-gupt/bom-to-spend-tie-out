@@ -4,6 +4,7 @@ The only module that reads data/truth/.
 
     python3 -m src.evaluate step2 [--backend local|openai]   # naive vs rules vs rules + embeddings
     python3 -m src.evaluate step3 [--no-llm]                  # classifier, three outcomes, Claude on the review band
+    python3 -m src.evaluate step4 [--materiality USD]         # buckets, tie-out by bucket, leads vs planted findings
 
 step3 also trains the classifier (labels come from the truth, tuning split only) and saves it to models/.
 
@@ -205,25 +206,29 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
         band = dec.index[dec["decision"] == "review"]
         prompts = adjudicate.build_prompts(inp, rules, pairs, band)
         print(f"\n=== Claude on the review band ({best} backend): {len(band)} lines, {prompts['prompt'].nunique()} distinct items ===")
-        verdicts = adjudicate.adjudicate(prompts)
-        answered = verdicts["llm_conf"].notna()
-        v_right = pd.Series(same(verdicts["llm_part"].to_numpy()) == true_part[verdicts.index], index=verdicts.index)
-        in_tune = pd.Series(tune[verdicts.index], index=verdicts.index) & answered
-        picks, nones = in_tune & (verdicts["llm_part"] != ""), in_tune & (verdicts["llm_part"] == "")
-        scorer.llm_accept_conf = _llm_threshold(verdicts["llm_conf"][picks], v_right[picks], scoring.ACCEPT_PRECISION)
-        scorer.llm_reject_conf = _llm_threshold(verdicts["llm_conf"][nones], v_right[nones], 1 - scoring.REJECT_MISS_RATE)
-        in_held = pd.Series(held[verdicts.index], index=verdicts.index) & answered
-        dec = adjudicate.apply(dec, verdicts, scorer.llm_accept_conf, scorer.llm_reject_conf)
-        report["llm"] = dict(model=adjudicate.MODEL, band_lines=len(band), distinct_items=int(prompts["prompt"].nunique()),
-                             unanswered_lines=int((~answered).sum()), accept_conf=scorer.llm_accept_conf, reject_conf=scorer.llm_reject_conf,
-                             heldout_band_lines=int(in_held.sum()), heldout_answer_accuracy=float(v_right[in_held].mean()),
-                             tune_answer_accuracy=float(v_right[in_tune].mean()),
-                             heldout=outcome_metrics(dec, truth, p, canon, held), tune=outcome_metrics(dec, truth, p, canon, tune))
-        print(f"Claude's answer is right on {v_right[in_held].mean():.1%} of {in_held.sum()} held-out band lines ({v_right[in_tune].mean():.1%} on tune); "
-              f"{(~answered).sum()} lines unanswered")
-        print(f"confidence cutoffs set on tune: accept a pick at >= {scorer.llm_accept_conf}, accept 'none' at >= {scorer.llm_reject_conf} (1.01 = never)")
-        print_outcomes("HELD-OUT, rules + classifier + Claude", report["llm"]["heldout"])
-        print_outcomes("TUNE, rules + classifier + Claude", report["llm"]["tune"])
+        report["llm"], classifier_dec = {}, dec
+        for model in (adjudicate.SMALL_MODEL, adjudicate.MODEL):  # the main model runs last, so its decisions are the ones saved
+            verdicts, usage = adjudicate.adjudicate(prompts, model)
+            answered = verdicts["llm_conf"].notna()
+            v_right = pd.Series(same(verdicts["llm_part"].to_numpy()) == true_part[verdicts.index], index=verdicts.index)
+            in_tune = pd.Series(tune[verdicts.index], index=verdicts.index) & answered
+            in_held = pd.Series(held[verdicts.index], index=verdicts.index) & answered
+            picks, nones = in_tune & (verdicts["llm_part"] != ""), in_tune & (verdicts["llm_part"] == "")
+            accept_conf = _llm_threshold(verdicts["llm_conf"][picks], v_right[picks], scoring.ACCEPT_PRECISION)
+            reject_conf = _llm_threshold(verdicts["llm_conf"][nones], v_right[nones], 1 - scoring.REJECT_MISS_RATE)
+            dec = adjudicate.apply(classifier_dec, verdicts, accept_conf, reject_conf)
+            report["llm"][model] = dict(usage=usage, band_lines=len(band), unanswered_lines=int((~answered).sum()),
+                                        accept_conf=accept_conf, reject_conf=reject_conf,
+                                        heldout_band_lines=int(in_held.sum()), heldout_answer_accuracy=float(v_right[in_held].mean()),
+                                        tune_answer_accuracy=float(v_right[in_tune].mean()),
+                                        heldout=outcome_metrics(dec, truth, p, canon, held), tune=outcome_metrics(dec, truth, p, canon, tune))
+            print(f"\n--- {model}: {usage['calls']} calls, {usage['input_tokens']:,} input + {usage['output_tokens']:,} output tokens, "
+                  f"${usage['cost_usd']:.2f} at list price ({usage['failed_calls']} failed) ---")
+            print(f"answer is right on {v_right[in_held].mean():.1%} of {in_held.sum()} held-out band lines ({v_right[in_tune].mean():.1%} on tune)")
+            print(f"confidence cutoffs set on tune: accept a pick at >= {accept_conf}, accept 'none' at >= {reject_conf} (1.01 = never)")
+            print_outcomes(f"HELD-OUT, rules + classifier + {model}", report["llm"][model]["heldout"])
+            print_outcomes(f"TUNE, rules + classifier + {model}", report["llm"][model]["tune"])
+        scorer.llm_accept_conf, scorer.llm_reject_conf = accept_conf, reject_conf
 
     scorer.save()
     Path("out").mkdir(exist_ok=True)
@@ -234,11 +239,77 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
     return report
 
 
+# ---------------------------------------------------------------------- step 4
+
+def step4(data_dir: str | Path = "data", materiality: float | None = None):
+    from . import allocate
+    inp, lines, alloc, products, leads = allocate.run(data_dir=data_dir, materiality=allocate.MATERIALITY_USD if materiality is None else materiality)
+    truth, canon = load_truth(data_dir)
+    assert (truth["po_id"] == lines["po_id"]).all()
+    spend, held = lines["spend_usd"], (truth["split"] == "heldout")
+    right = lines["bucket"] == truth["true_bucket"]
+    report = {"materiality_usd": allocate.MATERIALITY_USD if materiality is None else materiality}
+
+    print("BUCKETS")
+    for name, mask in (("all lines", pd.Series(True, index=lines.index)), ("held-out", held)):
+        acc = spend[right & mask].sum() / spend[mask].sum()
+        inferred = mask & lines["bucket_inferred"]
+        acc_inf = spend[right & inferred].sum() / max(spend[inferred].sum(), 1e-9)
+        report[f"bucket_accuracy_{name}"] = dict(by_spend=float(acc), inferred_lines=int(inferred.sum()), inferred_by_spend=float(acc_inf))
+        print(f"  {name}: bucket right for {acc:.1%} of spend; where the bucket was inferred ({inferred.sum()} lines), right for {acc_inf:.1%}")
+    rows = {}
+    print(f"\n  {'bucket':<12}{'tool':>15}{'share':>8}{'truth':>15}{'share':>8}{'tool - truth':>14}")
+    for b in ("production", "spares", "warranty", "unassigned"):
+        got, true = spend[lines["bucket"] == b].sum(), spend[truth["true_bucket"] == b].sum()
+        rows[b] = dict(tool_usd=float(got), truth_usd=float(true))
+        print(f"  {b:<12}{got:>15,.0f}{got / spend.sum():>8.1%}{true:>15,.0f}{true / spend.sum():>8.1%}{got - true:>+14,.0f}")
+    tied, true_tied = 1 - rows["unassigned"]["tool_usd"] / spend.sum(), 1 - rows["unassigned"]["truth_usd"] / spend.sum()
+    review = lines["decision"] == "review"
+    report.update(buckets=rows, tie_out=float(tied), true_tie_out=float(true_tied), review_lines=int(review.sum()), review_spend=float(spend[review].sum()),
+                  moved_by_materiality=int((lines["source"] == "llm_material").sum()))
+    print(f"  tie-out rate {tied:.1%} vs true {true_tied:.1%}; review queue {review.sum()} lines, ${spend[review].sum():,.0f} "
+          f"({report['moved_by_materiality']} lines moved there by the ${report['materiality_usd']:,.0f} materiality rule)")
+
+    print("\nPARTS COST PER UNIT (estimated from purchases) VS BOM STANDARD")
+    print(products.to_string(index=False, formatters={"std_cost_per_unit": "${:.2f}".format, "actual_cost_per_unit_est": "${:.2f}".format,
+                                                      "allocated_production_spend_est": "${:,.0f}".format, "actual_vs_std": "{:+.1%}".format}))
+    report["products"] = products.to_dict("records")
+
+    print("\nLEADS VS PLANTED FINDINGS")
+    planted = pd.read_csv(Path(data_dir) / "truth" / "planted_findings.csv", dtype=str, keep_default_na=False)
+    key = lambda df, kind, col: ({frozenset(x) for x in zip(df.loc[df[col] == kind, "part_number"], df.loc[df[col] == kind, "related"])}
+                                 if kind == "duplicate_part" else set(df.loc[df[col] == kind, "part_number"]))
+    report["leads"] = {}
+    for kind in ("supplier_price_gap", "duplicate_part", "spares_premium"):
+        found, want = key(leads, kind, "lead_type"), key(planted, kind, "finding_type")
+        hit = found & want
+        mine = leads[leads["lead_type"] == kind]
+        r = dict(found=len(found), planted=len(want), precision=len(hit) / max(len(found), 1), recall=len(hit) / max(len(want), 1),
+                 low_usd=float(mine["low_usd"].sum()), high_usd=float(mine["high_usd"].sum()))
+        if kind == "spares_premium":  # a planted premium can only be seen if spares of that part were actually bought
+            bought = set(truth.loc[truth["line_kind"] == "spare", "true_part_number"])
+            r["planted_with_spares_bought"] = len(want & bought)
+            r["recall_of_detectable"] = len(hit) / max(len(want & bought), 1)
+        report["leads"][kind] = r
+        extra = f", {r['recall_of_detectable']:.0%} of the {r['planted_with_spares_bought']} that had spares bought" if kind == "spares_premium" else ""
+        print(f"  {kind:<20} found {r['found']:>3}, planted {r['planted']:>3}: precision {r['precision']:.0%}, recall {r['recall']:.0%}{extra}; "
+              f"range ${r['low_usd']:,.0f} to ${r['high_usd']:,.0f}")
+
+    Path("out").mkdir(exist_ok=True)
+    for name, df in (("lines", lines), ("allocation", alloc), ("product_cost", products), ("leads", leads)):
+        df.to_csv(f"out/{name}.csv", index=False)
+    Path("out/eval_step4.json").write_text(json.dumps(report, indent=2, default=float))
+    print("\nwrote out/eval_step4.json and the step-4 outputs")
+    return report
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["step2", "step3"])
+    ap.add_argument("step", choices=["step2", "step3", "step4"])
     ap.add_argument("--backend", choices=list(match.BACKENDS), default="local")
     ap.add_argument("--no-llm", action="store_true")
+    ap.add_argument("--materiality", type=float, default=None)
     args = ap.parse_args()
-    step2(backend=args.backend) if args.step == "step2" else step3(use_llm=not args.no_llm)
+    {"step2": lambda: step2(backend=args.backend), "step3": lambda: step3(use_llm=not args.no_llm),
+     "step4": lambda: step4(materiality=args.materiality)}[args.step]()

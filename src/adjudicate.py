@@ -19,6 +19,8 @@ from .match import load_env
 from .normalize import Inputs
 
 MODEL = "claude-opus-5-5"
+SMALL_MODEL = "claude-haiku-5-5"  # the smallest current Claude model, for the cost comparison
+PRICE_PER_MTOK = {"claude-opus-5-5": (4.00, 20.00), "claude-haiku-5-5": (0.10, 0.50)}  # USD (input, output), list price
 CACHE = Path("cache/llm")
 
 SYSTEM = """You match purchase-order lines to parts on a manufacturer's bills of materials (BOMs).
@@ -77,12 +79,15 @@ def build_prompts(inp: Inputs, rules: pd.DataFrame, pairs: pd.DataFrame, lines) 
     return pd.DataFrame(rows, columns=["line", "prompt", "cands"]).set_index("line")
 
 
-def _ask(client: anthropic.Anthropic, prompt: str) -> dict | None:
-    path = CACHE / f"{hashlib.sha256((MODEL + SYSTEM + prompt).encode()).hexdigest()}.json"
+def _ask(client: anthropic.Anthropic, prompt: str, model: str) -> dict | None:
+    """One cached call. The cache entry keeps the verdict and the token usage that produced it."""
+    path = CACHE / f"{hashlib.sha256((model + SYSTEM + prompt).encode()).hexdigest()}.json"
     if path.exists():
-        return json.loads(path.read_text())
+        hit = json.loads(path.read_text())
+        if "input_tokens" in hit:
+            return hit
     try:
-        resp = client.messages.parse(model=MODEL, max_tokens=4000, system=SYSTEM, output_config={"effort": "low"},
+        resp = client.messages.parse(model=model, max_tokens=4000, system=SYSTEM, output_config={"effort": "low"},
                                      messages=[{"role": "user", "content": prompt}], output_format=Verdict)
     except anthropic.RateLimitError:
         return None  # the SDK already retried; leave uncached so a rerun picks it up
@@ -93,19 +98,27 @@ def _ask(client: anthropic.Anthropic, prompt: str) -> dict | None:
         return None
     if resp.stop_reason != "end_turn" or resp.parsed_output is None:
         return None
-    verdict = resp.parsed_output.model_dump()
-    path.write_text(json.dumps(verdict))
-    return verdict
+    entry = {**resp.parsed_output.model_dump(), "model": model,
+             "input_tokens": resp.usage.input_tokens, "output_tokens": resp.usage.output_tokens}
+    path.write_text(json.dumps(entry))
+    return entry
 
 
-def adjudicate(prompts: pd.DataFrame, workers: int = 8) -> pd.DataFrame:
-    """Returns llm_part ('' for none), llm_conf and llm_reason per line. Lines whose call failed get llm_conf NaN and stay in review."""
+def adjudicate(prompts: pd.DataFrame, model: str = MODEL, workers: int = 8) -> tuple[pd.DataFrame, dict]:
+    """Returns (verdicts, usage). Verdicts hold llm_part ('' for none), llm_conf and llm_reason per line; lines whose
+    call failed get llm_conf NaN and stay in review. Usage is tokens and list-price cost over the distinct calls,
+    including calls answered from the cache (what it cost to produce them)."""
     load_env()
     CACHE.mkdir(parents=True, exist_ok=True)
     client = anthropic.Anthropic(max_retries=4)
     unique = prompts["prompt"].drop_duplicates().tolist()
     with ThreadPoolExecutor(workers) as pool:
-        answers = dict(zip(unique, pool.map(lambda q: _ask(client, q), unique)))
+        answers = dict(zip(unique, pool.map(lambda q: _ask(client, q, model), unique)))
+    done = [a for a in answers.values() if a is not None]
+    tokens_in, tokens_out = sum(a["input_tokens"] for a in done), sum(a["output_tokens"] for a in done)
+    price_in, price_out = PRICE_PER_MTOK[model]
+    usage = dict(model=model, calls=len(done), failed_calls=len(unique) - len(done), input_tokens=tokens_in, output_tokens=tokens_out,
+                 cost_usd=round((tokens_in * price_in + tokens_out * price_out) / 1e6, 4))
     rows = []
     for line, prompt, cands in prompts.itertuples():
         v = answers[prompt]
@@ -117,7 +130,7 @@ def adjudicate(prompts: pd.DataFrame, workers: int = 8) -> pd.DataFrame:
         # an answer outside the candidate list that is not "none" is unusable: keep the line in review
         conf = v["confidence"] if valid or part.lower() == "none" else float("nan")
         rows.append((line, part if valid else "", min(max(conf, 0.0), 1.0), v["reason"]))
-    return pd.DataFrame(rows, columns=["line", "llm_part", "llm_conf", "llm_reason"]).set_index("line")
+    return pd.DataFrame(rows, columns=["line", "llm_part", "llm_conf", "llm_reason"]).set_index("line"), usage
 
 
 def apply(decisions: pd.DataFrame, verdicts: pd.DataFrame, accept_conf: float, reject_conf: float) -> pd.DataFrame:

@@ -100,6 +100,7 @@ def load_inputs(data_dir: str | Path = "data") -> Inputs:
 
     boms = read("boms.csv")
     boms["qty_per_unit"] = boms["qty_per_unit"].astype(float)
+    boms["std_cost"] = boms["std_cost"].astype(float)
     parts = boms.drop_duplicates("part_number")[["part_number", "revision", "description"]].reset_index(drop=True)
     parts["pn_key"] = parts["part_number"].map(norm_pn)
     parts["desc_norm"] = parts["description"].map(norm_desc)
