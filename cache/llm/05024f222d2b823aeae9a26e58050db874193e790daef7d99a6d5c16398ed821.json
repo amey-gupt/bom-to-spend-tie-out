@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Loctite 243 threadlocker is a shop consumable rather than a BOM part, and none of the candidates (screws and a nut costing a few cents each) matches its description or its $27.73 price.", "model": "claude-opus-5-5", "input_tokens": 1388, "output_tokens": 88}

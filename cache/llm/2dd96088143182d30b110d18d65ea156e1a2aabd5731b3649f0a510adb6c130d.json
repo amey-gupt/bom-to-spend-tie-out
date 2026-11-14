@@ -1,0 +1,1 @@
+{"part_number": "SCR-66822", "confidence": 0.5, "reason": "Socket cap M4x20 stainless matches both SCR-66822 and SCR-66772 identically (supplier part number MT6498-65 is not internal); SCR-66822 chosen as its confirmed price $0.0142 is close to $0.0137, but the two are indistinguishable from the text.", "model": "claude-opus-5-5", "input_tokens": 1402, "output_tokens": 127}

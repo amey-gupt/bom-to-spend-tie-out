@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The purchase line is a 10-tooth, module 0.5 sun gear under internal number SGR-63464; no candidate has 10 teeth or module 0.5, and that number matches none of them, so it is likely a part for a product whose BOM is not in this set.", "model": "claude-opus-5-5", "input_tokens": 1409, "output_tokens": 108}

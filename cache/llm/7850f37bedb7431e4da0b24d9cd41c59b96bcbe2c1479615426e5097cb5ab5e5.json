@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a calibration service for a torque analyzer (a service, not a BOM part), priced at $250.51, far from every candidate's sub-$2 component price.", "model": "claude-opus-5-5", "input_tokens": 1373, "output_tokens": 76}

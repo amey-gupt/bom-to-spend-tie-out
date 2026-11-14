@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Isopropyl alcohol 99% 1 gal is a shop consumable, not a BOM part, and no candidate (insulation pads, carton, housing, label) matches its description or ~$24.64 price.", "model": "claude-opus-5-5", "input_tokens": 1398, "output_tokens": 92}

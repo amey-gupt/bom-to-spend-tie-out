@@ -121,6 +121,37 @@ Data sources and their terms, as checked on 2026-11-14:
 
 Because several of these have no clear license, none of the downloaded data, and none of Claude's cached answers about it, is committed. Only aggregate results are.
 
+## Experiment: self-training without truth labels
+
+Can the classifier be trained on a dataset's own rule-matched lines, with no confirmed labels? Positives are the lines a rule matched, negatives are their other top-5 candidates, the part-number features are hidden, and the matched number is stripped from the text. A line's own price and supplier are also left out of the evidence for its own part.
+
+```
+uv run python -m src.evaluate selftrain
+uv run python -m src.external.selftrain_parts     # needs the external data
+```
+
+**(a) Synthetic data, held-out split** (self-trained on 2,229 rule-matched lines from the whole dataset):
+
+| Classifier | Stage | Precision | Recall | Review queue | Wrong-match dollars |
+|---|---|---|---|---|---|
+| Truth-trained | Rules + classifier | 100.00% | 87.0% | 287 lines, $2.23M | $0 |
+| Truth-trained | + Claude | 100.00% | 99.1% | 13 lines, $48K | $0 |
+| Self-trained | Rules + classifier | 97.44% | 95.3% | 168 lines, $1.02M | $67,154 |
+| Self-trained | + Claude | 97.53% | 98.8% | 19 lines, $38K | $67,154 |
+
+**(b) Real parts** (trained on 70 rule-matched lines from half the parts, of which 24 gave a usable positive; tested on 97 lines from the other half with the part number hidden, plus 500 no-match lines):
+
+| Classifier | Stage | Right | Wrong | Precision | Recall | Review queue | No-match lines wrongly accepted |
+|---|---|---|---|---|---|---|---|
+| Transferred from synthetic | Rules + classifier | 0 | 0 | n/a | 0.00 | 593 lines | 3 |
+| Transferred from synthetic | + Claude | 26 | 1 | 0.96 | 0.27 | 10 lines | 3 |
+| Self-trained | Rules + classifier | 2 | 0 | 1.00 | 0.02 | 595 lines | 0 |
+| Self-trained | + Claude | 26 | 1 | 0.96 | 0.27 | 10 lines | 0 |
+
+The catalog has no quantities, so wrong-match dollars cannot be computed for (b).
+
+Self-training is not a shortcut. On the synthetic data it accepts more lines but loses the 99% precision guarantee: rule-matched lines always have a true part, so the model never sees a line that should stay unmatched, and its own cross-validated precision estimate (99.7%) is optimistic. On real parts the training set is too small and too weak, the accept threshold collapses to 1.0, and recall moves from 0.00 to 0.02. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
+
 ## Generate the data
 
 ```

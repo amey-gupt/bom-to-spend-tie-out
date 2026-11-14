@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The line is a 20V/4A fast charger, and chargers are not BOM parts; none of the candidates (BMS PCBAs, housing, motor, controller) is a charger, and supplier number 76541X604 matches none of them.", "model": "claude-opus-5-5", "input_tokens": 1358, "output_tokens": 99}

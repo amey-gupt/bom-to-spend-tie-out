@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The line is a 12 VDC 2 A fast charger, and chargers are not BOM parts; none of the candidates (switch, motor, PCBAs, housing) is a charger, and the supplier number SV-9709592 matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 103}

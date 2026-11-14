@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The line is a complete 20V 4.0Ah battery pack ('BATT PACK CPL') at $43.04, which is a finished assembly rather than a single BOM part, and its price is far above any candidate cell, housing or BMS ($1\u2013$3.5).", "model": "claude-opus-5-5", "input_tokens": 1385, "output_tokens": 110}

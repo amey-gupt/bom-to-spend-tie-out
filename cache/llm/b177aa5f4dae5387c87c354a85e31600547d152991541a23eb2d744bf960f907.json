@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "A 48 x 40 in wood pallet is shipping/shop material, not one of the candidate cartons; the candidates differ in type, dimensions and price (~$0.55\u20130.77 vs $15.40), and part number 873640 matches none of them.", "model": "claude-opus-5-5", "input_tokens": 1373, "output_tokens": 105}

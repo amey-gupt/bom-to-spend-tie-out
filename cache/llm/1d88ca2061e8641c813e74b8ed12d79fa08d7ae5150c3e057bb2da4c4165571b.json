@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The line is a chuck service kit (SVC part number, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates.", "model": "claude-opus-5-5", "input_tokens": 1415, "output_tokens": 86}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "LED-16307 is an internal LED number that matches none of the candidates, and its 6500 K color temperature conflicts with LED-16300 (5000 K, 60 mA) and LED-16299 (5000 K, 20 mA).", "model": "claude-opus-5-5", "input_tokens": 1382, "output_tokens": 102}

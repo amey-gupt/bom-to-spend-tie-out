@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service kit (belt clip kit with screw, SVC part number, service PO type), and kits are not BOM parts, so it matches none of the individual clip or screw candidates.", "model": "claude-opus-5-5", "input_tokens": 1420, "output_tokens": 83}

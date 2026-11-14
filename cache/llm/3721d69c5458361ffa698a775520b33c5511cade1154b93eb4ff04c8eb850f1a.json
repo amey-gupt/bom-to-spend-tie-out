@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "SCR-66841 is an internal-format number matching no candidate, and none fits the Torx pan head M6x16 stainless description: SCR-66741 is M3, SCR-66829/66694/66726 are M4, and SCR-66809 is M6x16 but self-tapping and about half the price.", "model": "claude-opus-5-5", "input_tokens": 1392, "output_tokens": 121}

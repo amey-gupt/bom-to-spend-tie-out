@@ -1,0 +1,1 @@
+{"part_number": "SPR-38617", "confidence": 0.85, "reason": "Only SPR-38617 matches every stated attribute (6 mm dia, 20 mm long, 0.5 mm wire); the others differ in wire size, diameter or length, and the low price is plausible for a small spring.", "model": "claude-opus-5-5", "input_tokens": 1422, "output_tokens": 101}

@@ -5,6 +5,7 @@ The only module that reads data/truth/.
     python3 -m src.evaluate step2 [--backend local|openai]   # naive vs rules vs rules + embeddings
     python3 -m src.evaluate step3 [--no-llm]                  # classifier, three outcomes, Claude on the review band
     python3 -m src.evaluate step4 [--materiality USD]         # buckets, tie-out by bucket, leads vs planted findings
+    python3 -m src.evaluate selftrain                         # experiment: classifier trained on rule-matched lines only
 
 step3 also trains the classifier (labels come from the truth, tuning split only) and saves it to models/.
 
@@ -312,13 +313,51 @@ def step4(data_dir: str | Path = "data", materiality: float | None = None):
     return report
 
 
+# ------------------------------------------------------------ self-training
+
+def selftrain(data_dir: str | Path = "data", backend: str = "openai"):
+    """Experiment: a classifier trained on the dataset's own rule-matched lines (no truth labels) against the
+    truth-trained one, both scored on the held-out split. Truth is used here for scoring only."""
+    inp = load_inputs(data_dir)
+    p = inp.purchases
+    truth, canon = load_truth(data_dir)
+    tune, held = (truth["split"] == "tune").to_numpy(), (truth["split"] == "heldout").to_numpy()
+    rules = match.rule_match(inp)
+    cand_parts, cand_sims = match.embedding_candidates(inp, backend=backend)
+    pairs = scoring.build_pairs(inp, rules, cand_parts, cand_sims)
+    scorers = {"Truth-trained (tuning-split labels)": scoring.Scorer.load(backend)}
+    scorers["Self-trained (rule-matched lines, no truth)"], info = scoring.self_train(inp, rules, backend)
+    cut = scorers["Truth-trained (tuning-split labels)"]
+
+    report = {"backend": backend, "self_train_fit": info, "results": {}}
+    print(f"self-trained on {info['train_lines']} rule-matched lines ({info['train_pairs']} pairs, {info['positives']} positives); "
+          f"accept at p >= {info['accept_at']:.3f}, no match below {info['reject_below']:.3f}")
+    for name, scorer in scorers.items():
+        dec = scoring.decide(rules, pairs, scorer)
+        band = dec.index[dec["decision"] == "review"]
+        verdicts, usage = adjudicate.adjudicate(adjudicate.build_prompts(inp, rules, pairs, band))
+        final = adjudicate.apply(dec, verdicts, cut.llm_accept_conf, cut.llm_reject_conf)
+        report["results"][name] = dict(
+            classifier_stage=dict(heldout=outcome_metrics(dec, truth, p, canon, held), tune=outcome_metrics(dec, truth, p, canon, tune)),
+            with_claude=dict(heldout=outcome_metrics(final, truth, p, canon, held), tune=outcome_metrics(final, truth, p, canon, tune)),
+            claude=dict(lines_sent=len(band), **usage))
+        print(f"\n=== {name} ===")
+        print_outcomes("HELD-OUT, rules + classifier", report["results"][name]["classifier_stage"]["heldout"])
+        print_outcomes("HELD-OUT, rules + classifier + Claude", report["results"][name]["with_claude"]["heldout"])
+        print(f"  Claude: {len(band)} lines sent, {usage['calls']} calls, ${usage['cost_usd']:.2f}")
+    Path("out").mkdir(exist_ok=True)
+    Path("out/eval_selftrain.json").write_text(json.dumps(report, indent=2, default=float))
+    print("\nwrote out/eval_selftrain.json")
+    return report
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["step2", "step3", "step4"])
+    ap.add_argument("step", choices=["step2", "step3", "step4", "selftrain"])
     ap.add_argument("--backend", choices=list(match.BACKENDS), default="local")
     ap.add_argument("--no-llm", action="store_true")
     ap.add_argument("--materiality", type=float, default=None)
     args = ap.parse_args()
     {"step2": lambda: step2(backend=args.backend), "step3": lambda: step3(use_llm=not args.no_llm),
-     "step4": lambda: step4(materiality=args.materiality)}[args.step]()
+     "step4": lambda: step4(materiality=args.materiality), "selftrain": selftrain}[args.step]()

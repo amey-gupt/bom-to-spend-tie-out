@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The line is a complete 20V 4.0Ah battery pack (an assembly, bought on a service PO at $43), not a single cell, housing or BMS board, so it matches no BOM candidate.", "model": "claude-opus-5-5", "input_tokens": 1386, "output_tokens": 88}

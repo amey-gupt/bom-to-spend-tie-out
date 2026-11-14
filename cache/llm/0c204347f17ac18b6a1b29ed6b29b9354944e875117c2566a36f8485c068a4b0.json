@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.92, "reason": "The line buys a complete 18V 2.0Ah battery pack (a full assembly, service PO, about $26), whereas the candidates are only housings or single cells priced at $0.55 to $1.98, so none of them is the same part.", "model": "claude-opus-5-5", "input_tokens": 1384, "output_tokens": 99}

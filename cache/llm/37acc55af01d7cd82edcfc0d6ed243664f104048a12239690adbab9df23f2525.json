@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The line is a complete 18V 4.0Ah battery pack (an assembly, service PO, SVC- number, $36.60) rather than any single cell, housing or BMS component on the candidate BOMs.", "model": "claude-opus-5-5", "input_tokens": 1386, "output_tokens": 91}

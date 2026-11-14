@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The PO calls for 6500 K / 60 mA under internal number LED-16307. No candidate has that number, and both LED candidates are 5000 K, so the color temperature conflicts; this is likely a part for a product whose BOM is not in this set.", "model": "claude-opus-5-5", "input_tokens": 1392, "output_tokens": 105}

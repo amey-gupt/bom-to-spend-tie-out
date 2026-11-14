@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A 25-pack of PH2 screwdriver bits at $17.64 is a shop tool/consumable, not a BOM part, and none of the candidates (screws costing about $0.01\u20130.03) match it.", "model": "claude-opus-5-5", "input_tokens": 1402, "output_tokens": 92}

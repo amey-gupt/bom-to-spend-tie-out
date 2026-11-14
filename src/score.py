@@ -26,7 +26,7 @@ from sklearn.isotonic import IsotonicRegression
 from sklearn.model_selection import GroupKFold
 
 from . import match
-from .normalize import Inputs, load_inputs, numbers_in
+from .normalize import Inputs, load_inputs, norm_desc, norm_pn, numbers_in
 
 MODEL_DIR = Path("models")
 PN_FEATURES = ["pn_sim", "pn_prefix_match", "pn_looks_internal", "has_pn"]
@@ -43,8 +43,12 @@ def _lead(values: np.ndarray) -> np.ndarray:
     return values - np.where(values == best, second, best)
 
 
-def build_pairs(inp: Inputs, rules: pd.DataFrame, cand_parts: np.ndarray, cand_sims: np.ndarray) -> pd.DataFrame:
-    """One row per (purchase line, candidate part) with the features the classifier sees."""
+def build_pairs(inp: Inputs, rules: pd.DataFrame, cand_parts: np.ndarray, cand_sims: np.ndarray, leave_own_line_out: bool = False) -> pd.DataFrame:
+    """One row per (purchase line, candidate part) with the features the classifier sees.
+
+    leave_own_line_out: when a rule-matched line is itself a training example, its own price and supplier must not
+    count as evidence for its own part, or the price and supplier features would give the answer away.
+    """
     p, parts = inp.purchases, inp.parts.set_index("part_number")
     n, k = cand_parts.shape
     line = np.repeat(np.arange(n), k)
@@ -78,7 +82,7 @@ def build_pairs(inp: Inputs, rules: pd.DataFrame, cand_parts: np.ndarray, cand_s
     bom_prefixes = set(parts.index.str.split("-").str[0])
     line_prefix = np.array([m.group(1) if (m := re.match(r"^([A-Z]{3})\d", x)) else "" for x in line_pn])
 
-    return pd.DataFrame({
+    out = pd.DataFrame({
         "line": line, "cand": cand,
         "emb_sim": cand_sims.ravel(), "emb_rank": np.tile(np.arange(k), n), "emb_lead": _lead(cand_sims).ravel(),
         "tfidf_sim": tfidf_sim.ravel(), "tfidf_lead": _lead(tfidf_sim).ravel(),
@@ -93,6 +97,17 @@ def build_pairs(inp: Inputs, rules: pd.DataFrame, cand_parts: np.ndarray, cand_s
         "pn_looks_internal": np.isin(line_prefix, list(bom_prefixes)).astype(float),
         "has_pn": (line_pn != "").astype(float),
     })
+    if leave_own_line_out:
+        prices = settled.groupby("part")["unit_price_usd"].apply(list).to_dict()
+        counts = settled.groupby(["part", "supplier_key"]).size().to_dict()
+        own_part, price_of = rules["rule_part"].to_numpy(), p["unit_price_usd"].to_numpy()
+        for row in np.flatnonzero((own_part[line] == cand) & (own_part[line] != "")):
+            i, c = line[row], cand[row]
+            others = list(prices[c])
+            others.remove(price_of[i])
+            out.at[row, "log_price_ratio"] = abs(np.log(price_of[i] / np.median(others))) if others else np.nan
+            out.at[row, "sup_seen_part"] = float(counts[c, sup[row]] > 1)
+    return out
 
 
 def without_pn(pairs: pd.DataFrame) -> pd.DataFrame:
@@ -112,9 +127,11 @@ class Scorer:
     backend: str
     llm_accept_conf: float = 1.01  # set by evaluate.py once the LLM band has been scored on the tuning split
     llm_reject_conf: float = 1.01
+    unused: tuple = ()  # features that were entirely missing in training; zeroed so they cannot matter
 
     def proba(self, pairs: pd.DataFrame) -> np.ndarray:
-        return self.calibrator.predict(self.clf.predict_proba(pairs[FEATURES])[:, 1])
+        X = pairs[FEATURES].assign(**{c: 0.0 for c in getattr(self, "unused", ())})
+        return self.calibrator.predict(self.clf.predict_proba(X)[:, 1])
 
     def save(self):
         MODEL_DIR.mkdir(exist_ok=True)
@@ -142,7 +159,8 @@ def fit(pairs: pd.DataFrame, label: np.ndarray, group: np.ndarray, decides: np.n
              out-of-fold prediction is for a style that fold's model never saw
     decides  True for rows of lines the classifier would really decide (not settled by rules)
     """
-    X = pairs[FEATURES]
+    unused = tuple(c for c in FEATURES if pairs[c].isna().all())
+    X = pairs[FEATURES].assign(**{c: 0.0 for c in unused})
     oof = np.zeros(len(pairs))
     for train, test in GroupKFold(n_splits=min(5, len(np.unique(group)))).split(X, label, group):
         oof[test] = _new_clf().fit(X.iloc[train], label[train]).predict_proba(X.iloc[test])[:, 1]
@@ -163,7 +181,43 @@ def fit(pairs: pd.DataFrame, label: np.ndarray, group: np.ndarray, decides: np.n
     info = dict(train_pairs=len(pairs), deciding_lines=len(best), accept_at=float(accept_at), reject_below=float(reject_below),
                 oof_accept_share=float(accepted.mean()), oof_accept_precision=float(best.loc[accepted, "correct"].mean()),
                 oof_review_share=float(((best["prob"] < accept_at) & (best["prob"] >= reject_below)).mean()))
-    return Scorer(_new_clf().fit(X, label), calibrator, float(accept_at), float(reject_below), backend), info
+    return Scorer(_new_clf().fit(X, label), calibrator, float(accept_at), float(reject_below), backend, unused=unused), info
+
+
+def strip_matched_numbers(inp: Inputs, rules: pd.DataFrame) -> Inputs:
+    """A copy of the inputs where every rule-matched line has its matched part number removed from the description."""
+    key_of = inp.parts.set_index("part_number")["pn_key"]
+    p = inp.purchases.copy()
+    for i in rules.index[rules["rule_part"] != ""]:
+        key = key_of[rules.at[i, "rule_part"]]
+        kept = [tok for tok in re.split(r"(?<=[\s,;()])|(?=[\s,;()])", p.at[i, "item_description"]) if norm_pn(tok) != key]
+        p.at[i, "item_description"] = "".join(kept).strip()
+    p["desc_norm"] = p["item_description"].map(norm_desc)
+    return Inputs(p, inp.boms, inp.parts, inp.builds, inp.xref)
+
+
+def self_train(inp: Inputs, rules: pd.DataFrame, backend: str, train_lines: np.ndarray | None = None, use_history: bool = True) -> tuple[Scorer, dict]:
+    """Train the classifier on one dataset with no truth labels.
+
+    Positives are the lines a rule matched, paired with the part the rule chose; negatives are those lines' other
+    nearest candidates. The part-number features are hidden and the matched number is stripped from the text, so
+    the model has to learn from descriptions, numbers, prices and suppliers, which is what the open lines offer.
+    Calibration and thresholds come from folds that hold out whole parts.
+
+    train_lines  optional boolean mask limiting which rule-matched lines may be used
+    use_history  False drops the price and supplier evidence (for data where the lines to score will have none)
+    """
+    matched = (rules["rule_part"] != "").to_numpy() & (np.ones(len(rules), bool) if train_lines is None else train_lines)
+    stripped = strip_matched_numbers(inp, rules)
+    cand_parts, cand_sims = match.embedding_candidates(stripped, backend=backend)
+    history = rules if use_history else rules.assign(rule_part="", rule_method="")
+    pairs = build_pairs(stripped, history, cand_parts, cand_sims, leave_own_line_out=use_history)
+    pairs = without_pn(pairs[matched[pairs["line"]]]).reset_index(drop=True)
+    target = rules["rule_part"].to_numpy()[pairs["line"]]
+    label = (pairs["cand"].to_numpy() == target).astype(int)
+    scorer, info = fit(pairs, label, pd.factorize(target)[0], np.ones(len(pairs), bool), backend)
+    info.update(train_lines=int(matched.sum()), positives=int(label.sum()), lines_with_rule_part_in_top5=float(pairs.assign(y=label).groupby("line")["y"].max().mean()))
+    return scorer, info
 
 
 def decide(rules: pd.DataFrame, pairs: pd.DataFrame, scorer: Scorer) -> pd.DataFrame:

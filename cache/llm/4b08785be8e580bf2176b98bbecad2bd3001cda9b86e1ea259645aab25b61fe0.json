@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service-exchange motor assembly rated 250 W 18 V, which is a service assembly rather than a BOM part, and its 250 W rating conflicts with the only 18 V motor candidate (MTR-75169, 400 W).", "model": "claude-opus-5-5", "input_tokens": 1393, "output_tokens": 104}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is SAC305 solder wire on a 1 lb spool at $42.09, a shop consumable, not one of the compression springs priced at about $0.03\u20130.08; the 0.8 mm figure is the solder diameter, not a spring wire size.", "model": "claude-opus-5-5", "input_tokens": 1452, "output_tokens": 106}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The line is a service-exchange motor assembly (SVC part number, service PO type), and service kits and assemblies are not BOM parts; its 350 W rating also conflicts with the 400 W motors MTR-75173 and MTR-75169.", "model": "claude-opus-5-5", "input_tokens": 1382, "output_tokens": 103}

@@ -438,6 +438,40 @@ with tab_eval:
 - **Real no-match lines are rejected correctly more than 99% of the time** after Claude. The two or three accepted in error were accepted by the classifier, not by Claude.
 """)
 
+    st.subheader("Experiment: self-training without truth labels")
+    st.caption("Can the classifier be trained on a dataset's own rule-matched lines, with no confirmed labels? Positives are the lines a rule "
+               "matched; negatives are their other nearest candidates. Part-number features are hidden and the matched number is stripped from the text.")
+    sa, sb = evals.get("eval_selftrain"), evals.get("eval_external_selftrain")
+    if sa:
+        fit_a = sa["self_train_fit"]
+        st.markdown(f"**(a) Synthetic data, held-out split.** Self-trained on {fit_a['train_lines']:,} rule-matched lines.")
+        table = []
+        for name, r in sa["results"].items():
+            for stage_name, key in (("Rules + classifier", "classifier_stage"), ("Rules + classifier + Claude", "with_claude")):
+                h = r[key]["heldout"]
+                table.append({"Classifier": name, "Stage": stage_name, "Precision": f"{h['accept_precision']:.2%}", "Recall": pct(h["recall"]),
+                              "Review queue": f"{h['review_lines']} lines, {usd(h['review_spend'])}", "Wrong-match $": usd(h["wrong_match_spend"])})
+        st.dataframe(pd.DataFrame(table), hide_index=True, width="stretch")
+    if sb:
+        fit_b = sb["self_train_fit"]
+        st.markdown(f"**(b) Real parts.** Trained on {fit_b['train_lines']} rule-matched lines from half the parts ({fit_b['positives']} usable positives); "
+                    f"tested on the other half with the part number hidden, plus 500 no-match lines.")
+        table = []
+        for name, r in sb["results"].items():
+            for stage_name, key in (("Rules + classifier", "classifier_stage"), ("Rules + classifier + Claude", "with_claude")):
+                m = r[key]
+                table.append({"Classifier": name, "Stage": stage_name, "Right": f"{m['right']} of {m['test_lines']}", "Wrong": m["wrong"],
+                              "Precision": f"{m['precision']:.2f}", "Recall": f"{m['recall']:.2f}", "Review queue": f"{m['review_queue_lines']} lines",
+                              "No-match lines wrongly accepted": m["no_match_wrongly_accepted"]})
+        st.dataframe(pd.DataFrame(table), hide_index=True, width="stretch")
+        st.caption("The catalog has prices but no quantities, so wrong-match dollars cannot be computed for the real-parts test.")
+    if sa or sb:
+        st.markdown("""
+- **It does not replace confirmed labels.** On the synthetic data the self-trained classifier accepts more lines, but its precision falls from 100% to about 97.4% and it produces wrong-match dollars where the truth-trained one has none. Rule-matched lines always have a true part, so the model never sees a line that should be left unmatched.
+- **On real parts it barely moves.** Only a third of the training lines had their true part among the five nearest candidates, the thresholds collapse to "accept almost nothing", and recall goes from 0.00 to 0.02. Its one gain: it stops wrongly accepting no-match lines.
+- **Conclusion:** self-training is not a shortcut. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
+""")
+
     st.subheader("Limits")
     st.markdown("""
 - **The data is synthetic.** Accuracy is measured on noise this project generated. Real exports are messier in ways the generator does not model, so treat these numbers as a ceiling, not a forecast.

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service-exchange motor assembly (MTR ASSY SVC EXCH) rated 250 W 18 V, which conflicts with the 400 W ratings of both candidate motors, and service assemblies are not BOM parts.", "model": "claude-opus-5-5", "input_tokens": 1395, "output_tokens": 102}

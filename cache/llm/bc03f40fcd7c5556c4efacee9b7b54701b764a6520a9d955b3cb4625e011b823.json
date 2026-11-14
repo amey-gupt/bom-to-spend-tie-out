@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A conveyor belt splice kit at $180.58 from an industrial supplier is a plant maintenance kit, not a BOM part, and it matches none of the belt clips or wire harnesses (all under $0.40).", "model": "claude-opus-5-5", "input_tokens": 1415, "output_tokens": 95}

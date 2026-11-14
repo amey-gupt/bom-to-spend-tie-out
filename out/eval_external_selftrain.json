@@ -1,0 +1,103 @@
+{
+  "bom_parts": 250,
+  "parts_with_catalog_lines": 161,
+  "train_parts": 80,
+  "test_parts": 81,
+  "train_lines_available": 111,
+  "self_train_fit": {
+    "train_pairs": 350,
+    "deciding_lines": 70,
+    "accept_at": 1.0,
+    "reject_below": 0.0,
+    "oof_accept_share": 0.05714285714285714,
+    "oof_accept_precision": 1.0,
+    "oof_review_share": 0.9428571428571428,
+    "train_lines": 70,
+    "positives": 24,
+    "lines_with_rule_part_in_top5": 0.34285714285714286
+  },
+  "results": {
+    "Transferred from the synthetic data": {
+      "classifier_stage": {
+        "test_lines": 97,
+        "accepted": 0,
+        "right": 0,
+        "wrong": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "in_review": 96,
+        "called_no_match": 1,
+        "review_queue_lines": 593,
+        "no_match_lines": 500,
+        "no_match_right": 0,
+        "no_match_in_review": 497,
+        "no_match_wrongly_accepted": 3
+      },
+      "with_claude": {
+        "test_lines": 97,
+        "accepted": 27,
+        "right": 26,
+        "wrong": 1,
+        "precision": 0.9629629629629629,
+        "recall": 0.26804123711340205,
+        "in_review": 10,
+        "called_no_match": 60,
+        "review_queue_lines": 10,
+        "no_match_lines": 500,
+        "no_match_right": 497,
+        "no_match_in_review": 0,
+        "no_match_wrongly_accepted": 3
+      },
+      "claude": {
+        "lines_sent": 593,
+        "model": "claude-opus-5-5",
+        "calls": 579,
+        "failed_calls": 0,
+        "input_tokens": 767406,
+        "output_tokens": 57323,
+        "cost_usd": 4.2161
+      }
+    },
+    "Self-trained on this dataset's rule-matched lines": {
+      "classifier_stage": {
+        "test_lines": 97,
+        "accepted": 2,
+        "right": 2,
+        "wrong": 0,
+        "precision": 1.0,
+        "recall": 0.020618556701030927,
+        "in_review": 95,
+        "called_no_match": 0,
+        "review_queue_lines": 595,
+        "no_match_lines": 500,
+        "no_match_right": 0,
+        "no_match_in_review": 500,
+        "no_match_wrongly_accepted": 0
+      },
+      "with_claude": {
+        "test_lines": 97,
+        "accepted": 27,
+        "right": 26,
+        "wrong": 1,
+        "precision": 0.9629629629629629,
+        "recall": 0.26804123711340205,
+        "in_review": 10,
+        "called_no_match": 60,
+        "review_queue_lines": 10,
+        "no_match_lines": 500,
+        "no_match_right": 500,
+        "no_match_in_review": 0,
+        "no_match_wrongly_accepted": 0
+      },
+      "claude": {
+        "lines_sent": 595,
+        "model": "claude-opus-5-5",
+        "calls": 581,
+        "failed_calls": 0,
+        "input_tokens": 769938,
+        "output_tokens": 57457,
+        "cost_usd": 4.2289
+      }
+    }
+  }
+}

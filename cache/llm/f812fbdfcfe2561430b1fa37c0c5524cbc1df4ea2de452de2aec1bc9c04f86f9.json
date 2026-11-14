@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A 100-pack of test-jig pogo pins at $40.37 is a test-fixture shop supply rather than a BOM part, and none of the candidates are pogo pins (they are dowel pins and a steel ball costing a few cents each); the part number 686603 also matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1428, "output_tokens": 117}

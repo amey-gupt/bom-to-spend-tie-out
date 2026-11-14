@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a 250 W 18 V 'motor assembly service exchange' with supplier number PS-879278, which is a service assembly rather than a BOM part, and 250 W matches no candidate (motors are 400 W/20 V, 400 W/18 V, 200 W/12 V).", "model": "claude-opus-5-5", "input_tokens": 1390, "output_tokens": 119}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A 200 lb toggle fixture clamp at about $24 is shop tooling, not a BOM part, and none of the candidates (washers, belt clips, clutch ring) match its description or price.", "model": "claude-opus-5-5", "input_tokens": 1365, "output_tokens": 87}

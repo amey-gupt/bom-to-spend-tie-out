@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "Line is a complete 18V 4.0Ah battery pack (CPL = complete assembly, service PO, $36.60) rather than any single cell, housing or BMS component listed, and assemblies are not BOM parts.", "model": "claude-opus-5-5", "input_tokens": 1392, "output_tokens": 96}

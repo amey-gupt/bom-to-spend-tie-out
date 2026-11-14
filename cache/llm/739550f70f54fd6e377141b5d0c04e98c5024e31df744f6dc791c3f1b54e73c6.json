@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "Bulk 5 kg desiccant at $34.47 is a consumable/shop supply, and no candidate is a desiccant (they are a poly bag, cartons and a PET insulation pad); part number 671093 matches none of them.", "model": "claude-opus-5-5", "input_tokens": 1379, "output_tokens": 100}

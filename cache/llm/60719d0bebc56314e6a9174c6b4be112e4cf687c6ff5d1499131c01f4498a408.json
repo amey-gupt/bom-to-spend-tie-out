@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Nitrile gloves (box of 100, ~$11.61) are a shop consumable, not a BOM part; the only NBR candidate is an O-ring, which is a different item.", "model": "claude-opus-5-5", "input_tokens": 1404, "output_tokens": 82}
