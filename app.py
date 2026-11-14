@@ -35,6 +35,7 @@ UPLOAD_LIMIT_MB = 5  # also set as server.maxUploadSize in .streamlit/config.tom
 SAMPLE_CACHE = Path("cache/llm_sample")  # committed Claude answers for the second sample: it runs with no Claude calls
 HOSTED = settings.hosted()               # a public deployment: access code, limits, and nothing written to disk
 HOSTED_MAX_LINES, HOSTED_MAX_CALLS, HOSTED_MAX_RUNS = 2_000, 150, 3
+HOSTED_DAILY_RUNS = int(settings.secret("DAILY_RUN_LIMIT", "40"))  # across all visitors: bounds API spend when there is no access code
 adjudicate.PERSIST = match.PERSIST = not HOSTED
 BUCKETS = ["production", "spares", "warranty", "unassigned"]
 BLUE, ORANGE, AQUA, YELLOW, VIOLET, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#6250d6", "#9a9890"
@@ -195,6 +196,12 @@ def engineering_changes(bom: pd.DataFrame) -> list[tuple[str, str, str]]:
             what = f"{old['part_number'].iat[0]} replaced by {r.part_number}" if len(old) else f"{r.part_number} added"
         out.append((r.effective_from, r.product_id, what))
     return sorted(out)
+
+
+@st.cache_resource
+def daily_runs() -> dict:
+    """One counter for the whole server, shared by every visitor. Holds a date and a count, nothing else."""
+    return {"day": "", "runs": 0}
 
 
 def saved_load() -> pd.DataFrame:
@@ -953,12 +960,10 @@ with tab_data:
     st.caption("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up for "
                "the app. It sends the headers and 20 sample rows of each file to Claude for the mapping, then purchase descriptions and BOM parts to "
                "the embedding model and Claude for matching.")
-    unlocked = not HOSTED or st.session_state.get("unlocked", False)
+    code = settings.secret("ACCESS_CODE") if HOSTED else ""  # optional: with no code set, the tab is open to everyone
+    unlocked = not code or st.session_state.get("unlocked", False)
     if not unlocked:
-        code = settings.secret("ACCESS_CODE")
-        if not code:
-            st.info("Running your own files is switched off on this hosted copy. The other tabs show the built-in sample.")
-        else:
+        if True:
             st.markdown("Running your own files on this hosted copy needs an access code. The other tabs are open to everyone.")
             entered = st.text_input("Access code", type="password", key="access_code_entry")
             if st.button("Unlock", type="primary"):
@@ -978,7 +983,8 @@ with tab_data:
             st.rerun()
         st.caption(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each."
                    + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
-                      f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions stay in this browser session and are not written to disk." if HOSTED else ""))
+                      f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions are visible only in your own session, are not written to disk, "
+                  "and are gone when you reload the page." if HOSTED else ""))
         for col, kind in zip(st.columns(3), KIND_LABEL):
             f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
             if f is not None and f.size > UPLOAD_LIMIT_MB * 1_000_000:
@@ -997,6 +1003,12 @@ with tab_data:
             blocked = []
             if HOSTED and not is_demo and len(raw["purchases"]) > HOSTED_MAX_LINES:
                 blocked.append(f"The purchase file has {len(raw['purchases']):,} lines. This hosted copy accepts at most {HOSTED_MAX_LINES:,} per run.")
+            counter = daily_runs()
+            if counter["day"] != date.today().isoformat():
+                counter.update(day=date.today().isoformat(), runs=0)
+            if HOSTED and not is_demo and counter["runs"] >= HOSTED_DAILY_RUNS:
+                blocked.append(f"This hosted copy has reached today's limit of {HOSTED_DAILY_RUNS} runs on uploaded files across all visitors. "
+                               "The second sample still works.")
             if HOSTED and runs_used >= HOSTED_MAX_RUNS:
                 blocked.append(f"This session has used its {HOSTED_MAX_RUNS} runs. Reload the page to start a new session.")
             for message in blocked:
@@ -1051,6 +1063,8 @@ with tab_data:
                             dec, stats = pipeline.run(inp, {} if is_demo else crosswalk.as_rules(saved_load()), cache=llm_cache,
                                                       max_calls=HOSTED_MAX_CALLS if HOSTED and not is_demo else pipeline.MAX_CALLS)
                             st.session_state["runs_used"] = runs_used + 1
+                            if HOSTED and not is_demo:
+                                counter["runs"] += 1
                             st.session_state["uploaded"] = dict(
                                 lines=allocate.build_lines(inp, dec), bom=inp.boms, builds=inp.builds, stats=stats, notes=notes,
                                 files=[up[kind][0] for kind in KIND_LABEL], demo_sample=is_demo)

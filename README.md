@@ -50,7 +50,6 @@ I have not deployed this myself; the hosted mode below was tested locally with t
 
    ```toml
    HOSTED = "true"
-   ACCESS_CODE = "choose-a-code"
    OPENAI_API_KEY = "..."
    ANTHROPIC_API_KEY = "..."
    ```
@@ -60,17 +59,18 @@ I have not deployed this myself; the hosted mode below was tested locally with t
 | Secret | What it does |
 |---|---|
 | `HOSTED` | Turns on hosted mode: the access code, the limits below, and no writes to disk. |
-| `ACCESS_CODE` | Unlocks the Your data tab. Without it that tab is switched off; the other tabs stay open to everyone. Compared in constant time. |
+| `ACCESS_CODE` | Optional. Leave it out and the Your data tab is open to everyone. Set it and that tab asks for the code (compared in constant time); the other tabs stay open. |
+| `DAILY_RUN_LIMIT` | Optional, default 40. Runs on uploaded files per day across all visitors, to bound API spend when there is no access code. |
 | `OPENAI_API_KEY` | Embeddings for uploaded files. The local embedding model is not installed on the host. |
 | `ANTHROPIC_API_KEY` | Column mapping and matching for uploaded files. |
 
-The second sample needs neither key: its Claude answers (`cache/llm_sample/`) and its embeddings (`cache/sample_embeddings.npz`) are committed, so "Try the second sample" makes no API calls. It still needs the access code, because the whole tab does.
+The second sample needs neither key: its Claude answers (`cache/llm_sample/`) and its embeddings (`cache/sample_embeddings.npz`) are committed, so "Try the second sample" makes no API calls.
 
 Keys are read from Streamlit secrets first, then from the environment or `.env.local`, and are passed straight to the API clients; they are never printed or logged. `.streamlit/secrets.toml` is gitignored.
 
-Hosted limits, each shown on the page when it is hit: 5 MB per file, 2,000 purchase lines per run, 150 Claude calls per run (the largest lines go first; the rest wait in Review), and 3 runs per browser session.
+Hosted limits, each shown on the page when it is hit: 5 MB per file, 2,000 purchase lines per run, 150 Claude calls per run (the largest lines go first; the rest wait in Review), 3 runs per browser session, and 40 runs on uploaded files per day across all visitors.
 
-What is kept where on the host: uploaded files, the matched results and saved decisions live in the browser session's memory only. Nothing derived from uploaded text is written to disk, and there is no shared decisions file. Uploaded text is sent to OpenAI and Anthropic for matching, as the tab says.
+What is kept where on the host: each visitor gets their own session. Uploaded files, the matched results, review decisions and slider settings live in that session's memory on the server and are visible only to that visitor; a reload starts fresh. Every visitor starts from the same built-in sample, which no one can change. Nothing derived from uploaded text is written to disk, and there is no shared decisions file. Uploaded text is sent to OpenAI and Anthropic for matching, as the tab says.
 
 Dependencies: Community Cloud uses `uv.lock` when a repository has one, ahead of `requirements.txt`. The default install in both is the same small set, without torch or sentence-transformers. Those, with scikit-learn, are in the optional `local` extra, needed only to rebuild the results: `uv sync --extra local`.
 
