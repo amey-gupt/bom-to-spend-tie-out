@@ -61,8 +61,10 @@ I have not deployed this myself; the hosted mode below was tested locally with t
 |---|---|
 | `HOSTED` | Turns on hosted mode: the access code, the limits below, and no writes to disk. |
 | `ACCESS_CODE` | Unlocks the Your data tab. Without it that tab is switched off; the other tabs stay open to everyone. Compared in constant time. |
-| `OPENAI_API_KEY` | Embeddings for anything run in the Your data tab, including the second sample. The local embedding model is not installed on the host. |
-| `ANTHROPIC_API_KEY` | Column mapping and matching for uploaded files. The second sample needs none: its Claude answers are committed in `cache/llm_sample/`. |
+| `OPENAI_API_KEY` | Embeddings for uploaded files. The local embedding model is not installed on the host. |
+| `ANTHROPIC_API_KEY` | Column mapping and matching for uploaded files. |
+
+The second sample needs neither key: its Claude answers (`cache/llm_sample/`) and its embeddings (`cache/sample_embeddings.npz`) are committed, so "Try the second sample" makes no API calls. It still needs the access code, because the whole tab does.
 
 Keys are read from Streamlit secrets first, then from the environment or `.env.local`, and are passed straight to the API clients; they are never printed or logged. `.streamlit/secrets.toml` is gitignored.
 
