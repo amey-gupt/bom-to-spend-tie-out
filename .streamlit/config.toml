@@ -1,5 +1,12 @@
 [theme]
 base = "light"
+primaryColor = "#2a78d6"
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+maxUploadSize = 5
 
 [browser]
 gatherUsageStats = false

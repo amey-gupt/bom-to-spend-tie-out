@@ -15,30 +15,28 @@ uv sync
 uv run streamlit run app.py
 ```
 
-Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys and starts in about a second. It has seven tabs:
+Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys. The header shows the tie-out rate, the lines waiting for a decision, total spend, and how far reviewing the largest lines would move tie-out. It has six tabs:
 
-- **Overview:** tie-out rate, the four buckets, and each stage from a plain part-number lookup to the full pipeline.
-- **Review queue:** uncertain lines, largest dollars first, with the suggested part, Claude's reason, and price and supplier evidence. Approve, reject or mark as not a BOM part; tie-out, buckets, product cost and leads update at once. The materiality slider is in the sidebar.
-- **Product cost:** BOM standard versus estimated actual per unit, the parts driving the difference, and the BOM in effect on any date.
-- **Leads:** price differences shown as ranges, with the purchase lines behind each one. They are leads, not savings.
-- **Evaluation:** held-out versus tuning results, accuracy by noise style, Claude cost, and limits.
+- **Overview:** the four buckets, tie-out by quarter, and each stage from a plain part-number lookup to the full pipeline.
+- **Review:** the queue on the left, grouped so lines with identical text are one item, and the detail on the right: decision buttons, what approving would settle, the PO text and BOM description with shared words in bold, Claude's reason, and price and supplier evidence. Saved decisions (undo, clear, download) are at the bottom.
+- **Product cost:** BOM standard versus estimated actual per unit, the engineering changes, the parts driving the difference, the BOM in effect on any date, the cost trend by quarter and an estimated inventory view.
+- **Savings leads:** price and quantity gaps shown as ranges, by type, with the purchase lines behind each one. They are leads, not booked savings.
+- **Evidence:** three headline results, then the full evaluation in collapsed sections, and the limits.
+- **Your data:** run the matcher on your own CSV or Excel files in three steps (see below). Uploads are limited to 5 MB per file.
 
-- **Trends and inventory:** tie-out and estimated actual versus standard by quarter, and an estimated inventory view (bought minus built). Both are rough estimates.
-- **Upload:** run the matcher on your own CSV or Excel files (see below).
+The sidebar has the data switch, the "Needs sign-off above" threshold and a date range.
 
-The sidebar has the data switch, the materiality slider, a date range, and the reviewer crosswalk.
+### Saved decisions
 
-### Reviewer crosswalk
-
-Every approve, reject or not-a-BOM-part decision is written to `crosswalk.csv` (purchase text and part-number field to BOM part). It applies at once to every line with the same text, persists across sessions, and is the first rule on the next pipeline run. Undo, clear and download are in the sidebar. The file is local working state and is gitignored. Leads and product cost also have download buttons.
+Every approve, reject or not-a-BOM-part decision is written to `crosswalk.csv` (purchase text and part-number field to BOM part). It applies at once to every line with the same text, persists across sessions, and is the first rule on the next pipeline run. Undo, clear and download are at the bottom of the Review tab. The file is local working state and is gitignored. Leads and product cost also have download buttons.
 
 ### Your own files
 
-The Upload tab takes a BOM, purchase lines and production volumes as CSV or Excel. Column names do not need to match: Claude reads the headers and 20 sample rows of each file and proposes a mapping with a confidence per column, which you confirm or fix before anything runs. This needs `ANTHROPIC_API_KEY` (and uses `OPENAI_API_KEY` for embeddings if present, otherwise a local model), in the environment or in `.env.local`.
+The Your data tab takes a BOM, purchase lines and production volumes as CSV or Excel. Column names do not need to match: Claude reads the headers and 20 sample rows of each file and proposes a mapping with a confidence per column, which you confirm or fix before anything runs. This needs `ANTHROPIC_API_KEY` (and uses `OPENAI_API_KEY` for embeddings if present, otherwise a local model), in the environment or in `.env.local`.
 
 Uploaded data is matched with rules, embeddings and Claude only. The classifier is skipped: it has to be trained on a company's own confirmed matches, and the external tests show one trained elsewhere does not transfer. There is no ground truth for uploaded files, so the app reports how lines were decided, not accuracy.
 
-`samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Load the second sample" in the Upload tab uses it. It includes the multi-level BOM columns and the continuous materials. On that slice the mapping was right for all 25 columns, and matching reached 99.7% precision and 97.5% recall against the planted truth (259 Claude calls, $2.03, about 85 seconds uncached).
+`samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Try the second sample" in the Your data tab uses it. It includes the multi-level BOM columns and the continuous materials. On that slice the mapping was right for all 25 columns, and matching reached 99.7% precision and 97.5% recall against the planted truth (259 Claude calls, $2.03, about 85 seconds uncached).
 
 ## Results so far (held-out noise styles, 1,708 lines, $10.1M, true tie-out rate 98.8%)
 
