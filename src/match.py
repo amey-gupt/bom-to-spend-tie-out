@@ -74,6 +74,7 @@ def rule_match(inp: Inputs, crosswalk: dict | None = None) -> pd.DataFrame:
 # ----------------------------------------------------------------- embeddings
 
 PERSIST = True  # False on a public host: nothing derived from uploaded text is written to disk
+SAMPLE_EMBEDDINGS = Path("cache/sample_embeddings.npz")  # committed OpenAI embeddings for samples/second_company (synthetic text)
 
 
 def load_env():
@@ -104,12 +105,23 @@ def embed(texts: list[str], backend: str = "local") -> np.ndarray:
         CACHE_DIR.mkdir(exist_ok=True)
     path = CACHE_DIR / f"embeddings_{hashlib.sha1(BACKENDS[backend].encode()).hexdigest()[:10]}.pkl"
     cache = pickle.loads(path.read_bytes()) if path.exists() else {}
+    if backend == "openai" and SAMPLE_EMBEDDINGS.exists() and any(t not in cache for t in texts):
+        # The demo sample ships its embeddings, so it gives the same candidates everywhere and needs no key.
+        shipped = np.load(SAMPLE_EMBEDDINGS, allow_pickle=False)
+        cache = {**dict(zip(shipped["texts"].tolist(), shipped["vectors"])), **cache}
     missing = sorted({t for t in texts if t not in cache})
     if missing:
         cache.update(zip(missing, _encode(missing, backend).astype(np.float32)))
         if PERSIST:
             path.write_bytes(pickle.dumps(cache))
     return np.stack([cache[t] for t in texts])
+
+
+def shipped_embeddings_cover(texts) -> bool:
+    """True when every text is in the committed sample embeddings, so no embedding call is needed."""
+    if not SAMPLE_EMBEDDINGS.exists():
+        return False
+    return set(texts) <= set(np.load(SAMPLE_EMBEDDINGS, allow_pickle=False)["texts"].tolist())
 
 
 def embedding_candidates(inp: Inputs, k: int = TOP_K, backend: str = "local") -> tuple[np.ndarray, np.ndarray]:

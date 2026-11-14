@@ -27,7 +27,8 @@ def run(inp: Inputs, crosswalk: dict | None = None, backend: str | None = None, 
         max_calls: int = MAX_CALLS) -> tuple[pd.DataFrame, dict]:
     """Returns (decisions per purchase line, run statistics). cache=None keeps Claude's answers in memory only."""
     if backend is None:  # OpenAI when a key is available; the local model only if it is installed
-        if secret("OPENAI_API_KEY"):
+        texts = set(inp.parts["desc_norm"]) | set(inp.purchases["desc_norm"])
+        if secret("OPENAI_API_KEY") or match.shipped_embeddings_cover(texts):
             backend = "openai"
         elif importlib.util.find_spec("sentence_transformers"):
             backend = "local"

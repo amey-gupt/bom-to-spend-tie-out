@@ -11,6 +11,7 @@ models/
 cache/*
 !cache/llm/
 !cache/llm_sample/
+!cache/sample_embeddings.npz
 data/external/
 crosswalk.csv
 .streamlit/secrets.toml
