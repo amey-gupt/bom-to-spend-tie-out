@@ -1,0 +1,495 @@
+product_id,assembly_id,part_number,revision,description,qty_per_unit,uom
+DR-12C,MOTOR,MTR-75168,B,"Brushed motor, 200 W, 12 V",1,EA
+DR-18,MOTOR,MTR-75169,B,"Brushless motor, 400 W, 18 V",1,EA
+DR-18H,MOTOR,MTR-75169,B,"Brushless motor, 400 W, 18 V",1,EA
+DR-20,MOTOR,MTR-75173,A,"Brushed motor, 400 W, 20 V",1,EA
+DR-12C,MOTOR,ROT-73034,D,"Rotor assembly, 32 mm dia, 45 mm long",1,EA
+DR-18,MOTOR,ROT-73041,D,"Rotor assembly, 36 mm dia, 35 mm long",1,EA
+DR-18H,MOTOR,ROT-73034,D,"Rotor assembly, 32 mm dia, 45 mm long",1,EA
+DR-20,MOTOR,ROT-73041,D,"Rotor assembly, 36 mm dia, 35 mm long",1,EA
+DR-12C,MOTOR,STA-57656,A,"Wound stator, 42 mm dia, 25 mm long",1,EA
+DR-18,MOTOR,STA-57656,A,"Wound stator, 42 mm dia, 25 mm long",1,EA
+DR-18H,MOTOR,STA-57659,A,"Wound stator, 42 mm dia, 30 mm long",1,EA
+DR-20,MOTOR,STA-57659,A,"Wound stator, 42 mm dia, 30 mm long",1,EA
+DR-12C,MOTOR,BRS-17975,B,"Carbon brush, 6 x 9 x 14 mm",2,EA
+DR-18,MOTOR,BRS-17975,B,"Carbon brush, 6 x 9 x 14 mm",2,EA
+DR-18H,MOTOR,BRS-17978,B,"Carbon brush, 6 x 6 x 12 mm",2,EA
+DR-20,MOTOR,BRS-17978,B,"Carbon brush, 6 x 6 x 12 mm",2,EA
+DR-12C,MOTOR,FAN-30241,B,"Cooling fan, 55 mm dia, 9 blades",1,EA
+DR-18,MOTOR,FAN-30247,B,"Cooling fan, 45 mm dia, 9 blades",1,EA
+DR-18H,MOTOR,FAN-30247,B,"Cooling fan, 45 mm dia, 9 blades",1,EA
+DR-20,MOTOR,FAN-30248,D,"Cooling fan, 55 mm dia, 11 blades",1,EA
+DR-12C,MOTOR,BRG-65673,C,"Deep groove ball bearing, 6000, open",1,EA
+DR-18,MOTOR,BRG-65675,B,"Deep groove ball bearing, 698, ZZ",1,EA
+DR-18H,MOTOR,BRG-65675,B,"Deep groove ball bearing, 698, ZZ",1,EA
+DR-20,MOTOR,BRG-65675,B,"Deep groove ball bearing, 698, ZZ",1,EA
+DR-12C,MOTOR,BRG-65683,A,"Deep groove ball bearing, 625, ZZ",1,EA
+DR-18,MOTOR,BRG-65683,A,"Deep groove ball bearing, 625, ZZ",1,EA
+DR-18H,MOTOR,BRG-65683,A,"Deep groove ball bearing, 625, ZZ",1,EA
+DR-20,MOTOR,BRG-65683,A,"Deep groove ball bearing, 625, ZZ",1,EA
+DR-12C,GEARBOX,BRG-65684,B,"Deep groove ball bearing, 6001, ZZ",1,EA
+DR-18,GEARBOX,BRG-65684,B,"Deep groove ball bearing, 6001, ZZ",1,EA
+DR-18H,GEARBOX,BRG-65684,B,"Deep groove ball bearing, 6001, ZZ",1,EA
+DR-20,GEARBOX,BRG-65684,B,"Deep groove ball bearing, 6001, ZZ",1,EA
+DR-12C,GEARBOX,BRG-65689,A,"Deep groove ball bearing, 608, open",1,EA
+DR-18,GEARBOX,BRG-65697,D,"Deep groove ball bearing, 6001, 2RS",1,EA
+DR-18H,GEARBOX,BRG-65697,D,"Deep groove ball bearing, 6001, 2RS",1,EA
+DR-20,GEARBOX,BRG-65697,D,"Deep groove ball bearing, 6001, 2RS",1,EA
+DR-12C,GEARBOX,BRG-65703,D,"Deep groove ball bearing, 607, 2RS",1,EA
+DR-18,GEARBOX,BRG-65712,B,"Deep groove ball bearing, 6200, open",1,EA
+DR-18H,GEARBOX,BRG-65712,B,"Deep groove ball bearing, 6200, open",1,EA
+DR-20,GEARBOX,BRG-65717,A,"Deep groove ball bearing, 626, 2RS",1,EA
+DR-12C,CHUCK,BRG-65722,A,"Deep groove ball bearing, 6201, 2RS",1,EA
+DR-18,CHUCK,BRG-65728,B,"Deep groove ball bearing, 626, open",1,EA
+DR-18H,CHUCK,BRG-65728,B,"Deep groove ball bearing, 626, open",1,EA
+DR-20,CHUCK,BRG-65728,B,"Deep groove ball bearing, 626, open",1,EA
+DR-12C,MOTOR,ECP-58906,B,"Motor end cap, die-cast aluminum, 50 mm dia",1,EA
+DR-18,MOTOR,ECP-58906,B,"Motor end cap, die-cast aluminum, 50 mm dia",1,EA
+DR-18H,MOTOR,ECP-58913,B,"Motor end cap, PBT-GF30, 42 mm dia",1,EA
+DR-20,MOTOR,ECP-58913,B,"Motor end cap, PBT-GF30, 42 mm dia",1,EA
+DR-12C,MOTOR,MAG-10901,C,"Magnet ring, NdFeB N42, 8-pole",1,EA
+DR-18,MOTOR,MAG-10901,C,"Magnet ring, NdFeB N42, 8-pole",1,EA
+DR-18H,MOTOR,MAG-10905,B,"Magnet ring, NdFeB N42, 4-pole",1,EA
+DR-20,MOTOR,MAG-10905,B,"Magnet ring, NdFeB N42, 4-pole",1,EA
+DR-12C,GEARBOX,PGR-79728,A,"Sintered planet gear, 13 teeth, module 0.5",3,EA
+DR-18,GEARBOX,PGR-79728,A,"Sintered planet gear, 13 teeth, module 0.5",3,EA
+DR-18H,GEARBOX,PGR-79730,A,"Sintered planet gear, 16 teeth, module 0.5",3,EA
+DR-20,GEARBOX,PGR-79730,A,"Sintered planet gear, 16 teeth, module 0.5",3,EA
+DR-12C,GEARBOX,PGR-79738,B,"Sintered planet gear, 16 teeth, module 0.6",3,EA
+DR-18,GEARBOX,PGR-79738,B,"Sintered planet gear, 16 teeth, module 0.6",3,EA
+DR-18H,GEARBOX,PGR-79738,B,"Sintered planet gear, 16 teeth, module 0.6",3,EA
+DR-20,GEARBOX,PGR-79738,B,"Sintered planet gear, 16 teeth, module 0.6",3,EA
+DR-12C,GEARBOX,PGR-79741,B,"Sintered planet gear, 20 teeth, module 0.6",5,EA
+DR-18,GEARBOX,PGR-79741,B,"Sintered planet gear, 20 teeth, module 0.6",5,EA
+DR-18H,GEARBOX,PGR-79746,D,"Steel planet gear, 13 teeth, module 0.5",5,EA
+DR-20,GEARBOX,PGR-79746,D,"Steel planet gear, 13 teeth, module 0.5",5,EA
+DR-12C,GEARBOX,SGR-63429,A,"Steel sun gear, 9 teeth, module 0.5",1,EA
+DR-18,GEARBOX,SGR-63434,A,"Sintered sun gear, 13 teeth, module 0.8",1,EA
+DR-18H,GEARBOX,SGR-63442,A,"Sintered sun gear, 9 teeth, module 0.6",1,EA
+DR-20,GEARBOX,SGR-63446,B,"Sintered sun gear, 11 teeth, module 0.8",1,EA
+DR-12C,GEARBOX,SGR-63452,B,"Steel sun gear, 13 teeth, module 0.5",1,EA
+DR-18,GEARBOX,SGR-63457,D,"Sintered sun gear, 14 teeth, module 0.8",1,EA
+DR-18H,GEARBOX,SGR-63457,D,"Sintered sun gear, 14 teeth, module 0.8",1,EA
+DR-20,GEARBOX,SGR-63461,A,"Sintered sun gear, 12 teeth, module 0.8",1,EA
+DR-12C,GEARBOX,RGR-62085,A,"Nylon ring gear, 54 teeth, 48 mm dia",1,EA
+DR-18,GEARBOX,RGR-62085,A,"Nylon ring gear, 54 teeth, 48 mm dia",1,EA
+DR-18H,GEARBOX,RGR-62091,B,"Sintered ring gear, 45 teeth, 48 mm dia",1,EA
+DR-20,GEARBOX,RGR-62091,B,"Sintered ring gear, 45 teeth, 48 mm dia",1,EA
+DR-12C,GEARBOX,PCR-13098,B,"Planet carrier, stage 1, 3 pins",1,EA
+DR-18,GEARBOX,PCR-13101,A,"Planet carrier, stage 2, 4 pins",1,EA
+DR-18H,GEARBOX,PCR-13098,B,"Planet carrier, stage 1, 3 pins",1,EA
+DR-20,GEARBOX,PCR-13101,A,"Planet carrier, stage 2, 4 pins",1,EA
+DR-12C,GEARBOX,PCR-13104,A,"Planet carrier, stage 3, 5 pins",1,EA
+DR-18,GEARBOX,PCR-13104,A,"Planet carrier, stage 3, 5 pins",1,EA
+DR-18H,GEARBOX,PCR-13108,D,"Planet carrier, stage 3, 4 pins",1,EA
+DR-20,GEARBOX,PCR-13108,D,"Planet carrier, stage 3, 4 pins",1,EA
+DR-12C,GEARBOX,GCS-43891,A,"Nylon gear case, 56 mm dia, 38 mm long",1,EA
+DR-18,GEARBOX,GCS-43891,A,"Nylon gear case, 56 mm dia, 38 mm long",1,EA
+DR-18H,GEARBOX,GCS-43891,A,"Nylon gear case, 56 mm dia, 38 mm long",1,EA
+DR-20,GEARBOX,GCS-43891,A,"Nylon gear case, 56 mm dia, 38 mm long",1,EA
+DR-12C,GEARBOX,SPD-62933,D,"Output spindle, 1/2-20 UNF, 75 mm long",1,EA
+DR-18,GEARBOX,SPD-62936,A,"Output spindle, 1/2-20 UNF, 60 mm long",1,EA
+DR-18H,GEARBOX,SPD-62936,A,"Output spindle, 1/2-20 UNF, 60 mm long",1,EA
+DR-20,GEARBOX,SPD-62936,A,"Output spindle, 1/2-20 UNF, 60 mm long",1,EA
+DR-12C,GEARBOX,CLR-37704,B,"Torque clutch ring, 18-position",1,EA
+DR-18,GEARBOX,CLR-37713,A,"Torque clutch ring, 15-position",1,EA
+DR-18H,GEARBOX,CLR-37722,A,TORQUE CLUTCH RING; 15-position,1,EA
+DR-20,GEARBOX,CLR-37715,D,"Torque clutch ring, 24-position",1,EA
+DR-12C,GEARBOX,SPR-38617,A,"Compression spring, 6 mm dia, 20 mm long, 0.5 mm wire",2,EA
+DR-18,GEARBOX,SPR-38623,A,"Compression spring, 5 mm dia, 12 mm long, 0.5 mm wire",2,EA
+DR-18H,GEARBOX,SPR-38623,A,"Compression spring, 5 mm dia, 12 mm long, 0.5 mm wire",2,EA
+DR-20,GEARBOX,SPR-38623,A,"Compression spring, 5 mm dia, 12 mm long, 0.5 mm wire",2,EA
+DR-12C,GEARBOX,SPR-38627,A,"Compression spring, 8 mm dia, 10 mm long, 1.0 mm wire",1,EA
+DR-18,GEARBOX,SPR-38627,A,"Compression spring, 8 mm dia, 10 mm long, 1.0 mm wire",1,EA
+DR-18H,GEARBOX,SPR-38627,A,"Compression spring, 8 mm dia, 10 mm long, 1.0 mm wire",1,EA
+DR-20,GEARBOX,SPR-38627,A,"Compression spring, 8 mm dia, 10 mm long, 1.0 mm wire",1,EA
+DR-12C,ELECTRONICS,SPR-38628,B,"Compression spring, 5 mm dia, 20 mm long, 0.8 mm wire",2,EA
+DR-18,ELECTRONICS,SPR-38636,C,"Compression spring, 10 mm dia, 16 mm long, 0.8 mm wire",2,EA
+DR-18H,ELECTRONICS,SPR-38636,C,"Compression spring, 10 mm dia, 16 mm long, 0.8 mm wire",2,EA
+DR-20,ELECTRONICS,SPR-38636,C,"Compression spring, 10 mm dia, 16 mm long, 0.8 mm wire",2,EA
+DR-12C,CHUCK,SPR-38645,B,"Compression spring, 6 mm dia, 20 mm long, 1.0 mm wire",2,EA
+DR-18,CHUCK,SPR-38647,B,"Compression spring, 10 mm dia, 20 mm long, 1.0 mm wire",2,EA
+DR-18H,CHUCK,SPR-38647,B,"Compression spring, 10 mm dia, 20 mm long, 1.0 mm wire",2,EA
+DR-20,CHUCK,SPR-38654,A,"Compression spring, 12 mm dia, 20 mm long, 1.0 mm wire",2,EA
+DR-12C,BATTERY,SPR-38659,B,"Compression spring, 8 mm dia, 16 mm long, 0.5 mm wire",2,EA
+DR-18,BATTERY,SPR-38665,D,"Compression spring, 4 mm dia, 12 mm long, 0.8 mm wire",2,EA
+DR-18H,BATTERY,SPR-38665,D,"Compression spring, 4 mm dia, 12 mm long, 0.8 mm wire",2,EA
+DR-20,BATTERY,SPR-38668,B,"Compression spring, 4 mm dia, 8 mm long, 1.0 mm wire",2,EA
+DR-12C,GEARBOX,PIN-61253,B,"Hardened dowel pin, 3 x 10 mm",4,EA
+DR-18,GEARBOX,PIN-61259,D,"Hardened dowel pin, 4 x 12 mm",4,EA
+DR-18H,GEARBOX,PIN-61259,D,"Hardened dowel pin, 4 x 12 mm",4,EA
+DR-20,GEARBOX,PIN-61259,D,"Hardened dowel pin, 4 x 12 mm",4,EA
+DR-12C,GEARBOX,PIN-61263,A,"Hardened dowel pin, 4 x 16 mm",3,EA
+DR-18,GEARBOX,PIN-61263,A,"Hardened dowel pin, 4 x 16 mm",3,EA
+DR-18H,GEARBOX,PIN-61263,A,"Hardened dowel pin, 4 x 16 mm",3,EA
+DR-20,GEARBOX,PIN-61263,A,"Hardened dowel pin, 4 x 16 mm",3,EA
+DR-12C,CHUCK,PIN-61268,B,"Hardened dowel pin, 2 x 10 mm",3,EA
+DR-18,CHUCK,PIN-61268,B,"Hardened dowel pin, 2 x 10 mm",3,EA
+DR-18H,CHUCK,PIN-61271,A,"Hardened dowel pin, 5 x 20 mm",3,EA
+DR-20,CHUCK,PIN-61271,A,"Hardened dowel pin, 5 x 20 mm",3,EA
+DR-12C,GEARBOX,RRG-28916,A,"Internal retaining ring, 22 mm shaft",1,EA
+DR-18,GEARBOX,RRG-28916,A,"Internal retaining ring, 22 mm shaft",1,EA
+DR-18H,GEARBOX,RRG-28916,A,"Internal retaining ring, 22 mm shaft",1,EA
+DR-20,GEARBOX,RRG-28916,A,"Internal retaining ring, 22 mm shaft",1,EA
+DR-12C,GEARBOX,RRG-28918,A,"Internal retaining ring, 20 mm shaft",1,EA
+DR-18,GEARBOX,RRG-28918,A,"Internal retaining ring, 20 mm shaft",1,EA
+DR-18H,GEARBOX,RRG-28918,A,"Internal retaining ring, 20 mm shaft",1,EA
+DR-20,GEARBOX,RRG-28918,A,"Internal retaining ring, 20 mm shaft",1,EA
+DR-12C,CHUCK,RRG-28924,C,"Internal retaining ring, 10 mm shaft",1,EA
+DR-18,CHUCK,RRG-28924,C,"Internal retaining ring, 10 mm shaft",1,EA
+DR-18H,CHUCK,RRG-28924,C,"Internal retaining ring, 10 mm shaft",1,EA
+DR-20,CHUCK,RRG-28924,C,"Internal retaining ring, 10 mm shaft",1,EA
+DR-12C,MOTOR,RRG-28930,B,"External retaining ring, 20 mm shaft",1,EA
+DR-18,MOTOR,RRG-28930,B,"External retaining ring, 20 mm shaft",1,EA
+DR-18H,MOTOR,RRG-28930,B,"External retaining ring, 20 mm shaft",1,EA
+DR-20,MOTOR,RRG-28930,B,"External retaining ring, 20 mm shaft",1,EA
+DR-12C,GEARBOX,ORG-40036,D,"O-ring, 12 mm ID, 1.5 mm section, FKM 75",1,EA
+DR-18,GEARBOX,ORG-40036,D,"O-ring, 12 mm ID, 1.5 mm section, FKM 75",1,EA
+DR-18H,GEARBOX,ORG-40036,D,"O-ring, 12 mm ID, 1.5 mm section, FKM 75",1,EA
+DR-20,GEARBOX,ORG-40036,D,"O-ring, 12 mm ID, 1.5 mm section, FKM 75",1,EA
+DR-12C,CHUCK,ORG-40045,B,"O-ring, 20 mm ID, 2 mm section, NBR 70",1,EA
+DR-18,CHUCK,ORG-40045,B,"O-ring, 20 mm ID, 2 mm section, NBR 70",1,EA
+DR-18H,CHUCK,ORG-40045,B,"O-ring, 20 mm ID, 2 mm section, NBR 70",1,EA
+DR-20,CHUCK,ORG-40045,B,"O-ring, 20 mm ID, 2 mm section, NBR 70",1,EA
+DR-12C,HARDWARE,WSH-19085,B,"Flat washer, M4, black oxide",4,EA
+DR-18,HARDWARE,WSH-19147,A,"WASHER, FLAT; M4 black oxide",4,EA
+DR-18H,HARDWARE,WSH-19090,C,"Flat washer, M5, zinc",4,EA
+DR-20,HARDWARE,WSH-19090,C,"Flat washer, M5, zinc",4,EA
+DR-12C,HARDWARE,WSH-19094,B,"Spring washer, M8, stainless",2,EA
+DR-18,HARDWARE,WSH-19094,B,"Spring washer, M8, stainless",2,EA
+DR-18H,HARDWARE,WSH-19096,A,"Flat washer, M5, stainless",2,EA
+DR-20,HARDWARE,WSH-19096,A,"Flat washer, M5, stainless",2,EA
+DR-12C,HARDWARE,WSH-19103,A,"Flat washer, M8, stainless",2,EA
+DR-18,HARDWARE,WSH-19110,A,"Thrust washer, M6, stainless",2,EA
+DR-18H,HARDWARE,WSH-19110,A,"Thrust washer, M6, stainless",2,EA
+DR-20,HARDWARE,WSH-19114,D,"Thrust washer, M8, zinc",2,EA
+DR-12C,HARDWARE,WSH-19123,A,"Flat washer, M6, black oxide",4,EA
+DR-18,HARDWARE,WSH-19129,A,"Flat washer, M4, zinc",4,EA
+DR-18H,HARDWARE,WSH-19129,A,"Flat washer, M4, zinc",4,EA
+DR-20,HARDWARE,WSH-19129,A,"Flat washer, M4, zinc",4,EA
+DR-12C,GEARBOX,WSH-19138,A,"Thrust washer, M4, stainless",2,EA
+DR-18,GEARBOX,WSH-19138,A,"Thrust washer, M4, stainless",2,EA
+DR-18H,GEARBOX,WSH-19141,B,"Flat washer, M3, black oxide",2,EA
+DR-20,GEARBOX,WSH-19141,B,"Flat washer, M3, black oxide",2,EA
+DR-12C,GEARBOX,WSH-19143,A,"Spring washer, M8, black oxide",4,EA
+DR-18,GEARBOX,WSH-19143,A,"Spring washer, M8, black oxide",4,EA
+DR-18H,GEARBOX,WSH-19144,B,"Spring washer, M3, stainless",4,EA
+DR-20,GEARBOX,WSH-19144,B,"Spring washer, M3, stainless",4,EA
+DR-12C,CHUCK,CHK-47564,C,"Metal sleeve keyless chuck, 10 mm capacity, 1/2-20 UNF",1,EA
+DR-18,CHUCK,CHK-47564,C,"Metal sleeve keyless chuck, 10 mm capacity, 1/2-20 UNF",1,EA
+DR-18H,CHUCK,CHK-47572,B,"Single sleeve keyless chuck, 10 mm capacity, 3/8-24 UNF",1,EA
+DR-20,CHUCK,CHK-47572,B,"Single sleeve keyless chuck, 10 mm capacity, 3/8-24 UNF",1,EA
+DR-12C,CHUCK,CSC-39029,B,"Left-hand chuck retaining screw, M5 x 25",1,EA
+DR-18,CHUCK,CSC-39035,C,"Left-hand chuck retaining screw, M6 x 25",1,EA
+DR-18H,CHUCK,CSC-39035,C,"Left-hand chuck retaining screw, M6 x 25",1,EA
+DR-20,CHUCK,CSC-39037,A,"Left-hand chuck retaining screw, M6 x 22",1,EA
+DR-18H,CHUCK,HCM-34670,A,"Rotating hammer cam, 30 mm dia, 12 teeth",1,EA
+DR-18H,CHUCK,HCM-34673,A,"Rotating hammer cam, 30 mm dia, 14 teeth",1,EA
+DR-12C,CHUCK,MCL-53294,B,"Mode selector collar, 3-position, 52 mm dia",1,EA
+DR-18,CHUCK,MCL-53294,B,"Mode selector collar, 3-position, 52 mm dia",1,EA
+DR-18H,CHUCK,MCL-53294,B,"Mode selector collar, 3-position, 52 mm dia",1,EA
+DR-20,CHUCK,MCL-53294,B,"Mode selector collar, 3-position, 52 mm dia",1,EA
+DR-12C,BATTERY,CEL-63994,A,"Li-ion cell, 21700, 2.0 Ah",3,EA
+DR-18,BATTERY,CEL-64003,D,"Li-ion cell, 21700, 3.0 Ah",5,EA
+DR-18H,BATTERY,CEL-64003,D,"Li-ion cell, 21700, 3.0 Ah",5,EA
+DR-20,BATTERY,CEL-64007,A,"Li-ion cell, 18650, 2.0 Ah",5,EA
+DR-12C,BATTERY,BMS-19537,A,"Battery management PCBA, 12 V, 30 A",1,EA
+DR-18,BATTERY,BMS-19545,D,"Battery management PCBA, 18 V, 20 A",1,EA
+DR-18H,BATTERY,BMS-19554,B,"Battery management PCBA, 18 V, 40 A",1,EA
+DR-20,BATTERY,BMS-19562,D,"Battery management PCBA, 20 V, 40 A",1,EA
+DR-12C,BATTERY,BHU-18891,A,"Battery housing upper, 12 V, yellow",1,EA
+DR-18,BATTERY,BHU-18894,B,"Battery housing upper, 18 V, red",1,EA
+DR-18H,BATTERY,BHU-18894,B,"Battery housing upper, 18 V, red",1,EA
+DR-20,BATTERY,BHU-18897,B,"Battery housing upper, 20 V, teal",1,EA
+DR-12C,BATTERY,BHL-55988,A,"Battery housing lower, 12 V, black",1,EA
+DR-18,BATTERY,BHL-55997,B,"Battery housing lower, 18 V, yellow",1,EA
+DR-18H,BATTERY,BHL-56003,A,"Battery housing lower, 18 V, black",1,EA
+DR-20,BATTERY,BHL-56005,D,"Battery housing lower, 20 V, yellow",1,EA
+DR-12C,BATTERY,TRM-27402,D,"Terminal block, 5-position, 20 A",1,EA
+DR-18,BATTERY,TRM-27408,A,"Terminal block, 5-position, 40 A",1,EA
+DR-18H,BATTERY,TRM-27412,C,"Terminal block, 3-position, 20 A",1,EA
+DR-20,BATTERY,TRM-27420,B,"Terminal block, 4-position, 40 A",1,EA
+DR-12C,ELECTRONICS,TRM-27425,A,"Terminal block, 3-position, 30 A",1,EA
+DR-18,ELECTRONICS,TRM-27425,A,"Terminal block, 3-position, 30 A",1,EA
+DR-18H,ELECTRONICS,TRM-27434,A,"Terminal block, 4-position, 20 A",1,EA
+DR-20,ELECTRONICS,TRM-27434,A,"Terminal block, 4-position, 20 A",1,EA
+DR-12C,BATTERY,NKS-29154,D,"Nickel strip, 8 mm wide, 0.15 mm thick",6,EA
+DR-18,BATTERY,NKS-29161,C,"Nickel strip, 6 mm wide, 0.1 mm thick",6,EA
+DR-18H,BATTERY,NKS-29162,A,"Nickel strip, 6 mm wide, 0.15 mm thick",6,EA
+DR-20,BATTERY,NKS-29168,C,"Nickel strip, 10 mm wide, 0.1 mm thick",6,EA
+DR-12C,BATTERY,NTC-13041,D,"NTC thermistor, 47k ohm, B3950",1,EA
+DR-18,BATTERY,NTC-13041,D,"NTC thermistor, 47k ohm, B3950",1,EA
+DR-18H,BATTERY,NTC-13041,D,"NTC thermistor, 47k ohm, B3950",1,EA
+DR-20,BATTERY,NTC-13041,D,"NTC thermistor, 47k ohm, B3950",1,EA
+DR-12C,BATTERY,LAT-54794,B,"Battery latch, black",1,EA
+DR-18,BATTERY,LAT-54794,B,"Battery latch, black",1,EA
+DR-18H,BATTERY,LAT-54794,B,"Battery latch, black",1,EA
+DR-20,BATTERY,LAT-54794,B,"Battery latch, black",1,EA
+DR-12C,BATTERY,INS-43092,B,"Insulation pad, silicone foam, 90 x 20 mm",1,EA
+DR-18,BATTERY,INS-43098,B,"Insulation pad, silicone foam, 65 x 40 mm",1,EA
+DR-18H,BATTERY,INS-43104,A,"Insulation pad, silicone foam, 70 x 70 mm",1,EA
+DR-20,BATTERY,INS-43112,A,"Insulation pad, PET film, 65 x 40 mm",1,EA
+DR-12C,BATTERY,INS-43117,B,"Insulation pad, silicone foam, 60 x 20 mm",1,EA
+DR-18,BATTERY,INS-43117,B,"Insulation pad, silicone foam, 60 x 20 mm",1,EA
+DR-18H,BATTERY,INS-43117,B,"Insulation pad, silicone foam, 60 x 20 mm",1,EA
+DR-20,BATTERY,INS-43117,B,"Insulation pad, silicone foam, 60 x 20 mm",1,EA
+DR-12C,ELECTRONICS,PCB-45433,B,"Motor controller PCBA, 12 V, 30 A",1,EA
+DR-18,ELECTRONICS,PCB-45440,B,"Motor controller PCBA, 18 V, 30 A",1,EA
+DR-18H,ELECTRONICS,PCB-45440,B,"Motor controller PCBA, 18 V, 30 A",1,EA
+DR-20,ELECTRONICS,PCB-45448,D,"Motor controller PCBA, 20 V, 20 A",1,EA
+DR-12C,ELECTRONICS,SWT-28080,C,"Variable speed trigger switch, 12 V, 24 A",1,EA
+DR-18,ELECTRONICS,SWT-28086,A,"Variable speed trigger switch, 18 V, 16 A",1,EA
+DR-18H,ELECTRONICS,SWT-28086,A,"Variable speed trigger switch, 18 V, 16 A",1,EA
+DR-20,ELECTRONICS,SWT-28090,C,"Variable speed trigger switch, 20 V, 24 A",1,EA
+DR-12C,ELECTRONICS,LVR-69919,B,"Forward/reverse lever, teal",1,EA
+DR-18,ELECTRONICS,LVR-69923,D,"Forward/reverse lever, black",1,EA
+DR-18H,ELECTRONICS,LVR-69923,D,"Forward/reverse lever, black",1,EA
+DR-20,ELECTRONICS,LVR-69923,D,"Forward/reverse lever, black",1,EA
+DR-12C,ELECTRONICS,LED-16299,C,"LED work light, 5000 K, 20 mA",1,EA
+DR-18,ELECTRONICS,LED-16300,A,"LED work light, 5000 K, 60 mA",1,EA
+DR-18H,ELECTRONICS,LED-16300,A,"LED work light, 5000 K, 60 mA",1,EA
+DR-20,ELECTRONICS,LED-16300,A,"LED work light, 5000 K, 60 mA",1,EA
+DR-12C,ELECTRONICS,FET-20824,B,"N-channel MOSFET, 40 V, 100 A, PDFN 5x6",6,EA
+DR-18,ELECTRONICS,FET-20824,B,"N-channel MOSFET, 40 V, 100 A, PDFN 5x6",6,EA
+DR-18H,ELECTRONICS,FET-20825,D,"N-channel MOSFET, 40 V, 80 A, TO-220",6,EA
+DR-20,ELECTRONICS,FET-20825,D,"N-channel MOSFET, 40 V, 80 A, TO-220",6,EA
+DR-12C,ELECTRONICS,FET-20827,D,"N-channel MOSFET, 40 V, 100 A, TO-220",2,EA
+DR-18,ELECTRONICS,FET-20829,C,"N-channel MOSFET, 30 V, 120 A, DPAK",2,EA
+DR-18H,ELECTRONICS,FET-20829,C,"N-channel MOSFET, 30 V, 120 A, DPAK",2,EA
+DR-20,ELECTRONICS,FET-20829,C,"N-channel MOSFET, 30 V, 120 A, DPAK",2,EA
+DR-12C,ELECTRONICS,CAP-40021,C,"Ceramic capacitor, 10 uF, 16 V",4,EA
+DR-18,ELECTRONICS,CAP-40030,D,"Ceramic capacitor, 220 uF, 35 V",4,EA
+DR-18H,ELECTRONICS,CAP-40030,D,"Ceramic capacitor, 220 uF, 35 V",4,EA
+DR-20,ELECTRONICS,CAP-40034,C,"Electrolytic capacitor, 470 uF, 16 V",4,EA
+DR-12C,ELECTRONICS,CAP-40036,B,"Ceramic capacitor, 10 uF, 25 V",2,EA
+DR-18,ELECTRONICS,CAP-40036,B,"Ceramic capacitor, 10 uF, 25 V",2,EA
+DR-18H,ELECTRONICS,CAP-40036,B,"Ceramic capacitor, 10 uF, 25 V",2,EA
+DR-20,ELECTRONICS,CAP-40036,B,"Ceramic capacitor, 10 uF, 25 V",2,EA
+DR-12C,ELECTRONICS,CAP-40042,C,"Ceramic capacitor, 470 uF, 16 V",1,EA
+DR-18,ELECTRONICS,CAP-40042,C,"Ceramic capacitor, 470 uF, 16 V",1,EA
+DR-18H,ELECTRONICS,CAP-40043,A,"Ceramic capacitor, 1000 uF, 35 V",1,EA
+DR-20,ELECTRONICS,CAP-40043,A,"Ceramic capacitor, 1000 uF, 35 V",1,EA
+DR-12C,ELECTRONICS,RES-69275,D,"Shunt resistor, 10k ohm, 0805",2,EA
+DR-18,ELECTRONICS,RES-69278,C,"Chip resistor, 10 ohm, 0805",2,EA
+DR-18H,ELECTRONICS,RES-69278,C,"Chip resistor, 10 ohm, 0805",2,EA
+DR-20,ELECTRONICS,RES-69278,C,"Chip resistor, 10 ohm, 0805",2,EA
+DR-12C,ELECTRONICS,RES-69281,C,"Shunt resistor, 10k ohm, 0603",1,EA
+DR-18,ELECTRONICS,RES-69286,D,"Shunt resistor, 0.002 ohm, 0603",1,EA
+DR-18H,ELECTRONICS,RES-69286,D,"Shunt resistor, 0.002 ohm, 0603",1,EA
+DR-20,ELECTRONICS,RES-69286,D,"Shunt resistor, 0.002 ohm, 0603",1,EA
+DR-12C,ELECTRONICS,RES-69290,C,"Chip resistor, 100 ohm, 0805",4,EA
+DR-18,ELECTRONICS,RES-69295,C,"Shunt resistor, 10 ohm, 0805",4,EA
+DR-18H,ELECTRONICS,RES-69295,C,"Shunt resistor, 10 ohm, 0805",4,EA
+DR-20,ELECTRONICS,RES-69295,C,"Shunt resistor, 10 ohm, 0805",4,EA
+DR-12C,ELECTRONICS,CON-20082,A,"Wire-to-board connector, 6-position, 2.54 mm pitch",1,EA
+DR-18,ELECTRONICS,CON-20082,A,"Wire-to-board connector, 6-position, 2.54 mm pitch",1,EA
+DR-18H,ELECTRONICS,CON-20091,A,"Wire-to-board connector, 2-position, 2.0 mm pitch",1,EA
+DR-20,ELECTRONICS,CON-20113,A,WIRE-TO-BOARD CONNECTOR; 2-position 2.0 mm pitch,1,EA
+DR-12C,ELECTRONICS,CON-20096,A,"Wire-to-board connector, 4-position, 3.96 mm pitch",1,EA
+DR-18,ELECTRONICS,CON-20101,C,"Wire-to-board connector, 4-position, 2.0 mm pitch",1,EA
+DR-18H,ELECTRONICS,CON-20104,A,"Wire-to-board connector, 2-position, 2.54 mm pitch",1,EA
+DR-20,ELECTRONICS,CON-20105,D,"Wire-to-board connector, 3-position, 2.0 mm pitch",1,EA
+DR-12C,ELECTRONICS,WHR-16755,C,"Wire harness, 18 AWG, 160 mm long",1,EA
+DR-18,ELECTRONICS,WHR-16757,B,"Wire harness, 14 AWG, 250 mm long",1,EA
+DR-18H,ELECTRONICS,WHR-16757,B,"Wire harness, 14 AWG, 250 mm long",1,EA
+DR-20,ELECTRONICS,WHR-16757,B,"Wire harness, 14 AWG, 250 mm long",1,EA
+DR-12C,ELECTRONICS,WHR-16766,B,"Wire harness, 16 AWG, 120 mm long",1,EA
+DR-18,ELECTRONICS,WHR-16766,B,"Wire harness, 16 AWG, 120 mm long",1,EA
+DR-18H,ELECTRONICS,WHR-16772,B,"Wire harness, 22 AWG, 200 mm long",1,EA
+DR-20,ELECTRONICS,WHR-16772,B,"Wire harness, 22 AWG, 200 mm long",1,EA
+DR-12C,BATTERY,WHR-16776,B,"Wire harness, 16 AWG, 80 mm long",1,EA
+DR-18,BATTERY,WHR-16777,D,"Wire harness, 14 AWG, 120 mm long",1,EA
+DR-18H,BATTERY,WHR-16777,D,"Wire harness, 14 AWG, 120 mm long",1,EA
+DR-20,BATTERY,WHR-16779,A,"Wire harness, 16 AWG, 200 mm long",1,EA
+DR-12C,ELECTRONICS,HSK-73614,B,"Extruded aluminum heat sink, 45 x 30 x 12 mm",1,EA
+DR-18,ELECTRONICS,HSK-73614,B,"Extruded aluminum heat sink, 45 x 30 x 12 mm",1,EA
+DR-18H,ELECTRONICS,HSK-73619,A,"Extruded aluminum heat sink, 30 x 20 x 8 mm",1,EA
+DR-20,ELECTRONICS,HSK-73619,A,"Extruded aluminum heat sink, 30 x 20 x 8 mm",1,EA
+DR-12C,ELECTRONICS,MCU-14989,B,"Microcontroller, 8-bit, LQFP-32",1,EA
+DR-18,ELECTRONICS,MCU-14989,B,"Microcontroller, 8-bit, LQFP-32",1,EA
+DR-18H,ELECTRONICS,MCU-14994,A,"Microcontroller, 8-bit, QFN-28",1,EA
+DR-20,ELECTRONICS,MCU-14994,A,"Microcontroller, 8-bit, QFN-28",1,EA
+DR-12C,HOUSING,HSL-37885,C,"Housing shell left, grey, PC/ABS",1,EA
+DR-18,HOUSING,HSL-37887,B,"Housing shell left, yellow, PC/ABS",1,EA
+DR-18H,HOUSING,HSL-37887,B,"Housing shell left, yellow, PC/ABS",1,EA
+DR-20,HOUSING,HSL-37888,A,"Housing shell left, grey, PA6-GF30",1,EA
+DR-12C,HOUSING,HSR-28954,D,"Housing shell right, red, PA6-GF30",1,EA
+DR-18,HOUSING,HSR-28957,B,"Housing shell right, yellow, TPE",1,EA
+DR-18H,HOUSING,HSR-28958,A,"Housing shell right, yellow, PC/ABS",1,EA
+DR-20,HOUSING,HSR-28963,A,"Housing shell right, teal, ABS",1,EA
+DR-12C,HOUSING,GRP-62234,B,"Overmold grip, grey, PA6-GF30",1,EA
+DR-18,HOUSING,GRP-62236,B,"Overmold grip, black, ABS",1,EA
+DR-18H,HOUSING,GRP-62236,B,"Overmold grip, black, ABS",1,EA
+DR-20,HOUSING,GRP-62242,A,"Overmold grip, yellow, TPE",1,EA
+DR-12C,HOUSING,TRG-48565,B,"Trigger, yellow, PC/ABS",1,EA
+DR-18,HOUSING,TRG-48567,A,"Trigger, red, PC/ABS",1,EA
+DR-18H,HOUSING,TRG-48567,A,"Trigger, red, PC/ABS",1,EA
+DR-20,HOUSING,TRG-48569,C,"Trigger, black, PC/ABS",1,EA
+DR-12C,HOUSING,BTH-20624,B,"Bit holder, grey, TPE",1,EA
+DR-18,HOUSING,BTH-20629,B,"Bit holder, orange, PA6-GF30",1,EA
+DR-18H,HOUSING,BTH-20629,B,"Bit holder, orange, PA6-GF30",1,EA
+DR-20,HOUSING,BTH-20635,D,"Bit holder, orange, ABS",1,EA
+DR-12C,HOUSING,VNT-77360,A,"Vent cover, black, PC/ABS",1,EA
+DR-18,HOUSING,VNT-77368,B,"Vent cover, teal, PA6-GF30",1,EA
+DR-18H,HOUSING,VNT-77374,A,"Vent cover, orange, TPE",1,EA
+DR-20,HOUSING,VNT-77379,A,"Vent cover, black, ABS",1,EA
+DR-12C,HOUSING,NPL-67921,B,"Nameplate, grey, PC/ABS",1,EA
+DR-18,HOUSING,NPL-67926,A,"Nameplate, yellow, ABS",1,EA
+DR-18H,HOUSING,NPL-67926,A,"Nameplate, yellow, ABS",1,EA
+DR-20,HOUSING,NPL-67932,A,"Nameplate, red, PC/ABS",1,EA
+DR-12C,HOUSING,LNS-58173,D,"Light lens, yellow, ABS",1,EA
+DR-18,HOUSING,LNS-58173,D,"Light lens, yellow, ABS",1,EA
+DR-18H,HOUSING,LNS-58173,D,"Light lens, yellow, ABS",1,EA
+DR-20,HOUSING,LNS-58173,D,"Light lens, yellow, ABS",1,EA
+DR-12C,HOUSING,BCL-69302,B,"Belt clip, spring steel, 55 mm long",1,EA
+DR-18,HOUSING,BCL-69302,B,"Belt clip, spring steel, 55 mm long",1,EA
+DR-18H,HOUSING,BCL-69304,B,"Belt clip, spring steel, 45 mm long",1,EA
+DR-20,HOUSING,BCL-69304,B,"Belt clip, spring steel, 45 mm long",1,EA
+DR-12C,HARDWARE,SCR-66634,D,"Countersunk screw, M4 x 10, black oxide",4,EA
+DR-18,HARDWARE,SCR-66634,D,"Countersunk screw, M4 x 10, black oxide",4,EA
+DR-18H,HARDWARE,SCR-66634,D,"Countersunk screw, M4 x 10, black oxide",4,EA
+DR-20,HARDWARE,SCR-66634,D,"Countersunk screw, M4 x 10, black oxide",4,EA
+DR-12C,HARDWARE,SCR-66643,C,"Self-tapping screw, M3 x 16, zinc",2,EA
+DR-18,HARDWARE,SCR-66643,C,"Self-tapping screw, M3 x 16, zinc",2,EA
+DR-18H,HARDWARE,SCR-66643,C,"Self-tapping screw, M3 x 16, zinc",2,EA
+DR-20,HARDWARE,SCR-66643,C,"Self-tapping screw, M3 x 16, zinc",2,EA
+DR-12C,HARDWARE,SCR-66651,A,"Socket cap screw, M6 x 16, zinc",6,EA
+DR-18,HARDWARE,SCR-66658,A,"Self-tapping screw, M3 x 10, zinc",6,EA
+DR-18H,HARDWARE,SCR-66658,A,"Self-tapping screw, M3 x 10, zinc",6,EA
+DR-20,HARDWARE,SCR-66658,A,"Self-tapping screw, M3 x 10, zinc",6,EA
+DR-12C,HARDWARE,SCR-66661,A,"Pan head screw, M2.5 x 8, zinc",6,EA
+DR-18,HARDWARE,SCR-66661,A,"Pan head screw, M2.5 x 8, zinc",6,EA
+DR-18H,HARDWARE,SCR-66669,A,"Pan head screw, M2.5 x 6, black oxide",6,EA
+DR-20,HARDWARE,SCR-66669,A,"Pan head screw, M2.5 x 6, black oxide",6,EA
+DR-12C,HARDWARE,SCR-66676,A,"Self-tapping screw, M4 x 8, stainless",4,EA
+DR-18,HARDWARE,SCR-66681,B,"Countersunk screw, M3 x 8, stainless",4,EA
+DR-18H,HARDWARE,SCR-66681,B,"Countersunk screw, M3 x 8, stainless",4,EA
+DR-20,HARDWARE,SCR-66681,B,"Countersunk screw, M3 x 8, stainless",4,EA
+DR-12C,HARDWARE,SCR-66685,A,"Torx pan head screw, M4 x 8, zinc",6,EA
+DR-18,HARDWARE,SCR-66685,A,"Torx pan head screw, M4 x 8, zinc",6,EA
+DR-18H,HARDWARE,SCR-66685,A,"Torx pan head screw, M4 x 8, zinc",6,EA
+DR-20,HARDWARE,SCR-66685,A,"Torx pan head screw, M4 x 8, zinc",6,EA
+DR-12C,HARDWARE,SCR-66688,C,"Self-tapping screw, M5 x 12, zinc",6,EA
+DR-18,HARDWARE,SCR-66694,B,"Pan head screw, M4 x 20, stainless",6,EA
+DR-18H,HARDWARE,SCR-66829,A,"SCREW, PAN HEAD; M4 x 20 stainless",6,EA
+DR-20,HARDWARE,SCR-66700,D,"Self-tapping screw, M3 x 6, stainless",6,EA
+DR-12C,HARDWARE,SCR-66708,A,"Countersunk screw, M3 x 12, stainless",8,EA
+DR-18,HARDWARE,SCR-66708,A,"Countersunk screw, M3 x 12, stainless",8,EA
+DR-18H,HARDWARE,SCR-66708,A,"Countersunk screw, M3 x 12, stainless",8,EA
+DR-20,HARDWARE,SCR-66708,A,"Countersunk screw, M3 x 12, stainless",8,EA
+DR-12C,HARDWARE,SCR-66712,A,"Socket cap screw, M5 x 12, zinc",4,EA
+DR-18,HARDWARE,SCR-66712,A,"Socket cap screw, M5 x 12, zinc",4,EA
+DR-18H,HARDWARE,SCR-66713,B,"Self-tapping screw, M4 x 20, black oxide",4,EA
+DR-20,HARDWARE,SCR-66823,A,"SCREW, SELF-TAPPING; M4 x 20 black oxide",4,EA
+DR-12C,HARDWARE,SCR-66719,D,"Self-tapping screw, M5 x 16, stainless",6,EA
+DR-18,HARDWARE,SCR-66719,D,"Self-tapping screw, M5 x 16, stainless",6,EA
+DR-18H,HARDWARE,SCR-66719,D,"Self-tapping screw, M5 x 16, stainless",6,EA
+DR-20,HARDWARE,SCR-66719,D,"Self-tapping screw, M5 x 16, stainless",6,EA
+DR-12C,HARDWARE,SCR-66724,A,"Self-tapping screw, M4 x 20, zinc",2,EA
+DR-18,HARDWARE,SCR-66726,B,"Pan head screw, M4 x 8, stainless",2,EA
+DR-18H,HARDWARE,SCR-66726,B,"Pan head screw, M4 x 8, stainless",2,EA
+DR-20,HARDWARE,SCR-66734,A,"Self-tapping screw, M4 x 12, zinc",2,EA
+DR-12C,HARDWARE,SCR-66741,A,"Torx pan head screw, M3 x 16, stainless",2,EA
+DR-18,HARDWARE,SCR-66750,B,"Torx pan head screw, M5 x 12, black oxide",2,EA
+DR-18H,HARDWARE,SCR-66750,B,"Torx pan head screw, M5 x 12, black oxide",2,EA
+DR-20,HARDWARE,SCR-66752,A,"Torx pan head screw, M2.5 x 6, zinc",2,EA
+DR-12C,HOUSING,SCR-66756,A,"Pan head screw, M3 x 6, black oxide",6,EA
+DR-18,HOUSING,SCR-66763,C,"Pan head screw, M4 x 20, black oxide",6,EA
+DR-18H,HOUSING,SCR-66763,C,"Pan head screw, M4 x 20, black oxide",6,EA
+DR-20,HOUSING,SCR-66765,D,"Socket cap screw, M5 x 12, black oxide",6,EA
+DR-12C,HOUSING,SCR-66767,D,"Pan head screw, M3 x 12, stainless",2,EA
+DR-18,HOUSING,SCR-66767,D,"Pan head screw, M3 x 12, stainless",2,EA
+DR-18H,HOUSING,SCR-66772,B,"Socket cap screw, M4 x 20, stainless",2,EA
+DR-20,HOUSING,SCR-66822,A,"SCREW, SOCKET CAP; M4 x 20 stainless",2,EA
+DR-12C,GEARBOX,SCR-66781,D,"Socket cap screw, M2.5 x 8, stainless",6,EA
+DR-18,GEARBOX,SCR-66781,D,"Socket cap screw, M2.5 x 8, stainless",6,EA
+DR-18H,GEARBOX,SCR-66781,D,"Socket cap screw, M2.5 x 8, stainless",6,EA
+DR-20,GEARBOX,SCR-66836,A,"SCREW, SOCKET CAP; M2.5 x 8 stainless",6,EA
+DR-12C,GEARBOX,SCR-66783,B,"Countersunk screw, M4 x 16, black oxide",4,EA
+DR-18,GEARBOX,SCR-66783,B,"Countersunk screw, M4 x 16, black oxide",4,EA
+DR-18H,GEARBOX,SCR-66791,D,"Self-tapping screw, M4 x 16, zinc",4,EA
+DR-20,GEARBOX,SCR-66791,D,"Self-tapping screw, M4 x 16, zinc",4,EA
+DR-12C,BATTERY,SCR-66795,C,"Self-tapping screw, M3 x 8, zinc",6,EA
+DR-18,BATTERY,SCR-66795,C,"Self-tapping screw, M3 x 8, zinc",6,EA
+DR-18H,BATTERY,SCR-66795,C,"Self-tapping screw, M3 x 8, zinc",6,EA
+DR-20,BATTERY,SCR-66795,C,"Self-tapping screw, M3 x 8, zinc",6,EA
+DR-12C,BATTERY,SCR-66799,A,"Socket cap screw, M6 x 16, black oxide",2,EA
+DR-18,BATTERY,SCR-66799,A,"Socket cap screw, M6 x 16, black oxide",2,EA
+DR-18H,BATTERY,SCR-66799,A,"Socket cap screw, M6 x 16, black oxide",2,EA
+DR-20,BATTERY,SCR-66799,A,"Socket cap screw, M6 x 16, black oxide",2,EA
+DR-12C,MOTOR,SCR-66802,C,"Socket cap screw, M3 x 12, black oxide",2,EA
+DR-18,MOTOR,SCR-66806,D,"Self-tapping screw, M4 x 16, stainless",2,EA
+DR-18H,MOTOR,SCR-66806,D,"Self-tapping screw, M4 x 16, stainless",2,EA
+DR-20,MOTOR,SCR-66806,D,"Self-tapping screw, M4 x 16, stainless",2,EA
+DR-12C,ELECTRONICS,SCR-66809,A,"Self-tapping screw, M6 x 16, stainless",8,EA
+DR-18,ELECTRONICS,SCR-66809,A,"Self-tapping screw, M6 x 16, stainless",8,EA
+DR-18H,ELECTRONICS,SCR-66814,B,"Pan head screw, M4 x 16, black oxide",8,EA
+DR-20,ELECTRONICS,SCR-66814,B,"Pan head screw, M4 x 16, black oxide",8,EA
+DR-12C,HARDWARE,NUT-31523,B,"Square nut, M5, black oxide",4,EA
+DR-18,HARDWARE,NUT-31523,B,"Square nut, M5, black oxide",4,EA
+DR-18H,HARDWARE,NUT-31523,B,"Square nut, M5, black oxide",4,EA
+DR-20,HARDWARE,NUT-31523,B,"Square nut, M5, black oxide",4,EA
+DR-12C,HARDWARE,NUT-31528,A,"Nyloc nut, M3, zinc",2,EA
+DR-18,HARDWARE,NUT-31528,A,"Nyloc nut, M3, zinc",2,EA
+DR-18H,HARDWARE,NUT-31532,A,"Hex nut, M4, stainless",2,EA
+DR-20,HARDWARE,NUT-31532,A,"Hex nut, M4, stainless",2,EA
+DR-12C,HARDWARE,NUT-31535,A,"Hex nut, M3, zinc",4,EA
+DR-18,HARDWARE,NUT-31535,A,"Hex nut, M3, zinc",4,EA
+DR-18H,HARDWARE,NUT-31543,A,"Square nut, M6, stainless",4,EA
+DR-20,HARDWARE,NUT-31543,A,"Square nut, M6, stainless",4,EA
+DR-12C,HARDWARE,TIN-22661,C,"Brass heat-set threaded insert, M3, 6 mm long",2,EA
+DR-18,HARDWARE,TIN-22661,C,"Brass heat-set threaded insert, M3, 6 mm long",2,EA
+DR-18H,HARDWARE,TIN-22669,A,"Brass heat-set threaded insert, M4, 8 mm long",2,EA
+DR-20,HARDWARE,TIN-22669,A,"Brass heat-set threaded insert, M4, 8 mm long",2,EA
+DR-12C,HARDWARE,TIN-22678,A,"Brass heat-set threaded insert, M5, 5 mm long",2,EA
+DR-18,HARDWARE,TIN-22681,B,"Brass heat-set threaded insert, M3, 4 mm long",2,EA
+DR-18H,HARDWARE,TIN-22681,B,"Brass heat-set threaded insert, M3, 4 mm long",2,EA
+DR-20,HARDWARE,TIN-22683,C,"Brass heat-set threaded insert, M5, 6 mm long",2,EA
+DR-12C,HARDWARE,ECL-51375,D,"E-clip, 6 mm shaft",1,EA
+DR-18,HARDWARE,ECL-51375,D,"E-clip, 6 mm shaft",1,EA
+DR-18H,HARDWARE,ECL-51375,D,"E-clip, 6 mm shaft",1,EA
+DR-20,HARDWARE,ECL-51375,D,"E-clip, 6 mm shaft",1,EA
+DR-12C,HARDWARE,BAL-68329,A,"Steel ball, 5 mm dia, G25",3,EA
+DR-18,HARDWARE,BAL-68329,A,"Steel ball, 5 mm dia, G25",3,EA
+DR-18H,HARDWARE,BAL-68336,D,"Steel ball, 6 mm dia, G25",3,EA
+DR-20,HARDWARE,BAL-68336,D,"Steel ball, 6 mm dia, G25",3,EA
+DR-12C,CHUCK,BAL-68342,A,"Steel ball, 5 mm dia, G100",3,EA
+DR-18,CHUCK,BAL-68342,A,"Steel ball, 5 mm dia, G100",3,EA
+DR-18H,CHUCK,BAL-68342,A,"Steel ball, 5 mm dia, G100",3,EA
+DR-20,CHUCK,BAL-68342,A,"Steel ball, 5 mm dia, G100",3,EA
+DR-12C,PACKAGING,CTN-23139,B,"Master carton, 320 x 100 x 260 mm",1,EA
+DR-18,PACKAGING,CTN-23147,A,"Retail carton, 560 x 330 x 270 mm",1,EA
+DR-18H,PACKAGING,CTN-23153,B,"Master carton, 560 x 330 x 270 mm",1,EA
+DR-20,PACKAGING,CTN-23162,C,"Master carton, 280 x 90 x 240 mm",1,EA
+DR-12C,PACKAGING,CTN-23169,D,"Retail carton, 320 x 100 x 260 mm",1,EA
+DR-18,PACKAGING,CTN-23176,C,"Retail carton, 400 x 300 x 280 mm",1,EA
+DR-18H,PACKAGING,CTN-23178,B,"Master carton, 400 x 300 x 280 mm",1,EA
+DR-20,PACKAGING,CTN-23187,B,"Master carton, 340 x 110 x 280 mm",1,EA
+DR-12C,PACKAGING,TRY-61235,B,"Molded pulp tray, 320 x 100 x 80 mm",1,EA
+DR-18,PACKAGING,TRY-61244,D,"Molded pulp tray, 300 x 90 x 70 mm",1,EA
+DR-18H,PACKAGING,TRY-61244,D,"Molded pulp tray, 300 x 90 x 70 mm",1,EA
+DR-20,PACKAGING,TRY-61253,A,MOLDED PULP TRAY; 300 x 90 x 70 mm,1,EA
+DR-12C,PACKAGING,MNL-14606,B,"User manual, EN/ES, 16 pages",1,EA
+DR-18,PACKAGING,MNL-14606,B,"User manual, EN/ES, 16 pages",1,EA
+DR-18H,PACKAGING,MNL-14614,B,"User manual, EN/ES/FR, 16 pages",1,EA
+DR-20,PACKAGING,MNL-14614,B,"User manual, EN/ES/FR, 16 pages",1,EA
+DR-12C,PACKAGING,LBL-74757,D,"Rating label, 25 x 25 mm",1,EA
+DR-18,PACKAGING,LBL-74764,A,"Rating label, 50 x 80 mm",1,EA
+DR-18H,PACKAGING,LBL-74773,A,"Barcode label, 25 x 25 mm",1,EA
+DR-20,PACKAGING,LBL-74774,C,"Warning label, 30 x 50 mm",1,EA
+DR-12C,PACKAGING,LBL-74779,D,"Rating label, 40 x 60 mm",1,EA
+DR-18,PACKAGING,LBL-74786,A,"Warning label, 40 x 60 mm",1,EA
+DR-18H,PACKAGING,LBL-74786,A,"Warning label, 40 x 60 mm",1,EA
+DR-20,PACKAGING,LBL-74789,B,"Barcode label, 40 x 60 mm",1,EA
+DR-12C,HOUSING,LBL-74793,D,"Barcode label, 20 x 40 mm",1,EA
+DR-18,HOUSING,LBL-74799,B,"Rating label, 20 x 40 mm",1,EA
+DR-18H,HOUSING,LBL-74799,B,"Rating label, 20 x 40 mm",1,EA
+DR-20,HOUSING,LBL-74799,B,"Rating label, 20 x 40 mm",1,EA
+DR-12C,PACKAGING,BAG-28614,B,"Poly bag, 300 x 400 mm",1,EA
+DR-18,PACKAGING,BAG-28614,B,"Poly bag, 300 x 400 mm",1,EA
+DR-18H,PACKAGING,BAG-28614,B,"Poly bag, 300 x 400 mm",1,EA
+DR-20,PACKAGING,BAG-28614,B,"Poly bag, 300 x 400 mm",1,EA
+DR-12C,PACKAGING,WCD-46791,C,"Warranty card, EN",1,EA
+DR-18,PACKAGING,WCD-46791,C,"Warranty card, EN",1,EA
+DR-18H,PACKAGING,WCD-46800,D,"Warranty card, EN/ES/FR",1,EA
+DR-20,PACKAGING,WCD-46800,D,"Warranty card, EN/ES/FR",1,EA

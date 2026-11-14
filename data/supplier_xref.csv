@@ -1,0 +1,180 @@
+supplier,supplier_part_number,part_number
+Dunmore Electric Motor Co.,41135B962,MTR-75168
+Dunmore Electric Motor Co.,57631K153,ROT-73034
+Dunmore Electric Motor Co.,97559X293,ROT-73041
+Dunmore Electric Motor Co.,72557A227,STA-57656
+Dunmore Electric Motor Co.,81507A186,STA-57659
+Nordlicht Antriebstechnik GmbH,NA3586-98,STA-57659
+Moldeados Regiomontanos S.A. de C.V.,MR2752-12,FAN-30247
+Greer Injection Molding Inc.,33001A887,FAN-30248
+Brennan Industrial Supply LLC,BI-364644,BRG-65675
+Brennan Industrial Supply LLC,BI-103107,BRG-65689
+"Okabe Precision Bearing Co., Ltd.",OP4032-70,BRG-65703
+Brennan Industrial Supply LLC,BI-474346,BRG-65703
+"Okabe Precision Bearing Co., Ltd.",OP8123-84,BRG-65717
+"Okabe Precision Bearing Co., Ltd.",OP9836-28,BRG-65722
+Kessler Praezision GmbH,52323T704,PGR-79728
+"Ningbo Tianyu Gear Co., Ltd.",NT-412872,PGR-79741
+Lakeshore Powder Metal Inc.,LP4213-34,PGR-79741
+Lakeshore Powder Metal Inc.,LP8682-18,SGR-63429
+"Ningbo Tianyu Gear Co., Ltd.",NT-220167,SGR-63446
+Lakeshore Powder Metal Inc.,LP8791-38,SGR-63452
+"Ningbo Tianyu Gear Co., Ltd.",NT-317931,SGR-63457
+Lakeshore Powder Metal Inc.,LP8590-59,RGR-62085
+Kessler Praezision GmbH,45977K500,RGR-62091
+Kessler Praezision GmbH,82624A985,PCR-13104
+Kessler Praezision GmbH,29018A567,PCR-13108
+"Ningbo Tianyu Gear Co., Ltd.",NT-712270,SPD-62933
+Kessler Praezision GmbH,52950T917,SPD-62936
+Moldeados Regiomontanos S.A. de C.V.,MR5799-42,CLR-37715
+Precision Wireform Inc.,PW5837-18,SPR-38636
+Calloway Spring & Stamping Co.,63903X396,SPR-38645
+Calloway Spring & Stamping Co.,77884B997,SPR-38647
+Calloway Spring & Stamping Co.,69197X375,SPR-38654
+Precision Wireform Inc.,PW1103-59,SPR-38659
+Calloway Spring & Stamping Co.,20394T325,SPR-38659
+Apex Screw & Rivet Corp.,AS-483119,PIN-61253
+Hanlon Fastener Supply Inc.,13100T406,PIN-61263
+Midwest Threaded Products LLC,MT1926-47,PIN-61268
+Precision Wireform Inc.,PW1342-37,RRG-28916
+Calloway Spring & Stamping Co.,26848X392,RRG-28918
+Precision Wireform Inc.,PW9054-48,RRG-28924
+Calloway Spring & Stamping Co.,81500T428,ORG-40036
+Precision Wireform Inc.,PW6400-19,ORG-40045
+Hanlon Fastener Supply Inc.,32122B858,WSH-19090
+Hanlon Fastener Supply Inc.,99082K624,WSH-19096
+Apex Screw & Rivet Corp.,AS-204807,WSH-19110
+Midwest Threaded Products LLC,MT1890-31,WSH-19114
+Apex Screw & Rivet Corp.,AS-689990,WSH-19114
+Hanlon Fastener Supply Inc.,63218B571,WSH-19129
+Midwest Threaded Products LLC,MT3339-31,WSH-19138
+Hanlon Fastener Supply Inc.,90641X166,WSH-19141
+Hanlon Fastener Supply Inc.,88278A458,WSH-19143
+Midwest Threaded Products LLC,MT1107-29,WSH-19144
+Apex Screw & Rivet Corp.,AS-741697,WSH-19144
+"Weihai Jinda Chuck Co., Ltd.",42427K817,CHK-47572
+Rothmann Spanntechnik GmbH,RS3637-14,CHK-47572
+Lakeshore Powder Metal Inc.,LP1388-86,HCM-34670
+"Hanbit Energy Solutions Co., Ltd.",HE6094-48,CEL-64003
+Voltera Cell Systems Inc.,11656A232,CEL-64007
+"Suntronix EMS Co., Ltd.",SE-405387,BMS-19537
+Redfield Circuits Inc.,48703K462,BMS-19562
+Greer Injection Molding Inc.,48213A271,BHU-18891
+Moldeados Regiomontanos S.A. de C.V.,MR5322-86,BHU-18894
+Greer Injection Molding Inc.,85941X634,BHU-18897
+Moldeados Regiomontanos S.A. de C.V.,MR6523-95,BHL-55988
+"Dongguan Yusheng Plastics Co., Ltd.",DY-671251,BHL-55997
+Moldeados Regiomontanos S.A. de C.V.,MR1664-40,BHL-56003
+"Dongguan Yusheng Plastics Co., Ltd.",DY-311333,BHL-56005
+Pacific Rim Semiconductor Distribution LLC,96287B695,TRM-27408
+"Hanbit Energy Solutions Co., Ltd.",HE6007-62,NKS-29154
+Voltera Cell Systems Inc.,34788K678,NKS-29161
+Voltera Cell Systems Inc.,63309X286,NKS-29162
+"Hanbit Energy Solutions Co., Ltd.",HE8056-18,NKS-29162
+Moldeados Regiomontanos S.A. de C.V.,MR1574-85,LAT-54794
+"Hanbit Energy Solutions Co., Ltd.",HE4418-51,INS-43092
+Voltera Cell Systems Inc.,55240A982,INS-43104
+"Shenzhen Brightcell Energy Co., Ltd.",SB-144057,INS-43117
+"Suntronix EMS Co., Ltd.",SE-332083,PCB-45440
+"Suntronix EMS Co., Ltd.",SE-832554,PCB-45448
+Redfield Circuits Inc.,79848K616,PCB-45448
+Pacific Rim Semiconductor Distribution LLC,83239T424,SWT-28090
+Greer Injection Molding Inc.,46413A926,LVR-69919
+Greer Injection Molding Inc.,79119B102,LVR-69923
+Moldeados Regiomontanos S.A. de C.V.,MR1589-99,LVR-69923
+Corvin Electronic Components Inc.,CE-252272,LED-16299
+Pacific Rim Semiconductor Distribution LLC,76313A614,FET-20824
+Corvin Electronic Components Inc.,CE-658914,FET-20825
+Pacific Rim Semiconductor Distribution LLC,10540A703,FET-20825
+Pacific Rim Semiconductor Distribution LLC,36301K756,FET-20827
+Corvin Electronic Components Inc.,CE-481901,CAP-40021
+Eastgate Components Ltd.,EC4207-10,CAP-40042
+Pacific Rim Semiconductor Distribution LLC,90162X514,CAP-40043
+Corvin Electronic Components Inc.,CE-105207,CON-20105
+Cableworks de Mexico S.A. de C.V.,CD-932005,WHR-16757
+Ohio Valley Wire & Harness Inc.,OV1898-57,WHR-16777
+Cableworks de Mexico S.A. de C.V.,CD-763487,WHR-16777
+Corvin Electronic Components Inc.,CE-447234,HSK-73614
+Corvin Electronic Components Inc.,CE-731981,HSK-73619
+Corvin Electronic Components Inc.,CE-422691,MCU-14994
+Moldeados Regiomontanos S.A. de C.V.,MR6326-61,HSL-37885
+Moldeados Regiomontanos S.A. de C.V.,MR3375-70,HSL-37887
+Moldeados Regiomontanos S.A. de C.V.,MR6025-51,HSL-37888
+Greer Injection Molding Inc.,69500K635,HSR-28954
+"Dongguan Yusheng Plastics Co., Ltd.",DY-145146,HSR-28957
+"Dongguan Yusheng Plastics Co., Ltd.",DY-928237,HSR-28958
+Greer Injection Molding Inc.,39080K766,GRP-62234
+"Dongguan Yusheng Plastics Co., Ltd.",DY-829034,GRP-62242
+Moldeados Regiomontanos S.A. de C.V.,MR9950-39,TRG-48565
+Moldeados Regiomontanos S.A. de C.V.,MR4607-64,TRG-48569
+"Dongguan Yusheng Plastics Co., Ltd.",DY-283341,VNT-77368
+Greer Injection Molding Inc.,49464K278,VNT-77368
+"Dongguan Yusheng Plastics Co., Ltd.",DY-236588,NPL-67921
+Moldeados Regiomontanos S.A. de C.V.,MR2495-85,NPL-67921
+Greer Injection Molding Inc.,93384B179,NPL-67926
+Moldeados Regiomontanos S.A. de C.V.,MR6958-31,LNS-58173
+Calloway Spring & Stamping Co.,16138X726,BCL-69304
+Precision Wireform Inc.,PW2533-84,BCL-69304
+Midwest Threaded Products LLC,MT6373-55,SCR-66658
+Midwest Threaded Products LLC,MT6350-61,SCR-66661
+Apex Screw & Rivet Corp.,AS-711401,SCR-66669
+Midwest Threaded Products LLC,MT4565-47,SCR-66685
+Apex Screw & Rivet Corp.,AS-247240,SCR-66694
+Apex Screw & Rivet Corp.,AS-319646,SCR-66708
+Midwest Threaded Products LLC,MT2957-71,SCR-66713
+Midwest Threaded Products LLC,MT7067-58,SCR-66734
+Apex Screw & Rivet Corp.,AS-873471,SCR-66734
+Hanlon Fastener Supply Inc.,34973X345,SCR-66763
+Apex Screw & Rivet Corp.,AS-875219,SCR-66767
+Hanlon Fastener Supply Inc.,66000T989,SCR-66783
+Hanlon Fastener Supply Inc.,53368K679,SCR-66799
+Midwest Threaded Products LLC,MT4789-46,SCR-66806
+Apex Screw & Rivet Corp.,AS-670219,SCR-66814
+Hanlon Fastener Supply Inc.,44077X344,NUT-31523
+Midwest Threaded Products LLC,MT8280-35,NUT-31532
+Midwest Threaded Products LLC,MT7165-35,NUT-31543
+Midwest Threaded Products LLC,MT4161-10,TIN-22669
+Hanlon Fastener Supply Inc.,42578B330,TIN-22678
+Hanlon Fastener Supply Inc.,28581X299,TIN-22681
+Midwest Threaded Products LLC,MT5969-60,TIN-22683
+Precision Wireform Inc.,PW2389-14,ECL-51375
+"Okabe Precision Bearing Co., Ltd.",OP1915-46,BAL-68329
+Tri-State Bearing & Drive Inc.,33298T414,BAL-68329
+Empaques del Norte S.A. de C.V.,97201B207,CTN-23147
+Carolina Corrugated & Packaging LLC,CC-202994,CTN-23169
+Palmetto Print & Label Inc.,PP6019-30,CTN-23169
+Empaques del Norte S.A. de C.V.,82386B265,CTN-23169
+Empaques del Norte S.A. de C.V.,96048A517,TRY-61235
+Carolina Corrugated & Packaging LLC,CC-237840,TRY-61244
+Palmetto Print & Label Inc.,PP4786-63,MNL-14606
+Empaques del Norte S.A. de C.V.,90170T705,LBL-74774
+Empaques del Norte S.A. de C.V.,96222A868,LBL-74779
+Carolina Corrugated & Packaging LLC,CC-212060,LBL-74789
+Palmetto Print & Label Inc.,PP4435-37,BAG-28614
+Palmetto Print & Label Inc.,PP2321-47,WCD-46791
+Carolina Corrugated & Packaging LLC,CC-474069,WCD-46800
+Empaques del Norte S.A. de C.V.,24211K204,WCD-46800
+Apex Screw & Rivet Corp.,AS-534523,SCR-66822
+Palmetto Print & Label Inc.,PP9335-25,TRY-61253
+Hanlon Fastener Supply Inc.,45320T978,SCR-66829
+Eastgate Components Ltd.,EC8079-90,LED-16307
+Calloway Spring & Stamping Co.,19981B678,ORG-40054
+"Dongguan Yusheng Plastics Co., Ltd.",DY-710505,ECP-58920
+Kessler Praezision GmbH,80014K458,SGR-63464
+Eastgate Components Ltd.,EC2490-95,MCU-15002
+Hanlon Fastener Supply Inc.,45887T286,SCR-66848
+Moldeados Regiomontanos S.A. de C.V.,MR5546-49,GRP-62260
+"Weihai Jinda Chuck Co., Ltd.",26793B218,CHK-47577
+Greer Injection Molding Inc.,37687K114,BTH-20640
+Brennan Industrial Supply LLC,BI-483273,BAL-68349
+Kessler Praezision GmbH,25107K173,SPD-62945
+Eastgate Components Ltd.,EC3777-44,NTC-13048
+"Weihai Jinda Chuck Co., Ltd.",88604X363,CHK-47582
+Lakeshore Powder Metal Inc.,LP2861-88,PGR-79755
+"Dongguan Yusheng Plastics Co., Ltd.",DY-691259,HSR-28972
+Allied Aftermarket Supply Inc.,31511X597,SVC-70974
+Allied Aftermarket Supply Inc.,47291A128,SVC-71009
+ProTool Service Parts Distribution LLC,PS-214028,SVC-71022
+ProTool Service Parts Distribution LLC,PS-727310,SVC-71047
+ProTool Service Parts Distribution LLC,PS-950522,SVC-71057
+Allied Aftermarket Supply Inc.,58625K591,SVC-71063

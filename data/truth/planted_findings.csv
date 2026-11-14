@@ -1,0 +1,76 @@
+finding_type,part_number,related,detail
+supplier_price_gap,MTR-75169,Nordlicht Antriebstechnik GmbH,1.176x the price of Dunmore Electric Motor Co.
+supplier_price_gap,ROT-73041,Dunmore Electric Motor Co.,1.249x the price of Nordlicht Antriebstechnik GmbH
+supplier_price_gap,STA-57659,Nordlicht Antriebstechnik GmbH,1.106x the price of Dunmore Electric Motor Co.
+supplier_price_gap,SGR-63442,Lakeshore Powder Metal Inc.,"1.139x the price of Ningbo Tianyu Gear Co., Ltd."
+supplier_price_gap,SGR-63446,Lakeshore Powder Metal Inc.,"1.220x the price of Ningbo Tianyu Gear Co., Ltd."
+supplier_price_gap,SGR-63461,"Ningbo Tianyu Gear Co., Ltd.",1.199x the price of Lakeshore Powder Metal Inc.
+supplier_price_gap,RGR-62085,Kessler Praezision GmbH,"1.161x the price of Ningbo Tianyu Gear Co., Ltd."
+supplier_price_gap,RGR-62085,Lakeshore Powder Metal Inc.,"1.290x the price of Ningbo Tianyu Gear Co., Ltd."
+supplier_price_gap,RGR-62091,Lakeshore Powder Metal Inc.,1.260x the price of Kessler Praezision GmbH
+supplier_price_gap,RGR-62091,"Ningbo Tianyu Gear Co., Ltd.",1.122x the price of Kessler Praezision GmbH
+supplier_price_gap,SPD-62936,Lakeshore Powder Metal Inc.,1.211x the price of Kessler Praezision GmbH
+supplier_price_gap,SPR-38647,Calloway Spring & Stamping Co.,1.259x the price of Precision Wireform Inc.
+supplier_price_gap,SPR-38659,Calloway Spring & Stamping Co.,1.293x the price of Precision Wireform Inc.
+supplier_price_gap,SPR-38665,Calloway Spring & Stamping Co.,1.117x the price of Precision Wireform Inc.
+supplier_price_gap,PIN-61268,Midwest Threaded Products LLC,1.231x the price of Hanlon Fastener Supply Inc.
+supplier_price_gap,PIN-61271,Apex Screw & Rivet Corp.,1.260x the price of Midwest Threaded Products LLC
+supplier_price_gap,ORG-40036,Calloway Spring & Stamping Co.,1.288x the price of Precision Wireform Inc.
+supplier_price_gap,WSH-19114,Apex Screw & Rivet Corp.,1.287x the price of Midwest Threaded Products LLC
+supplier_price_gap,WSH-19129,Midwest Threaded Products LLC,1.267x the price of Hanlon Fastener Supply Inc.
+supplier_price_gap,WSH-19129,Apex Screw & Rivet Corp.,1.179x the price of Hanlon Fastener Supply Inc.
+supplier_price_gap,WSH-19144,Hanlon Fastener Supply Inc.,1.229x the price of Midwest Threaded Products LLC
+supplier_price_gap,WSH-19144,Apex Screw & Rivet Corp.,1.105x the price of Midwest Threaded Products LLC
+supplier_price_gap,CEL-63994,Voltera Cell Systems Inc.,"1.115x the price of Shenzhen Brightcell Energy Co., Ltd."
+supplier_price_gap,CEL-64007,Voltera Cell Systems Inc.,"1.259x the price of Hanbit Energy Solutions Co., Ltd."
+supplier_price_gap,BMS-19537,Redfield Circuits Inc.,"1.257x the price of Suntronix EMS Co., Ltd."
+supplier_price_gap,BHL-55997,"Dongguan Yusheng Plastics Co., Ltd.",1.283x the price of Greer Injection Molding Inc.
+supplier_price_gap,BHL-56005,Moldeados Regiomontanos S.A. de C.V.,"1.168x the price of Dongguan Yusheng Plastics Co., Ltd."
+supplier_price_gap,NKS-29154,"Hanbit Energy Solutions Co., Ltd.","1.163x the price of Shenzhen Brightcell Energy Co., Ltd."
+supplier_price_gap,INS-43117,"Hanbit Energy Solutions Co., Ltd.",1.146x the price of Voltera Cell Systems Inc.
+supplier_price_gap,INS-43117,"Shenzhen Brightcell Energy Co., Ltd.",1.242x the price of Voltera Cell Systems Inc.
+supplier_price_gap,PCB-45448,Redfield Circuits Inc.,"1.141x the price of Suntronix EMS Co., Ltd."
+supplier_price_gap,LVR-69923,"Dongguan Yusheng Plastics Co., Ltd.",1.288x the price of Greer Injection Molding Inc.
+supplier_price_gap,FET-20827,Corvin Electronic Components Inc.,1.232x the price of Pacific Rim Semiconductor Distribution LLC
+supplier_price_gap,RES-69295,Pacific Rim Semiconductor Distribution LLC,1.123x the price of Corvin Electronic Components Inc.
+supplier_price_gap,CON-20082,Eastgate Components Ltd.,1.162x the price of Pacific Rim Semiconductor Distribution LLC
+supplier_price_gap,CON-20091,Pacific Rim Semiconductor Distribution LLC,1.250x the price of Corvin Electronic Components Inc.
+supplier_price_gap,CON-20105,Pacific Rim Semiconductor Distribution LLC,1.179x the price of Corvin Electronic Components Inc.
+supplier_price_gap,WHR-16757,Cableworks de Mexico S.A. de C.V.,1.122x the price of Ohio Valley Wire & Harness Inc.
+supplier_price_gap,WHR-16777,Cableworks de Mexico S.A. de C.V.,1.189x the price of Ohio Valley Wire & Harness Inc.
+supplier_price_gap,HSL-37888,Moldeados Regiomontanos S.A. de C.V.,1.162x the price of Greer Injection Molding Inc.
+supplier_price_gap,TRG-48565,Moldeados Regiomontanos S.A. de C.V.,"1.126x the price of Dongguan Yusheng Plastics Co., Ltd."
+supplier_price_gap,VNT-77368,Greer Injection Molding Inc.,"1.247x the price of Dongguan Yusheng Plastics Co., Ltd."
+supplier_price_gap,VNT-77368,Moldeados Regiomontanos S.A. de C.V.,"1.287x the price of Dongguan Yusheng Plastics Co., Ltd."
+supplier_price_gap,BCL-69304,Precision Wireform Inc.,1.231x the price of Calloway Spring & Stamping Co.
+supplier_price_gap,SCR-66651,Midwest Threaded Products LLC,1.083x the price of Hanlon Fastener Supply Inc.
+supplier_price_gap,SCR-66651,Apex Screw & Rivet Corp.,1.168x the price of Hanlon Fastener Supply Inc.
+supplier_price_gap,SCR-66685,Apex Screw & Rivet Corp.,1.101x the price of Midwest Threaded Products LLC
+supplier_price_gap,SCR-66734,Apex Screw & Rivet Corp.,1.227x the price of Midwest Threaded Products LLC
+supplier_price_gap,SCR-66791,Midwest Threaded Products LLC,1.243x the price of Apex Screw & Rivet Corp.
+supplier_price_gap,BAL-68336,Tri-State Bearing & Drive Inc.,1.222x the price of Brennan Industrial Supply LLC
+supplier_price_gap,LBL-74773,Palmetto Print & Label Inc.,1.200x the price of Empaques del Norte S.A. de C.V.
+supplier_price_gap,LBL-74779,Empaques del Norte S.A. de C.V.,1.255x the price of Palmetto Print & Label Inc.
+duplicate_part,SCR-66772,SCR-66822,same physical part; duplicate bought at 1.073x
+duplicate_part,SCR-66713,SCR-66823,same physical part; duplicate bought at 1.186x
+duplicate_part,CLR-37713,CLR-37722,same physical part; duplicate bought at 1.130x
+duplicate_part,CON-20091,CON-20113,same physical part; duplicate bought at 1.160x
+duplicate_part,WSH-19085,WSH-19147,same physical part; duplicate bought at 1.147x
+duplicate_part,TRY-61244,TRY-61253,same physical part; duplicate bought at 1.112x
+duplicate_part,SCR-66694,SCR-66829,same physical part; duplicate bought at 1.108x
+duplicate_part,SCR-66781,SCR-66836,same physical part; duplicate bought at 1.171x
+spares_premium,BMS-19562,,spares bought at about 1.62x production price
+spares_premium,MTR-75169,,spares bought at about 1.76x production price
+spares_premium,SWT-28080,,spares bought at about 1.64x production price
+spares_premium,PCB-45448,,spares bought at about 1.61x production price
+spares_premium,PCB-45440,,spares bought at about 1.70x production price
+spares_premium,BRS-17978,,spares bought at about 1.86x production price
+spares_premium,BMS-19537,,spares bought at about 1.63x production price
+spares_premium,BRS-17975,,spares bought at about 1.85x production price
+spares_premium,MTR-75173,,spares bought at about 1.70x production price
+spares_premium,BMS-19554,,spares bought at about 1.86x production price
+spares_premium,CHK-47564,,spares bought at about 1.68x production price
+spares_premium,CEL-64003,,spares bought at about 1.82x production price
+spares_premium,BMS-19545,,spares bought at about 1.69x production price
+spares_premium,SWT-28086,,spares bought at about 1.55x production price
+spares_premium,CHK-47572,,spares bought at about 1.70x production price
