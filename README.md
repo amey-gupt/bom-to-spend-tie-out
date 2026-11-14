@@ -6,7 +6,17 @@ Links a manufacturer's bills of materials (BOMs) to its purchasing records using
 
 ## Status
 
-Step 1 of 6 is done: the data generator. Matching, allocation and the app are not built yet.
+Steps 1 and 2 of 6 are done: the data generator, and the rules + embedding matcher with its evaluation. Scoring with a review queue, allocation and the app are not built yet.
+
+## Results so far (held-out noise styles, 1,669 lines)
+
+| Method | Precision | Recall | Dollar-weighted accuracy | Tie-out rate (true: 98.7%) |
+|---|---|---|---|---|
+| Naive exact part number | 100.0% | 21.8% | 27.6% | 28.2% |
+| Rules only | 100.0% | 40.0% | 34.2% | 34.4% |
+| Rules + embeddings | 95.2% | 86.9% | 85.7% | 85.4% |
+
+The embedding similarity threshold (0.66) was chosen on the tuning split only. Reproduce with `uv run python -m src.evaluate`.
 
 ## Generate the data
 
@@ -14,7 +24,7 @@ Step 1 of 6 is done: the data generator. Matching, allocation and the app are no
 python3 -m src.generate
 ```
 
-Standard library only, fixed seed, same output every run.
+The generator uses the standard library only, with a fixed seed, and gives the same output every run. The matcher needs `uv sync` first (pandas, sentence-transformers on CPU); embeddings are cached in `cache/`.
 
 | File | Contents |
 |---|---|
@@ -41,5 +51,8 @@ Purchases also include lines that correctly match no BOM: service-only items, pa
 src/catalog.py   products, part categories, suppliers
 src/noise.py     noise layer (independent of the backbone)
 src/generate.py  backbone, purchase lines, ground truth
+src/normalize.py load exports; normalize part numbers, units, currency, text
+src/match.py     naive baseline, rules, embedding candidates (top 5)
+src/evaluate.py  scores against data/truth/ (the only module that reads it)
 data/            generated CSVs
 ```

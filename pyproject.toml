@@ -3,4 +3,12 @@ name = "bom-to-spend-tie-out"
 version = "0.1.0"
 description = "Ties bills of materials to purchasing records from messy CSV exports"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = ["numpy", "pandas", "sentence-transformers", "torch"]
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

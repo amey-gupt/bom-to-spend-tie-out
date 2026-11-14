@@ -3,7 +3,8 @@ __pycache__/
 .env
 data/raw/
 running_claude_web_chat.txt
-.env.localCLAUDE.md
+.env.local
+CLAUDE.md
 track.png
 cache/
 out/

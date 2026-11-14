@@ -1,0 +1,112 @@
+"""Match purchase lines to BOM parts: rules first, then embedding candidates.
+
+Reads data/*.csv only (through normalize.py). Never reads data/truth/.
+
+    python3 -m src.match            # writes out/matches.csv
+
+Stages
+  naive   raw part-number string equality (the baseline a spreadsheet VLOOKUP gives)
+  rules   normalized part number, then the supplier crosswalk
+  embed   top-k BOM parts by description similarity, for lines the rules did not settle
+"""
+from __future__ import annotations
+
+import hashlib
+import pickle
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from .normalize import Inputs, load_inputs
+
+MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+CACHE_DIR = Path("cache")
+TOP_K = 5
+DEFAULT_THRESHOLD = 0.80  # evaluate.py picks the working threshold on the tuning split
+
+
+def naive_match(inp: Inputs) -> pd.Series:
+    """Exact string equality between the purchase line's part-number field and a BOM part number."""
+    known = set(inp.parts["part_number"])
+    return inp.purchases["supplier_part_number"].where(inp.purchases["supplier_part_number"].isin(known), "")
+
+
+def rule_match(inp: Inputs) -> pd.DataFrame:
+    """Returns rule_part ('' when none) and rule_method per purchase line.
+
+    pn_exact     normalized part number equals a BOM part's
+    xref         crosswalk maps the supplier's part number to a BOM part
+    xref_offbom  crosswalk maps it to an internal part that is on no supplied BOM: a settled 'no match'
+    """
+    p = inp.purchases
+    by_key = inp.parts.drop_duplicates("pn_key", keep=False).set_index("pn_key")["part_number"]
+    xref = inp.xref.drop_duplicates("spn_key", keep=False).set_index("spn_key")["part_number"]
+    on_bom = set(inp.parts["part_number"])
+
+    part, method = [], []
+    for key in p["pn_key"]:
+        if key and key in by_key.index:
+            part.append(by_key[key]); method.append("pn_exact")
+        elif key and key in xref.index:
+            target = xref[key]
+            part.append(target if target in on_bom else ""); method.append("xref" if target in on_bom else "xref_offbom")
+        else:
+            part.append(""); method.append("")
+    return pd.DataFrame({"rule_part": part, "rule_method": method}, index=p.index)
+
+
+# ----------------------------------------------------------------- embeddings
+
+def embed(texts: list[str], model_name: str = MODEL) -> np.ndarray:
+    """Unit-length embeddings, cached on disk per (model, text) so nothing is computed twice."""
+    CACHE_DIR.mkdir(exist_ok=True)
+    path = CACHE_DIR / f"embeddings_{hashlib.sha1(model_name.encode()).hexdigest()[:10]}.pkl"
+    cache = pickle.loads(path.read_bytes()) if path.exists() else {}
+    missing = sorted({t for t in texts if t not in cache})
+    if missing:
+        from sentence_transformers import SentenceTransformer  # imported late: slow to load, not needed on a warm cache
+        vectors = SentenceTransformer(model_name).encode(missing, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
+        cache.update(zip(missing, vectors.astype(np.float32)))
+        path.write_bytes(pickle.dumps(cache))
+    return np.stack([cache[t] for t in texts])
+
+
+def embedding_candidates(inp: Inputs, k: int = TOP_K) -> tuple[np.ndarray, np.ndarray]:
+    """For every purchase line, the k most similar BOM parts by description: (part numbers, cosine similarities)."""
+    part_vecs = embed(inp.parts["desc_norm"].tolist())
+    line_vecs = embed(inp.purchases["desc_norm"].tolist())
+    sims = line_vecs @ part_vecs.T
+    top = np.argsort(-sims, axis=1)[:, :k]
+    return inp.parts["part_number"].to_numpy()[top], np.take_along_axis(sims, top, axis=1)
+
+
+def combine(rules: pd.DataFrame, cand_parts: np.ndarray, cand_sims: np.ndarray, threshold: float) -> pd.Series:
+    """Rules win when they settled the line; otherwise take the best embedding candidate if it clears the threshold."""
+    by_embedding = np.where(cand_sims[:, 0] >= threshold, cand_parts[:, 0], "")
+    return pd.Series(np.where(rules["rule_method"] != "", rules["rule_part"], by_embedding), index=rules.index)
+
+
+def run(data_dir: str | Path = "data", threshold: float = DEFAULT_THRESHOLD) -> pd.DataFrame:
+    inp = load_inputs(data_dir)
+    rules = rule_match(inp)
+    cand_parts, cand_sims = embedding_candidates(inp)
+    out = pd.DataFrame({"po_id": inp.purchases["po_id"], "naive_part": naive_match(inp), **rules})
+    for i in range(TOP_K):
+        out[f"cand{i + 1}"] = cand_parts[:, i]
+        out[f"sim{i + 1}"] = cand_sims[:, i].round(4)
+    out["matched_part"] = combine(rules, cand_parts, cand_sims, threshold)
+    return out
+
+
+if __name__ == "__main__":
+    out = run()
+    Path("out").mkdir(exist_ok=True)
+    out.to_csv("out/matches.csv", index=False)
+    n = len(out)
+    print(f"{n} purchase lines")
+    print(f"  naive exact match     {(out['naive_part'] != '').sum():>5}  {(out['naive_part'] != '').mean():.1%}")
+    for method, count in out["rule_method"].value_counts().items():
+        print(f"  rule {method or '(not settled)':<16} {count:>5}  {count / n:.1%}")
+    print(f"  matched at threshold {DEFAULT_THRESHOLD}: {(out['matched_part'] != '').mean():.1%}")
+    print("wrote out/matches.csv")
