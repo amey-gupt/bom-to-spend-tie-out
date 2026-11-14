@@ -1,0 +1,1 @@
+{"part_number": "BRG-65722", "confidence": 0.95, "reason": "Description 6201 2RS matches BRG-65722 exactly, the supplier Okabe is the same as on its confirmed purchase, and the price $0.4671 is close to the confirmed $0.4942; the part-number field OP9836-28 looks like Okabe's own catalog number.", "model": "claude-opus-5-5", "input_tokens": 1372, "output_tokens": 123}

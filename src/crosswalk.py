@@ -23,12 +23,17 @@ def load(path: Path = PATH) -> pd.DataFrame:
     return pd.read_csv(path, dtype=str, keep_default_na=False)
 
 
-def add(supplier_part_number: str, item_description: str, part_number: str, decision: str, dataset: str, path: Path = PATH):
-    """decision: approve (ties the text to part_number), no_match (confirmed not a BOM part), reject (suggestion was wrong)."""
+def append(df: pd.DataFrame, supplier_part_number: str, item_description: str, part_number: str, decision: str, dataset: str) -> pd.DataFrame:
+    """The decisions with one more row. decision: approve (ties the text to part_number), no_match (confirmed not a BOM
+    part), reject (suggestion was wrong). Pure: the caller chooses where the result is kept."""
     row = dict(supplier_part_number=supplier_part_number, item_description=item_description,
                part_number=part_number if decision == "approve" else "", decision=decision,
                decided_at=datetime.now().isoformat(timespec="seconds"), dataset=dataset)
-    pd.concat([load(path), pd.DataFrame([row])], ignore_index=True).to_csv(path, index=False)
+    return pd.concat([df, pd.DataFrame([row])], ignore_index=True)
+
+
+def add(supplier_part_number: str, item_description: str, part_number: str, decision: str, dataset: str, path: Path = PATH):
+    append(load(path), supplier_part_number, item_description, part_number, decision, dataset).to_csv(path, index=False)
 
 
 def undo_last(path: Path = PATH):

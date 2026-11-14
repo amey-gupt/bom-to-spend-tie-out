@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The line is a complete 12 V 2000 mAh battery pack bought on a service PO under SVC-70977, which is a complete assembly rather than any single BOM component (housing, cell, or BMS) among the candidates.", "model": "claude-opus-5-5", "input_tokens": 1387, "output_tokens": 96}

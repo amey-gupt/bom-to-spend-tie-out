@@ -1,0 +1,1 @@
+{"part_number": "BRG-65697", "confidence": 0.85, "reason": "Description specifies a 6001 bearing with 2RS seals, which matches only BRG-65697; BRG-65684 is a 6001 but has ZZ shields, and the part number GV-7344119 looks like a supplier code rather than an internal number.", "model": "claude-opus-5-5", "input_tokens": 1355, "output_tokens": 111}

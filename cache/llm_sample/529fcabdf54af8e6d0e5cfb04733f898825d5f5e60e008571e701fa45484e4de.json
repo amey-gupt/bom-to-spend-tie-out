@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a mold maintenance service (cavity polish) at $1557, not a physical BOM part, so none of the molded-part candidates priced around $0.18\u2013$1.04 match.", "model": "claude-opus-5-5", "input_tokens": 1338, "output_tokens": 83}

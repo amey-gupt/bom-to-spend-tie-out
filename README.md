@@ -40,6 +40,38 @@ Uploaded data is matched with rules, embeddings and Claude only. The classifier 
 
 `samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Try the second sample" in the Your data tab uses it. It includes the multi-level BOM columns and the continuous materials. On that slice the mapping was right for all 25 columns, and matching reached 99.7% precision and 97.5% recall against the planted truth (259 Claude calls, $2.03, about 85 seconds uncached).
 
+## Deploying to Streamlit Community Cloud
+
+I have not deployed this myself; the hosted mode below was tested locally with the same secrets.
+
+1. Push the repository to GitHub.
+2. On share.streamlit.io choose **Create app**, pick the repository and branch, and set the main file to `app.py`. Choose Python 3.12.
+3. Under **Advanced settings, Secrets**, paste:
+
+   ```toml
+   HOSTED = "true"
+   ACCESS_CODE = "choose-a-code"
+   OPENAI_API_KEY = "..."
+   ANTHROPIC_API_KEY = "..."
+   ```
+
+4. Deploy.
+
+| Secret | What it does |
+|---|---|
+| `HOSTED` | Turns on hosted mode: the access code, the limits below, and no writes to disk. |
+| `ACCESS_CODE` | Unlocks the Your data tab. Without it that tab is switched off; the other tabs stay open to everyone. Compared in constant time. |
+| `OPENAI_API_KEY` | Embeddings for anything run in the Your data tab, including the second sample. The local embedding model is not installed on the host. |
+| `ANTHROPIC_API_KEY` | Column mapping and matching for uploaded files. The second sample needs none: its Claude answers are committed in `cache/llm_sample/`. |
+
+Keys are read from Streamlit secrets first, then from the environment or `.env.local`, and are passed straight to the API clients; they are never printed or logged. `.streamlit/secrets.toml` is gitignored.
+
+Hosted limits, each shown on the page when it is hit: 5 MB per file, 2,000 purchase lines per run, 150 Claude calls per run (the largest lines go first; the rest wait in Review), and 3 runs per browser session.
+
+What is kept where on the host: uploaded files, the matched results and saved decisions live in the browser session's memory only. Nothing derived from uploaded text is written to disk, and there is no shared decisions file. Uploaded text is sent to OpenAI and Anthropic for matching, as the tab says.
+
+Dependencies: Community Cloud uses `uv.lock` when a repository has one, ahead of `requirements.txt`. The default install in both is the same small set, without torch or sentence-transformers. Those, with scikit-learn, are in the optional `local` extra, needed only to rebuild the results: `uv sync --extra local`.
+
 ## Results so far (held-out noise styles, 1,708 lines, $10.1M, true tie-out rate 98.8%)
 
 | Stage | Tied-out spend | Precision of accepted matches | Recall | Review queue | Wrong-match dollars |
@@ -143,7 +175,7 @@ Purchases are processed one quarter at a time, in date order. Each quarter the f
 - **Purchased versus required:** a lead when production purchases over the trailing 12 months exceed the gross requirement by more than 15%. It is shown as a gap and no cause is assigned. Duplicate part numbers are pooled first, otherwise one half of each pair looks over-bought.
 - **What it found:** two materials were planted at about 1.3x their requirement. Grease is found (+30%, a $2,840 to $5,681 lead). Magnet wire is missed: two of its lines were bought by weight and are held for a unit conversion, so its counted purchases fall below the threshold.
 
-Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. To rebuild `out/` from scratch, step 3 needs `OPENAI_API_KEY` for the embeddings (in the environment or in `.env.local`); the embedding cache is not committed. Claude's responses are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
+Reproduce (after `uv sync --extra local`) with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. To rebuild `out/` from scratch, step 3 needs `OPENAI_API_KEY` for the embeddings (in the environment or in `.env.local`); the embedding cache is not committed. Claude's responses are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
 
 ## External tests (real data, zero-shot)
 

@@ -1,0 +1,1 @@
+{"part_number": "LVR-69923", "confidence": 0.85, "reason": "Description 'FWD/REV LVR BLACK' matches the forward/reverse lever in black (LVR-69923); the teal lever LVR-69919 conflicts on color, and the price of $0.1471 is within supplier variance of $0.1687; MR1589-99 appears to be the supplier's own number.", "model": "claude-opus-5-5", "input_tokens": 1315, "output_tokens": 131}

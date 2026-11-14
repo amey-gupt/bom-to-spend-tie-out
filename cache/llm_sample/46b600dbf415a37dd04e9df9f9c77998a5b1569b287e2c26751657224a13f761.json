@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is for an extruded aluminum heat sink of 30x20x8 mm, but the only heat sink candidate (HSK-73614) is 45x30x12 mm, a clear dimensional conflict, and no other candidate is a heat sink; the part number SV-8171040 also matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1394, "output_tokens": 123}

@@ -8,6 +8,7 @@ Reviewer decisions are saved (crosswalk.csv) and applied to every line with the 
 """
 from __future__ import annotations
 
+import hmac
 import html
 import json
 from datetime import date, timedelta
@@ -17,7 +18,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from src import allocate, crosswalk, mapping, pipeline
+from src import adjudicate, allocate, crosswalk, mapping, match, pipeline, settings
 
 try:  # animated charts; if the component cannot load (for example on a host that blocks it), static charts are used instead
     from streamlit_echarts import JsCode, st_echarts
@@ -31,6 +32,10 @@ SAMPLE_DIR = Path("samples/second_company")
 SAMPLE_FILES = {"boms": "bom_export.csv", "purchases": "po_lines.xlsx", "builds": "production_output.csv"}
 KIND_LABEL = {"boms": "Bill of materials", "purchases": "Purchase order lines", "builds": "Production volumes"}
 UPLOAD_LIMIT_MB = 5  # also set as server.maxUploadSize in .streamlit/config.toml
+SAMPLE_CACHE = Path("cache/llm_sample")  # committed Claude answers for the second sample: it runs with no Claude calls
+HOSTED = settings.hosted()               # a public deployment: access code, limits, and nothing written to disk
+HOSTED_MAX_LINES, HOSTED_MAX_CALLS, HOSTED_MAX_RUNS = 2_000, 150, 3
+adjudicate.PERSIST = match.PERSIST = not HOSTED
 BUCKETS = ["production", "spares", "warranty", "unassigned"]
 BLUE, ORANGE, AQUA, YELLOW, VIOLET, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#6250d6", "#9a9890"
 BUCKET_COLORS = [BLUE, AQUA, YELLOW, GRAY]  # unassigned is neutral: it is the absence of a tie
@@ -192,6 +197,34 @@ def engineering_changes(bom: pd.DataFrame) -> list[tuple[str, str, str]]:
     return sorted(out)
 
 
+def saved_load() -> pd.DataFrame:
+    """Saved reviewer decisions. On a public host they live in this browser session only, never in a shared file."""
+    if HOSTED:
+        return st.session_state.setdefault("saved_decisions", pd.DataFrame(columns=crosswalk.COLUMNS))
+    return crosswalk.load()
+
+
+def saved_add(supplier_part_number: str, item_description: str, part: str, decision: str, dataset: str):
+    if HOSTED:
+        st.session_state["saved_decisions"] = crosswalk.append(saved_load(), supplier_part_number, item_description, part, decision, dataset)
+    else:
+        crosswalk.add(supplier_part_number, item_description, part, decision, dataset)
+
+
+def saved_undo():
+    if HOSTED:
+        st.session_state["saved_decisions"] = saved_load().iloc[:-1]
+    else:
+        crosswalk.undo_last()
+
+
+def saved_clear():
+    if HOSTED:
+        st.session_state["saved_decisions"] = pd.DataFrame(columns=crosswalk.COLUMNS)
+    else:
+        crosswalk.clear()
+
+
 sample_base, sample_bom, sample_builds, evals = load()
 if st.session_state.pop("_switch_to_uploaded", False):
     st.session_state["dataset"] = "Your files"
@@ -215,7 +248,7 @@ with st.sidebar:
                     if len(quarters) > 1 else (quarters[0], quarters[0]))
     st.caption("The date range narrows every tab to those quarters.")
 
-xw = crosswalk.load()
+xw = saved_load()
 rules = tuple(sorted((k, d, part) for k, (d, part) in crosswalk.as_rules(xw).items()))
 lines, alloc, products, leads = compute(base, bom, builds, float(materiality), rules, q_from, q_to)
 start_lines = compute(base, bom, builds, float(allocate.MATERIALITY_USD), (), q_from, q_to)[0]
@@ -351,6 +384,8 @@ with tab_overview:
             lines=("po_id", "size"), spend=("spend_usd", "sum")).reset_index()
         st.dataframe(pd.DataFrame({"Outcome": how["decision"], "Decided by": how["how"], "Lines": how["lines"], "Spend": how["spend"].map(usd)}),
                      hide_index=True, width="stretch", height="content")
+        if stats.get("not_sent"):
+            st.warning(f"Limit reached: {stats['call_limit']} Claude calls per run. {stats['not_sent']:,} smaller lines were not sent and are waiting in Review.")
         for note in uploaded["notes"]:
             st.caption(note)
         st.caption("Your own files have no answer key, so accuracy cannot be reported here. The Evidence tab shows how the same steps score "
@@ -398,7 +433,7 @@ with tab_review:
             for col, label, action, kind, keyboard in ((c1, f"Approve: {sug}", "approve", "primary", "A"), (c2, "Reject suggestion", "reject", "secondary", "X"),
                                                        (c3, "Not a BOM part", "no_match", "secondary", "N")):
                 if col.button(label, type=kind, key=f"{action}_{g['first']}", width="stretch", shortcut=keyboard):
-                    crosswalk.add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
+                    saved_add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
                     st.rerun()  # the list shifts up, so the same position now holds the next item
 
             bom_text = part_desc.get(sug, "")
@@ -431,12 +466,13 @@ with tab_review:
 
     st.divider()
     s1, s2_, s3_, s4_ = st.columns([3, 1, 1, 1.4])
-    s1.markdown(f"**Saved decisions: {len(xw)}.** Each one applies to every line with the same text, now and on the next run.")
+    s1.markdown(f"**Saved decisions: {len(xw)}.** Each one applies to every line with the same text, now and on the next run."
+                + (" Here they last for this browser session only." if HOSTED else ""))
     if s2_.button("Undo last", disabled=xw.empty, width="stretch"):
-        crosswalk.undo_last()
+        saved_undo()
         st.rerun()
     if s3_.button("Clear all", disabled=xw.empty, width="stretch"):
-        crosswalk.clear()
+        saved_clear()
         st.rerun()
     s4_.download_button("Download (CSV)", xw.to_csv(index=False), "saved_decisions.csv", "text/csv", disabled=xw.empty, width="stretch")
     if not xw.empty:
@@ -914,81 +950,114 @@ with tab_evidence:
 # ---------------------------------------------------------------- your data
 with tab_data:
     st.subheader("Run it on your own exports")
-    st.caption("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up on this "
-               "machine. It sends the headers and 20 sample rows of each file to Claude for the mapping, then purchase descriptions and BOM parts to "
+    st.caption("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up for "
+               "the app. It sends the headers and 20 sample rows of each file to Claude for the mapping, then purchase descriptions and BOM parts to "
                "the embedding model and Claude for matching.")
-    up = st.session_state.setdefault("up_files", {})
-
-    st.markdown("#### 1. Upload")
-    if st.button("Try the second sample", type="primary", help="The same kind of data as the built-in sample, exported with different column names."):
-        for kind, name in SAMPLE_FILES.items():
-            up[kind] = (name, (SAMPLE_DIR / name).read_bytes())
-        st.session_state.pop("up_map", None)
-        st.rerun()
-    st.caption(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each.")
-    for col, kind in zip(st.columns(3), KIND_LABEL):
-        f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
-        if f is not None:
-            up[kind] = (f.name, f.getvalue())
-        if kind in up:
-            col.caption(f"Loaded: {up[kind][0]}")
-
-    if len(up) == 3:
-        raw = {kind: mapping.read_table(*up[kind]) for kind in KIND_LABEL}
-        st.markdown("#### 2. Confirm columns")
-        if st.button("Ask Claude to map the columns", type="secondary" if "up_map" in st.session_state else "primary"):
-            try:
-                with st.spinner("Claude is reading the headers and 20 sample rows of each file"):
-                    proposals = {kind: mapping.propose(kind, raw[kind])[0] for kind in KIND_LABEL}
-            except Exception as e:  # most often a missing API key
-                st.error(f"Could not get a mapping from Claude: {e}")
-            else:
-                st.session_state["up_map"] = proposals
-                for kind, prop in proposals.items():
-                    for row in prop.itertuples():
-                        st.session_state[f"map_{kind}_{row.canonical}"] = row.source or "(none)"
-                st.rerun()
-
-        if "up_map" in st.session_state:
-            chosen_map, problems = {}, []
-            for kind, prop in st.session_state["up_map"].items():
-                chosen_map[kind] = {}
-                with st.expander(f"{KIND_LABEL[kind]}: {up[kind][0]}, {len(raw[kind]):,} rows", expanded=True):
-                    st.dataframe(raw[kind].head(5), hide_index=True, width="stretch", height="content")
-                    grid = st.columns(4)
-                    for i, row in enumerate(prop.itertuples()):
-                        with grid[i % 4]:
-                            pick_col = st.selectbox(f"{row.canonical} ({'required' if row.required else 'optional'})", ["(none)"] + list(raw[kind].columns),
-                                                    key=f"map_{kind}_{row.canonical}", help=row.meaning)
-                            st.caption(f"Claude: {row.confidence:.0%} sure. {row.note}" if row.source else f"Claude found no column. {row.note}")
-                            chosen_map[kind][row.canonical] = None if pick_col == "(none)" else pick_col
-                            if row.required and pick_col == "(none)":
-                                problems.append(f"{KIND_LABEL[kind]}: {row.canonical} is required")
-                    used = [v for v in chosen_map[kind].values() if v]
-                    if len(used) != len(set(used)):
-                        problems.append(f"{KIND_LABEL[kind]}: one source column is used twice")
-            for problem in problems:
-                st.error(problem)
-
-            st.markdown("#### 3. Run")
-            st.info("On your own data the matcher uses rules, nearest descriptions and Claude only. The trained model is skipped until this company "
-                    "has confirmed matches to train it on. Saved decisions are applied first.")
-            if st.button("Run the pipeline", type="primary", disabled=bool(problems)):
-                try:
-                    with st.spinner("Matching: rules, then nearest descriptions, then Claude on the open lines. A minute or two the first time."):
-                        canon, notes = {}, []
-                        for kind in KIND_LABEL:
-                            canon[kind], kind_notes = mapping.apply_mapping(kind, raw[kind], chosen_map[kind])
-                            notes += kind_notes
-                        inp = prepare(canon["purchases"], canon["boms"], canon["builds"])
-                        dec, stats = pipeline.run(inp, crosswalk.as_rules(crosswalk.load()))
-                        st.session_state["uploaded"] = dict(
-                            lines=allocate.build_lines(inp, dec), bom=inp.boms, builds=inp.builds, stats=stats, notes=notes,
-                            files=[up[kind][0] for kind in KIND_LABEL], demo_sample=all(up[kind][0] == SAMPLE_FILES[kind] for kind in KIND_LABEL))
-                        st.session_state["_switch_to_uploaded"] = True
-                except Exception as e:
-                    st.error(f"The run failed: {e}")
-                else:
+    unlocked = not HOSTED or st.session_state.get("unlocked", False)
+    if not unlocked:
+        code = settings.secret("ACCESS_CODE")
+        if not code:
+            st.info("Running your own files is switched off on this hosted copy. The other tabs show the built-in sample.")
+        else:
+            st.markdown("Running your own files on this hosted copy needs an access code. The other tabs are open to everyone.")
+            entered = st.text_input("Access code", type="password", key="access_code_entry")
+            if st.button("Unlock", type="primary"):
+                if hmac.compare_digest(entered.encode(), code.encode()):
+                    st.session_state["unlocked"] = True
                     st.rerun()
-    if uploaded:
-        st.success(f"Last run: {', '.join(uploaded['files'])}: {uploaded['stats']['lines']:,} purchase lines. Select \"Your files\" under Data in the sidebar to view it.")
+                else:
+                    st.error("That code is not right.")
+    if unlocked:
+        up = st.session_state.setdefault("up_files", {})
+
+        st.markdown("#### 1. Upload")
+        if st.button("Try the second sample", type="primary", help="The same kind of data as the built-in sample, exported with different column names."):
+            for kind, name in SAMPLE_FILES.items():
+                up[kind] = (name, (SAMPLE_DIR / name).read_bytes())
+            st.session_state.pop("up_map", None)
+            st.rerun()
+        st.caption(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each."
+                   + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
+                      f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions stay in this browser session and are not written to disk." if HOSTED else ""))
+        for col, kind in zip(st.columns(3), KIND_LABEL):
+            f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
+            if f is not None and f.size > UPLOAD_LIMIT_MB * 1_000_000:
+                col.error(f"{f.name} is over the {UPLOAD_LIMIT_MB} MB limit.")
+            elif f is not None:
+                up[kind] = (f.name, f.getvalue())
+            if kind in up:
+                col.caption(f"Loaded: {up[kind][0]}")
+
+        if len(up) == 3:
+            raw = {kind: mapping.read_table(*up[kind]) for kind in KIND_LABEL}
+            is_demo = all(up[kind][0] == SAMPLE_FILES[kind] and up[kind][1] == (SAMPLE_DIR / SAMPLE_FILES[kind]).read_bytes() for kind in KIND_LABEL)
+            # The committed sample reads its answers from the repository. Anything else is cached locally, or not at all on a public host.
+            llm_cache = SAMPLE_CACHE if is_demo else None if HOSTED else pipeline.UPLOAD_CACHE
+            runs_used = st.session_state.get("runs_used", 0)
+            blocked = []
+            if HOSTED and not is_demo and len(raw["purchases"]) > HOSTED_MAX_LINES:
+                blocked.append(f"The purchase file has {len(raw['purchases']):,} lines. This hosted copy accepts at most {HOSTED_MAX_LINES:,} per run.")
+            if HOSTED and runs_used >= HOSTED_MAX_RUNS:
+                blocked.append(f"This session has used its {HOSTED_MAX_RUNS} runs. Reload the page to start a new session.")
+            for message in blocked:
+                st.error(message)
+            st.markdown("#### 2. Confirm columns")
+            if st.button("Ask Claude to map the columns", type="secondary" if "up_map" in st.session_state else "primary"):
+                try:
+                    with st.spinner("Claude is reading the headers and 20 sample rows of each file"):
+                        proposals = {kind: mapping.propose(kind, raw[kind], cache=llm_cache)[0] for kind in KIND_LABEL}
+                except Exception as e:  # most often a missing API key
+                    st.error(f"Could not get a mapping from Claude: {e}")
+                else:
+                    st.session_state["up_map"] = proposals
+                    for kind, prop in proposals.items():
+                        for row in prop.itertuples():
+                            st.session_state[f"map_{kind}_{row.canonical}"] = row.source or "(none)"
+                    st.rerun()
+
+            if "up_map" in st.session_state:
+                chosen_map, problems = {}, []
+                for kind, prop in st.session_state["up_map"].items():
+                    chosen_map[kind] = {}
+                    with st.expander(f"{KIND_LABEL[kind]}: {up[kind][0]}, {len(raw[kind]):,} rows", expanded=True):
+                        st.dataframe(raw[kind].head(5), hide_index=True, width="stretch", height="content")
+                        grid = st.columns(4)
+                        for i, row in enumerate(prop.itertuples()):
+                            with grid[i % 4]:
+                                pick_col = st.selectbox(f"{row.canonical} ({'required' if row.required else 'optional'})", ["(none)"] + list(raw[kind].columns),
+                                                        key=f"map_{kind}_{row.canonical}", help=row.meaning)
+                                st.caption(f"Claude: {row.confidence:.0%} sure. {row.note}" if row.source else f"Claude found no column. {row.note}")
+                                chosen_map[kind][row.canonical] = None if pick_col == "(none)" else pick_col
+                                if row.required and pick_col == "(none)":
+                                    problems.append(f"{KIND_LABEL[kind]}: {row.canonical} is required")
+                        used = [v for v in chosen_map[kind].values() if v]
+                        if len(used) != len(set(used)):
+                            problems.append(f"{KIND_LABEL[kind]}: one source column is used twice")
+                for problem in problems:
+                    st.error(problem)
+
+                st.markdown("#### 3. Run")
+                st.info("On your own data the matcher uses rules, nearest descriptions and Claude only. The trained model is skipped until this company "
+                        "has confirmed matches to train it on. Saved decisions are applied first.")
+                if st.button("Run the pipeline", type="primary", disabled=bool(problems or blocked)):
+                    try:
+                        with st.spinner("Matching: rules, then nearest descriptions, then Claude on the open lines. A minute or two the first time."):
+                            canon, notes = {}, []
+                            for kind in KIND_LABEL:
+                                canon[kind], kind_notes = mapping.apply_mapping(kind, raw[kind], chosen_map[kind])
+                                notes += kind_notes
+                            inp = prepare(canon["purchases"], canon["boms"], canon["builds"])
+                            # The sample runs without saved decisions so every answer comes from the committed cache; they still apply afterwards.
+                            dec, stats = pipeline.run(inp, {} if is_demo else crosswalk.as_rules(saved_load()), cache=llm_cache,
+                                                      max_calls=HOSTED_MAX_CALLS if HOSTED and not is_demo else pipeline.MAX_CALLS)
+                            st.session_state["runs_used"] = runs_used + 1
+                            st.session_state["uploaded"] = dict(
+                                lines=allocate.build_lines(inp, dec), bom=inp.boms, builds=inp.builds, stats=stats, notes=notes,
+                                files=[up[kind][0] for kind in KIND_LABEL], demo_sample=is_demo)
+                            st.session_state["_switch_to_uploaded"] = True
+                    except Exception as e:
+                        st.error(f"The run failed: {e}")
+                    else:
+                        st.rerun()
+        if uploaded:
+            st.success(f"Last run: {', '.join(uploaded['files'])}: {uploaded['stats']['lines']:,} purchase lines. Select \"Your files\" under Data in the sidebar to view it.")

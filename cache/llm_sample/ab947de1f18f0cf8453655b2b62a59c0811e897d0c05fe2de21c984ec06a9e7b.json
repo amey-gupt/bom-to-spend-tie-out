@@ -1,0 +1,1 @@
+{"part_number": "CAP-40036", "confidence": 0.88, "reason": "Description matches CAP-40036 exactly (ceramic, 10 uF, 25 V); the other capacitors conflict on voltage or capacitance (CAP-40021 is 16 V), and the $0.0328 price is plausible for this part.", "model": "claude-opus-5-5", "input_tokens": 1401, "output_tokens": 110}

@@ -1,0 +1,1 @@
+{"part_number": "SPR-38659", "confidence": 0.88, "reason": "Only SPR-38659 matches all stated attributes (8 mm dia, 16 mm long, 0.5 mm wire); the part-number field PW1103-59 looks like a supplier number, and the low $0.031 price is plausible for this thin-wire spring.", "model": "claude-opus-5-5", "input_tokens": 1403, "output_tokens": 116}

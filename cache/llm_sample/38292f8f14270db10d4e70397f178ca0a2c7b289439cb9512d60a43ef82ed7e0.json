@@ -1,0 +1,1 @@
+{"part_number": "NUT-31535", "confidence": 0.85, "reason": "The description 'Nut hex M3/ZINC' matches NUT-31535 (hex nut, M3, zinc) on type, size and finish. The nyloc, square-nut, screw and washer candidates differ in type or size. GV-4325124 looks like a supplier code rather than an internal number.", "model": "claude-opus-5-5", "input_tokens": 1329, "output_tokens": 126}

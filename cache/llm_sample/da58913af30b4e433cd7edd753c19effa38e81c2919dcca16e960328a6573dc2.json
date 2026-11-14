@@ -1,0 +1,1 @@
+{"part_number": "HSR-28954", "confidence": 0.93, "reason": "Description matches HSR-28954 exactly (housing shell right, red, PA6-GF30), while the other candidates differ in side, color or material; the $1.36 price is plausible next to similar shells at about $1.04-1.06.", "model": "claude-opus-5-5", "input_tokens": 1326, "output_tokens": 104}

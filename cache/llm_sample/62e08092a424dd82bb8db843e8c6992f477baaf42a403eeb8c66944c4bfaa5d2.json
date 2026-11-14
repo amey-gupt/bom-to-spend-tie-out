@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "STA-57659 is an internal stator number not among the candidates, and the only stator candidate (STA-57656) is 25 mm long versus the purchased L30, so the length conflicts.", "model": "claude-opus-5-5", "input_tokens": 1375, "output_tokens": 84}

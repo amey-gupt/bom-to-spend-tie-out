@@ -1,0 +1,1 @@
+{"part_number": "SPR-38659", "confidence": 0.88, "reason": "Description matches SPR-38659 exactly (8 mm dia, 16 mm long, 0.5 mm wire); all other candidates differ in diameter, length or wire, and the part-number field GV-7452699 looks like a supplier code rather than a conflicting internal number.", "model": "claude-opus-5-5", "input_tokens": 1419, "output_tokens": 119}

@@ -1,0 +1,1 @@
+{"part_number": "ORG-40045", "confidence": 0.93, "reason": "The description O-RING ID20 CS2 NBR 70 matches ORG-40045 exactly (20 mm ID, 2 mm section, NBR 70), and $0.0590 is within about 1% of its confirmed $0.0582 price; no other candidate is an O-ring of that size and material.", "model": "claude-opus-5-5", "input_tokens": 1377, "output_tokens": 127}

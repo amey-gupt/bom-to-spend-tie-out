@@ -1,0 +1,1 @@
+{"part_number": "SCR-66658", "confidence": 0.88, "reason": "The description \"M3X10 zinc self-tapping\" matches only SCR-66658 (M3 x 10, zinc); the other candidates differ in length or diameter, and the part-number field GV-2778344 looks like a supplier code rather than an internal SCR number.", "model": "claude-opus-5-5", "input_tokens": 1348, "output_tokens": 117}

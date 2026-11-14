@@ -1,0 +1,1 @@
+{"part_number": "SCR-66795", "confidence": 0.88, "reason": "The description 'M3X8 ZINC SELF-TAPPING' matches only SCR-66795 (self-tapping screw, M3 x 8, zinc); the other candidates differ in length or diameter, and GV-2583604 looks like a supplier part number rather than an internal SCR number.", "model": "claude-opus-5-5", "input_tokens": 1343, "output_tokens": 125}

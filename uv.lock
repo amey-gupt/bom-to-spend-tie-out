@@ -102,10 +102,14 @@ dependencies = [
     { name = "openai" },
     { name = "openpyxl" },
     { name = "pandas" },
-    { name = "scikit-learn" },
-    { name = "sentence-transformers" },
     { name = "streamlit" },
     { name = "streamlit-echarts" },
+]
+
+[package.optional-dependencies]
+local = [
+    { name = "scikit-learn" },
+    { name = "sentence-transformers" },
     { name = "torch", version = "2.15.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.15.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
 ]
@@ -117,12 +121,13 @@ requires-dist = [
     { name = "openai", specifier = ">=3.51.0" },
     { name = "openpyxl", specifier = ">=3.1.5" },
     { name = "pandas" },
-    { name = "scikit-learn", specifier = ">=1.9.1" },
-    { name = "sentence-transformers" },
+    { name = "scikit-learn", marker = "extra == 'local'", specifier = ">=1.9.1" },
+    { name = "sentence-transformers", marker = "extra == 'local'" },
     { name = "streamlit", specifier = ">=1.67.0" },
     { name = "streamlit-echarts", specifier = ">=0.7.0" },
-    { name = "torch", index = "https://download.pytorch.org/whl/cpu" },
+    { name = "torch", marker = "extra == 'local'", index = "https://download.pytorch.org/whl/cpu" },
 ]
+provides-extras = ["local"]
 
 [[package]]
 name = "certifi"

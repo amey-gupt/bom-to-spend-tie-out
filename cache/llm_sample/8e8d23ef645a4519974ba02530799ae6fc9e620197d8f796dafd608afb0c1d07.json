@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "A 48 x 40 in wood pallet is a shipping/shop supply, and no candidate is a pallet: all five are cartons or pulp trays with mm dimensions and prices under $1, versus the $12.05 paid here.", "model": "claude-opus-5-5", "input_tokens": 1356, "output_tokens": 99}

@@ -1,0 +1,1 @@
+{"part_number": "SCR-66685", "confidence": 0.88, "reason": "Description 'Torx pan head M4X8 zinc' matches only SCR-66685 (others are stainless, M4x20, or M2.5), and the price of $0.0117 is within a few percent of the confirmed $0.0114; AS-256120 looks like a supplier part number, not an internal one.", "model": "claude-opus-5-5", "input_tokens": 1385, "output_tokens": 127}

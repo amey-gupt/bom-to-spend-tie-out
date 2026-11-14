@@ -1,0 +1,1 @@
+{"part_number": "CSC-39029", "confidence": 0.88, "reason": "The description 'CHK RET SCR LEFT-HAND M5X25' matches CSC-39029 (left-hand chuck retaining screw, M5 x 25) exactly, CSC-39035 is ruled out by its M6 size, and the part-number field holds a supplier code rather than an internal number.", "model": "claude-opus-5-5", "input_tokens": 1349, "output_tokens": 129}

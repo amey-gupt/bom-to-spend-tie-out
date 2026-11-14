@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service label kit (EN/ES) bought on a service PO under supplier number 67587K150; kits are not BOM parts, and no candidate is a kit.", "model": "claude-opus-5-5", "input_tokens": 1320, "output_tokens": 78}

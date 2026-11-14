@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO is for a keyless chuck with 10 mm capacity and a 3/8-24 UNF thread under part number CHK-47572, a chuck-family internal number that matches none of the candidates; the only chuck candidate, CHK-47564, has a 1/2-20 UNF thread, which conflicts.", "model": "claude-opus-5-5", "input_tokens": 1421, "output_tokens": 126}

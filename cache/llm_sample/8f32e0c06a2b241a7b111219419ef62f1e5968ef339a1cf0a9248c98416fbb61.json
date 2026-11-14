@@ -1,0 +1,1 @@
+{"part_number": "SPR-38647", "confidence": 0.9, "reason": "Only SPR-38647 matches all stated attributes (10 mm dia, 20 mm long, 1.0 mm wire); the others differ in diameter, length or wire, and PW9338-80 looks like a supplier number rather than an internal one.", "model": "claude-opus-5-5", "input_tokens": 1403, "output_tokens": 110}

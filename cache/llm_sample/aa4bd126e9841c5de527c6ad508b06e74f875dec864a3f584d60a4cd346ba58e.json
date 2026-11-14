@@ -1,0 +1,1 @@
+{"part_number": "SPR-38617", "confidence": 0.9, "reason": "Diameter 6 mm, length 20 mm and 0.5 mm wire all match SPR-38617 exactly; SPR-38645 differs in wire (1.0 mm), and the other candidates differ in diameter and/or length.", "model": "claude-opus-5-5", "input_tokens": 1394, "output_tokens": 106}

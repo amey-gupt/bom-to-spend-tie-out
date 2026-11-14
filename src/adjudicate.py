@@ -15,13 +15,14 @@ import anthropic
 import pandas as pd
 from pydantic import BaseModel
 
-from .match import load_env
+from .settings import secret
 from .normalize import Inputs
 
 MODEL = "claude-opus-5-5"
 SMALL_MODEL = "claude-haiku-5-5"  # the smallest current Claude model, for the cost comparison
 PRICE_PER_MTOK = {"claude-opus-5-5": (4.00, 20.00), "claude-haiku-5-5": (0.10, 0.50)}  # USD (input, output), list price
 CACHE = Path("cache/llm")
+PERSIST = True  # False on a public host: answers are never written to disk there
 
 SYSTEM = """You match purchase-order lines to parts on a manufacturer's bills of materials (BOMs).
 
@@ -79,10 +80,10 @@ def build_prompts(inp: Inputs, rules: pd.DataFrame, pairs: pd.DataFrame, lines) 
     return pd.DataFrame(rows, columns=["line", "prompt", "cands"]).set_index("line")
 
 
-def _ask(client: anthropic.Anthropic, prompt: str, model: str, system: str = SYSTEM, schema=Verdict, cache: Path = CACHE) -> dict | None:
-    """One cached call. The cache entry keeps the verdict and the token usage that produced it."""
-    path = cache / f"{hashlib.sha256((model + system + prompt).encode()).hexdigest()}.json"
-    if path.exists():
+def _ask(client: anthropic.Anthropic, prompt: str, model: str, system: str = SYSTEM, schema=Verdict, cache: Path | None = CACHE) -> dict | None:
+    """One call, cached unless cache is None. The cache entry keeps the verdict and the token usage that produced it."""
+    path = cache / f"{hashlib.sha256((model + system + prompt).encode()).hexdigest()}.json" if cache is not None else None
+    if path is not None and path.exists():
         hit = json.loads(path.read_text())
         if "input_tokens" in hit:
             return hit
@@ -100,26 +101,29 @@ def _ask(client: anthropic.Anthropic, prompt: str, model: str, system: str = SYS
         return None
     entry = {**resp.parsed_output.model_dump(), "model": model,
              "input_tokens": resp.usage.input_tokens, "output_tokens": resp.usage.output_tokens}
-    path.write_text(json.dumps(entry))
+    entry["fresh"] = True  # made now, not read from the cache (never stored: set after the copy below is written)
+    if path is not None and PERSIST:
+        path.write_text(json.dumps({k: v for k, v in entry.items() if k != "fresh"}))
     return entry
 
 
-def ask_many(prompts: list[str], model: str = MODEL, system: str = SYSTEM, schema=Verdict, cache: Path = CACHE, workers: int = 8) -> tuple[dict, dict]:
-    """Ask each distinct prompt once. Returns ({prompt: answer or None}, usage)."""
-    load_env()
-    cache.mkdir(parents=True, exist_ok=True)
-    client = anthropic.Anthropic(max_retries=4)
+def ask_many(prompts: list[str], model: str = MODEL, system: str = SYSTEM, schema=Verdict, cache: Path | None = CACHE, workers: int = 8) -> tuple[dict, dict]:
+    """Ask each distinct prompt once. Returns ({prompt: answer or None}, usage). usage["new_calls"] counts calls not served from the cache."""
+    if cache is not None and PERSIST:
+        cache.mkdir(parents=True, exist_ok=True)
+    client = anthropic.Anthropic(api_key=secret("ANTHROPIC_API_KEY") or None, max_retries=4)
     unique = list(dict.fromkeys(prompts))
     with ThreadPoolExecutor(workers) as pool:
         answers = dict(zip(unique, pool.map(lambda q: _ask(client, q, model, system, schema, cache), unique)))
     done = [a for a in answers.values() if a is not None]
     tokens_in, tokens_out = sum(a["input_tokens"] for a in done), sum(a["output_tokens"] for a in done)
     price_in, price_out = PRICE_PER_MTOK[model]
-    return answers, dict(model=model, calls=len(done), failed_calls=len(unique) - len(done), input_tokens=tokens_in, output_tokens=tokens_out,
+    return answers, dict(model=model, calls=len(done), new_calls=sum(1 for a in done if a.get("fresh")), failed_calls=len(unique) - len(done),
+                         input_tokens=tokens_in, output_tokens=tokens_out,
                          cost_usd=round((tokens_in * price_in + tokens_out * price_out) / 1e6, 4))
 
 
-def adjudicate(prompts: pd.DataFrame, model: str = MODEL, workers: int = 8, cache: Path = CACHE) -> tuple[pd.DataFrame, dict]:
+def adjudicate(prompts: pd.DataFrame, model: str = MODEL, workers: int = 8, cache: Path | None = CACHE) -> tuple[pd.DataFrame, dict]:
     """Returns (verdicts, usage). Verdicts hold llm_part ('' for none), llm_conf and llm_reason per line; lines whose
     call failed get llm_conf NaN and stay in review. Usage is tokens and list-price cost over the distinct calls,
     including calls answered from the cache (what it cost to produce them)."""

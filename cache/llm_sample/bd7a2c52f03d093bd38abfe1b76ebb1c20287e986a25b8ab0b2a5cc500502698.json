@@ -1,0 +1,1 @@
+{"part_number": "SCR-66724", "confidence": 0.85, "reason": "The description 'SCR ST M4X20 ZINC' matches only SCR-66724 (self-tapping screw, M4 x 20, zinc); MT5609-29 looks like a supplier number, and $0.0108 is within about 20% of the $0.0133 paid to another supplier.", "model": "claude-opus-5-5", "input_tokens": 1363, "output_tokens": 124}

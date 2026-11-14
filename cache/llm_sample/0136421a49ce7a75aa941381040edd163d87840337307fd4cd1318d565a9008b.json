@@ -1,0 +1,1 @@
+{"part_number": "WSH-19094", "confidence": 0.85, "reason": "Description 'washer M8 stainless spring' matches only WSH-19094 (spring, M8, stainless); WSH-19103 is flat and WSH-19143 is black oxide, and the part-number field looks like a supplier catalog number rather than an internal one.", "model": "claude-opus-5-5", "input_tokens": 1348, "output_tokens": 115}

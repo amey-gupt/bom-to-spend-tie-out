@@ -1,0 +1,1 @@
+{"part_number": "FAN-30247", "confidence": 0.88, "reason": "Description 'COOLING FAN D45 9BL' matches FAN-30247 (45 mm dia, 9 blades) exactly, while FAN-30241 is 55 mm; the $0.36 price from a plastics molder is plausible for a small molded fan.", "model": "claude-opus-5-5", "input_tokens": 1373, "output_tokens": 116}

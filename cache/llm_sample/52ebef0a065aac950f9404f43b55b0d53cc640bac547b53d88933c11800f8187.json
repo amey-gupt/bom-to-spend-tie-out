@@ -1,0 +1,1 @@
+{"part_number": "WHR-16776", "confidence": 0.85, "reason": "The description '16AWG/L80' matches only WHR-16776 (16 AWG, 80 mm long), and every other candidate conflicts on gauge or length; the part number GV-6807228 appears to be a supplier code, and the $0.39 price is in line with similar harnesses.", "model": "claude-opus-5-5", "input_tokens": 1361, "output_tokens": 121}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "Air tool oil (1 qt) is a shop consumable, not a BOM part, and it does not match the gearbox grease GRS-58141 (lithium EP2, NLGI 2) or any of the washer or brush candidates.", "model": "claude-opus-5-5", "input_tokens": 1389, "output_tokens": 99}

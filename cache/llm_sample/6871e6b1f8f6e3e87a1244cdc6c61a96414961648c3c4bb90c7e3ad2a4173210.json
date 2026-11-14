@@ -1,0 +1,1 @@
+{"part_number": "WHR-16766", "confidence": 0.8, "reason": "16 AWG and 120 mm length match only WHR-16766; WHR-16777 is 14 AWG, the others differ in gauge or length, and the supplier part number CD-395421 is not an internal number.", "model": "claude-opus-5-5", "input_tokens": 1363, "output_tokens": 97}

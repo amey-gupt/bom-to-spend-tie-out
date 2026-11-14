@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 
 from .normalize import Inputs, load_inputs, norm_desc, norm_pn
+from .settings import secret
 
 BACKENDS = {"local": "sentence-transformers/all-MiniLM-L6-v2", "openai": "text-embedding-3-small"}
 CACHE_DIR = Path("cache")
@@ -72,6 +73,9 @@ def rule_match(inp: Inputs, crosswalk: dict | None = None) -> pd.DataFrame:
 
 # ----------------------------------------------------------------- embeddings
 
+PERSIST = True  # False on a public host: nothing derived from uploaded text is written to disk
+
+
 def load_env():
     """API keys come from the environment, or from .env.local / .env (both gitignored)."""
     for name in (".env.local", ".env"):
@@ -87,8 +91,7 @@ def _encode(texts: list[str], backend: str) -> np.ndarray:
         from sentence_transformers import SentenceTransformer  # imported late: slow to load, not needed on a warm cache
         return SentenceTransformer(BACKENDS[backend]).encode(texts, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
     from openai import OpenAI
-    load_env()
-    client, rows = OpenAI(), []
+    client, rows = OpenAI(api_key=secret("OPENAI_API_KEY") or None), []
     for i in range(0, len(texts), 500):
         rows += [d.embedding for d in client.embeddings.create(model=BACKENDS[backend], input=texts[i:i + 500]).data]
     vectors = np.asarray(rows)
@@ -97,13 +100,15 @@ def _encode(texts: list[str], backend: str) -> np.ndarray:
 
 def embed(texts: list[str], backend: str = "local") -> np.ndarray:
     """Unit-length embeddings, cached on disk per (model, text) so nothing is computed or paid for twice."""
-    CACHE_DIR.mkdir(exist_ok=True)
+    if PERSIST:
+        CACHE_DIR.mkdir(exist_ok=True)
     path = CACHE_DIR / f"embeddings_{hashlib.sha1(BACKENDS[backend].encode()).hexdigest()[:10]}.pkl"
     cache = pickle.loads(path.read_bytes()) if path.exists() else {}
     missing = sorted({t for t in texts if t not in cache})
     if missing:
         cache.update(zip(missing, _encode(missing, backend).astype(np.float32)))
-        path.write_bytes(pickle.dumps(cache))
+        if PERSIST:
+            path.write_bytes(pickle.dumps(cache))
     return np.stack([cache[t] for t in texts])
 
 

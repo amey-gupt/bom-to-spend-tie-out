@@ -1,0 +1,1 @@
+{"part_number": "TRM-27408", "confidence": 0.88, "reason": "The description states 5 positions and 40 A, which matches only TRM-27408; TRM-27402 is rated 20 A and TRM-27425 is a 3-position block, and the $0.39 price is in line with the similar 5-position block bought from the same supplier.", "model": "claude-opus-5-5", "input_tokens": 1368, "output_tokens": 114}

@@ -1,0 +1,1 @@
+{"part_number": "BAL-68342", "confidence": 0.9, "reason": "Description 'STL BALL D5 G100' matches BAL-68342 (steel ball, 5 mm, grade G100) exactly, while BAL-68329 is grade G25 (a conflict) and the others are bearings; the part-number field holds a supplier catalog number.", "model": "claude-opus-5-5", "input_tokens": 1342, "output_tokens": 119}

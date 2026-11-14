@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The purchase line calls for a 10 mm keyless chuck with a 3/8-24 UNF thread, which conflicts with the only chuck candidate CHK-47564 (1/2-20 UNF), and its part number chk-47572b is a different internal CHK number that matches none of the candidates.", "model": "claude-opus-5-5", "input_tokens": 1409, "output_tokens": 121}

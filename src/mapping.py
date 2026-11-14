@@ -79,12 +79,12 @@ def read_table(name: str, data: bytes) -> pd.DataFrame:
     return df.fillna("")
 
 
-def propose(kind: str, df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+def propose(kind: str, df: pd.DataFrame, cache: Path | None = CACHE) -> tuple[pd.DataFrame, dict]:
     """Ask Claude for the mapping. Returns (one row per canonical column: source, confidence, note; usage)."""
     target = "\n".join(f"- {c} ({'required' if req else 'optional'}): {meaning}" for c, req, meaning in CANONICAL[kind])
     prompt = (f"File kind: {KIND_NAME[kind]}\n\nTarget columns\n{target}\n\nSource headers\n{list(df.columns)}\n\n"
               f"First rows (CSV)\n{df.head(20).to_csv(index=False)}")
-    answers, usage = adjudicate.ask_many([prompt], system=SYSTEM, schema=FileMapping, cache=CACHE)
+    answers, usage = adjudicate.ask_many([prompt], system=SYSTEM, schema=FileMapping, cache=cache)
     got = {c["canonical"]: c for c in (answers[prompt] or {}).get("columns", [])}
     rows = []
     for c, req, meaning in CANONICAL[kind]:

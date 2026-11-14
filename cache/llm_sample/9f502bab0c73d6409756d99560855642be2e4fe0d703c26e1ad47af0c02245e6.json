@@ -1,0 +1,1 @@
+{"part_number": "CTN-23176", "confidence": 0.93, "reason": "The description 'retail carton 400X300X280MM' matches CTN-23176 (retail carton, 400 x 300 x 280 mm) exactly, and the other cartons have different dimensions; the $0.59 price is plausible next to similar cartons.", "model": "claude-opus-5-5", "input_tokens": 1350, "output_tokens": 112}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The PO line is a 40 V, 60 A TO-220 N-channel MOSFET, but the only TO-220 candidate (FET-20827) is rated 100 A. The other MOSFETs differ in package or voltage (PDFN, and 30 V DPAK), and the supplier number EC6534-92 does not identify any candidate.", "model": "claude-opus-5-5", "input_tokens": 1384, "output_tokens": 135}

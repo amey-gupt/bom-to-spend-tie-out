@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line is a 'SWITCH SERVICE KIT' under service part number SVC 71022 REV A from a service-parts distributor; service kits are not BOM parts, even though the 18 V trigger switch SWT-28086 is related.", "model": "claude-opus-5-5", "input_tokens": 1397, "output_tokens": 102}

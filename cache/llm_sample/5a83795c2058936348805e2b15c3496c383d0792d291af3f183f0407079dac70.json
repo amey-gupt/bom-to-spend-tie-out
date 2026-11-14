@@ -1,0 +1,1 @@
+{"part_number": "FAN-30247", "confidence": 0.88, "reason": "Description 'cooling fan dia 45mm 9 blade' matches FAN-30247 (45 mm, 9 blades) exactly; FAN-30241 is 55 mm, the part number MR2752-12 looks like a supplier code, and the $0.298 price is plausible for a small molded fan.", "model": "claude-opus-5-5", "input_tokens": 1373, "output_tokens": 129}

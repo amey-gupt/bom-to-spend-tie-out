@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The purchase line is an 18650 2.0 Ah cell with internal number CEL-64007. That number matches no candidate, and both candidate cells are 21700 format (CEL-63994 2.0 Ah, CEL-64003 3.0 Ah), so the size conflicts.", "model": "claude-opus-5-5", "input_tokens": 1412, "output_tokens": 117}

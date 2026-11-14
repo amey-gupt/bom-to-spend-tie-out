@@ -1,0 +1,1 @@
+{"part_number": "TRY-61244", "confidence": 0.9, "reason": "The description 'Molded pulp tray 300X90X70MM' matches TRY-61244 (300 x 90 x 70 mm) exactly; TRY-61235 is ruled out by its 320 x 100 x 80 mm size, and the other candidates are cartons or bags.", "model": "claude-opus-5-5", "input_tokens": 1329, "output_tokens": 121}

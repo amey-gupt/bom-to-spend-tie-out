@@ -1,0 +1,1 @@
+{"part_number": "CEL-64003", "confidence": 0.93, "reason": "Description matches exactly (Li-ion 21700, 3.0 Ah), same supplier HANBIT, and warranty price $3.52 is within range of the confirmed $3.24; HE6094-48 looks like a supplier part number, not an internal one.", "model": "claude-opus-5-5", "input_tokens": 1402, "output_tokens": 113}

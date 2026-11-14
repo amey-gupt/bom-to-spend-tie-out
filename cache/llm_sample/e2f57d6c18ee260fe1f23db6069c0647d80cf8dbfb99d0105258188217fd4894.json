@@ -1,0 +1,1 @@
+{"part_number": "CEL-64003", "confidence": 0.9, "reason": "Description 21700 Li-ion 3000 mAh = 3.0 Ah matches CEL-64003, and the $3.259 price is within 1% of its $3.2391 confirmed price; the part-number field GV-8165298 looks like a supplier code, not an internal number.", "model": "claude-opus-5-5", "input_tokens": 1386, "output_tokens": 120}

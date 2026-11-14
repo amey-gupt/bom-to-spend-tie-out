@@ -1,0 +1,1 @@
+{"part_number": "CEL-64003", "confidence": 0.85, "reason": "Description matches exactly (21700, 3.0 Ah) and the supplier is the same, Hanbit; the part number looks like Hanbit's catalog number, and $7.16 versus $3.24 is about 2.2x, slightly above the usual spare-price ceiling but plausible for a service PO.", "model": "claude-opus-5-5", "input_tokens": 1395, "output_tokens": 128}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a 12-piece housing screw service kit (supplier number PS-278111, service PO); kits are not BOM parts, even though SCR-66767 is a housing screw.", "model": "claude-opus-5-5", "input_tokens": 1333, "output_tokens": 82}

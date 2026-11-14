@@ -1,0 +1,1 @@
+{"part_number": "GRS-58141", "confidence": 0.85, "reason": "Description 'gearbox grease lithium EP2 NLGI 2' matches GRS-58141 exactly, and that grease is listed as a GEARBOX BOM item (production PO, unit KG); LI-454175 looks like the supplier's own catalog number, and no other candidate is a grease.", "model": "claude-opus-5-5", "input_tokens": 1372, "output_tokens": 127}

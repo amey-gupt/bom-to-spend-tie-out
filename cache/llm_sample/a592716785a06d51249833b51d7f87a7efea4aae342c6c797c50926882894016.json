@@ -1,0 +1,1 @@
+{"part_number": "FET-20829", "confidence": 0.88, "reason": "Description (N-channel MOSFET, 30 V, 120 A, DPAK) matches FET-20829 exactly, while the other FETs differ in voltage, current and package; the part-number field CE-687986 looks like a supplier code, and the $0.31 price is plausible for this part.", "model": "claude-opus-5-5", "input_tokens": 1399, "output_tokens": 122}

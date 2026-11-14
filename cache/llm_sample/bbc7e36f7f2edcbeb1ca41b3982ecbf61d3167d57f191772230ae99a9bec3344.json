@@ -1,0 +1,1 @@
+{"part_number": "LED-16299", "confidence": 0.88, "reason": "The description 'LED WORK LT 5000K 20MA' matches LED-16299 (5000 K, 20 mA) exactly, while LED-16300 is ruled out by its 60 mA rating; CE-252272 looks like a supplier number, and $0.1693 is plausible against the similar LED's $0.1922.", "model": "claude-opus-5-5", "input_tokens": 1380, "output_tokens": 134}

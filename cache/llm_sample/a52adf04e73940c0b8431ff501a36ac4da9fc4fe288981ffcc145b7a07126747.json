@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Shop towels by the case are a shop consumable, not a BOM part, and the description, $45.98 price and supplier code 825193 match none of the carton or tray candidates.", "model": "claude-opus-5-5", "input_tokens": 1353, "output_tokens": 80}

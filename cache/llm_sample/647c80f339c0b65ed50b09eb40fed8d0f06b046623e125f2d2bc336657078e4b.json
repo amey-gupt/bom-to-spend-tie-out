@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The line is a complete 18V 2.0Ah battery pack (a complete assembly bought on a service PO at $25.78), not a single component; the candidates are housings, a cell and a BMS board priced around $0.74\u2013$2.54, so none matches.", "model": "claude-opus-5-5", "input_tokens": 1377, "output_tokens": 105}
