@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies an M4 x 20 self-tapping screw, but no candidate matches that length: SCR-66791 is M4 x 16, SCR-66734 is M4 x 12, and SCR-66685 is M4 x 8 and a Torx pan head, so every candidate conflicts on a stated dimension.", "model": "claude-haiku-5-5", "input_tokens": 1377, "output_tokens": 321}

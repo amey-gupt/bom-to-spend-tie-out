@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.3, "reason": "The purchase line specifies 7 blades, which conflicts with all fan candidates (9 or 11 blades), and the 55 mm fans are the only size matches; the part number DY-743958 matches no candidate, so no candidate can be confirmed as the same part.}", "model": "claude-haiku-5-5", "input_tokens": 1399, "output_tokens": 111}

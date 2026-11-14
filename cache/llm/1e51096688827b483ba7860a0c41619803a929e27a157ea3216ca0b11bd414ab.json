@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.72, "reason": "The line asks for a 698 open bearing; the only 698 candidate (BRG-65675) is ZZ-shielded, which conflicts with the stated open type, and the open candidates are other sizes (608, 626, 6000, 6200), so none matches.", "model": "claude-opus-5-5", "input_tokens": 1405, "output_tokens": 107}

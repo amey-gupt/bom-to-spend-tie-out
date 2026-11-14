@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is an assembly fixture (press nest tooling) priced at $1410.73, which is shop tooling and not a BOM part, and part number 306259 matches none of the candidates (grease, gears, screw).", "model": "claude-opus-5-5", "input_tokens": 1399, "output_tokens": 93}

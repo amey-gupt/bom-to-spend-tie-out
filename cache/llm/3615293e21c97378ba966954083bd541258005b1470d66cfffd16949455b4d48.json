@@ -1,0 +1,1 @@
+{"part_number": "WHR-16779", "confidence": 0.5, "reason": "The 16AWG gauge matches, and reading 'L20' as 20 cm (200 mm) fits only WHR-16779; a literal 20 mm length would match no candidate, so this rests on the cm interpretation, and the supplier number MX-7762794 gives no cross-check.", "model": "claude-opus-5-5", "input_tokens": 1358, "output_tokens": 260}

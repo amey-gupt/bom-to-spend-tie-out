@@ -14,11 +14,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .normalize import Inputs, load_inputs, norm_desc, norm_pn, numbers_in
+from .normalize import Inputs, load_inputs, norm_desc, norm_pn, numbers_in, parse_uom
 
 MATERIALITY_USD = 25_000     # a Claude-accepted line above this goes to a person anyway
 PRICE_GAP_MIN = 0.05         # ignore supplier price differences smaller than this
 SPARES_PREMIUM_MIN = 0.35    # spares price over production price before it becomes a lead
+OVER_PURCHASE_MIN = 0.15     # bought this far above the gross requirement before it becomes a lead
 LEAD_LOW = 0.5               # low end of every lead's range: half the gap closed
 
 
@@ -28,7 +29,7 @@ def load_lines(inp: Inputs, decisions_path: str | Path = "out/decisions.csv") ->
 
 def build_lines(inp: Inputs, dec: pd.DataFrame) -> pd.DataFrame:
     cols = ["po_id", "po_date", "plant", "supplier", "supplier_key", "supplier_part_number", "item_description", "uom", "po_type",
-            "base_qty", "unit_price_usd", "spend_usd"]
+            "qty", "base_qty", "unit_price_usd", "spend_usd"]
     lines = inp.purchases[cols].merge(dec[["po_id", "decision", "source", "part", "prob", "llm_part", "llm_conf", "llm_reason"]], on="po_id", validate="1:1")
     # the matcher's verdict before the materiality rule or any reviewer action; the app starts from these
     lines["decision_pre"], lines["source_pre"] = lines["decision"], lines["source"]
@@ -57,6 +58,77 @@ def apply_crosswalk(lines: pd.DataFrame, crosswalk: dict) -> pd.DataFrame:
         if decision == "approve":
             out.loc[row, "part"] = part
         out.loc[row, ["decision", "source"]] = [{"approve": "accept", "no_match": "no_match", "reject": "rejected"}[decision], "crosswalk"]
+    return out
+
+
+def flatten_bom(boms: pd.DataFrame) -> pd.DataFrame:
+    """Explode a multi-level BOM down to the bought parts, per product.
+
+    qty_per_unit in the result is the gross quantity of the bought part per finished unit: the net quantities
+    multiplied down the tree, each divided by (1 - scrap_pct) of its own row. Raises ValueError on a cycle or
+    on a parent that is not on the product's BOM. A BOM without parent_part is treated as single-level.
+    """
+    b = boms.copy()
+    for col, default in (("scrap_pct", 0.0), ("parent_part", ""), ("make_buy", "buy")):
+        if col not in b:
+            b[col] = default
+    b["parent_part"] = b["parent_part"].fillna("").astype(str)
+    b["gross"] = b["qty_per_unit"] / (1 - b["scrap_pct"].fillna(0.0).clip(0, 0.95))
+    out = []
+    for product, rows in b.groupby("product_id", sort=False):
+        children, parent_of = {}, {}
+        for r in rows.itertuples():
+            children.setdefault(r.parent_part, []).append(r)
+            parent_of.setdefault(r.part_number, r.parent_part)
+        for part in parent_of:  # walk up from every row: a repeat means a cycle, a dead end means an orphan
+            seen, cur = [part], parent_of[part]
+            while cur != "":
+                if cur in seen:
+                    raise ValueError(f"BOM cycle in {product}: {' -> '.join(seen[seen.index(cur):] + [cur])}")
+                if cur not in parent_of:
+                    raise ValueError(f"BOM error in {product}: parent {cur} of {seen[-1]} is not on the BOM")
+                seen.append(cur)
+                cur = parent_of[cur]
+
+        def walk(parent: str, mult: float):
+            for r in children.get(parent, []):
+                if r.part_number in children or r.make_buy == "make":
+                    walk(r.part_number, mult * r.gross)  # an in-house item: its own scrap raises everything below it
+                else:
+                    out.append(dict(product_id=product, part_number=r.part_number, assembly_id=r.assembly_id, description=r.description,
+                                    uom=r.uom, std_cost=r.std_cost, qty_per_unit=mult * r.gross))
+        walk("", 1.0)
+    flat = pd.DataFrame(out, columns=["product_id", "part_number", "assembly_id", "description", "uom", "std_cost", "qty_per_unit"])
+    return flat.groupby(["product_id", "part_number"], sort=False).agg(
+        assembly_id=("assembly_id", "first"), description=("description", "first"), uom=("uom", "first"), std_cost=("std_cost", "first"),
+        qty_per_unit=("qty_per_unit", "sum")).reset_index()
+
+
+def apply_units(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
+    """Express each line's quantity in the unit its BOM part is measured in (qty_bom).
+
+    Same dimension: converted (KG to G, FT to M, box of 100 to each). Different dimension (wire bought by weight,
+    measured by length on the BOM): no conversion is possible without a factor, so qty_bom is blank, uom_issue says
+    why, and a matched line goes to review unless a reviewer has already decided it.
+    """
+    out = lines.copy()
+    bom_uom = boms.drop_duplicates("part_number").set_index("part_number")["uom"].to_dict()
+    qty_bom, issue = [], []
+    for part, uom, qty in zip(out["part"], out["uom"], out["qty"]):
+        if part not in bom_uom:
+            qty_bom.append(np.nan); issue.append("")
+            continue
+        (ldim, lsize), (bdim, bsize) = parse_uom(uom), parse_uom(bom_uom[part], bom_side=True)
+        if str(uom).upper().strip() == "M" and bdim == "length":
+            ldim, lsize = "length", 1.0
+        if ldim == bdim:
+            qty_bom.append(qty * lsize / bsize); issue.append("")
+        else:
+            qty_bom.append(np.nan)
+            issue.append(f"Bought in {uom} ({ldim}) but the BOM measures {part} in {bom_uom[part]} ({bdim}); the quantity cannot be converted without a factor")
+    out["qty_bom"], out["uom_issue"] = qty_bom, issue
+    hold = (out["decision"] == "accept") & (out["uom_issue"] != "") & (out["source"] != "crosswalk")
+    out.loc[hold, ["decision", "source"]] = ["review", "uom_mismatch"]
     return out
 
 
@@ -94,7 +166,8 @@ def tie_out(lines: pd.DataFrame) -> pd.DataFrame:
 # ----------------------------------------------------------------- allocation
 
 def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Split matched production spend across products by qty_per_unit x units_built in the purchase's quarter.
+    """Split matched production spend across products by gross quantity per unit x units_built in the purchase's quarter.
+    The BOM is flattened to bought parts first, so parts inside in-house subassemblies are allocated like any other.
 
     Returns (allocation rows: product, quarter, part, spend; product table with estimated actual cost per unit
     beside the BOM standard cost).
@@ -103,7 +176,8 @@ def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> t
     period = pd.to_datetime(builds["period"])
     builds["quarter"] = period.dt.year.astype(str) + "Q" + period.dt.quarter.astype(str)
     units_q = builds.groupby(["product_id", "quarter"])["units_built"].sum().rename("units").reset_index()
-    usage = boms.groupby(["part_number", "product_id"])["qty_per_unit"].sum().reset_index()
+    flat = flatten_bom(boms)
+    usage = flat[["part_number", "product_id", "qty_per_unit"]]
 
     demand = usage.merge(units_q, on="product_id")
     demand["need"] = demand["qty_per_unit"] * demand["units"]
@@ -119,7 +193,7 @@ def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> t
     rows["allocated_usd"] = rows["spend"] * weight / pd.Series(weight).groupby([rows["part_number"], rows["quarter"]]).transform("sum").to_numpy()
     alloc = rows[["product_id", "quarter", "part_number", "allocated_usd"]]
 
-    std = boms.assign(c=boms["qty_per_unit"] * boms["std_cost"]).groupby("product_id")["c"].sum(min_count=1)
+    std = flat.assign(c=flat["qty_per_unit"] * flat["std_cost"]).groupby("product_id")["c"].sum(min_count=1)
     products = pd.DataFrame({
         "units_built": builds.groupby("product_id")["units_built"].sum(),
         "std_cost_per_unit": std,
@@ -133,14 +207,15 @@ def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> t
 # ---------------------------------------------------------------------- leads
 
 def _vwap(df: pd.DataFrame, by) -> pd.DataFrame:
-    g = df.groupby(by).agg(spend=("spend_usd", "sum"), qty=("base_qty", "sum"))
+    g = df[df["qty_bom"].notna()].groupby(by).agg(spend=("spend_usd", "sum"), qty=("qty_bom", "sum"))
     g["price"] = g["spend"] / g["qty"]
     return g
 
 
-def find_leads(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
+def find_leads(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame | None = None) -> pd.DataFrame:
     """Each lead carries a dollar range: LEAD_LOW of the gap closed, up to all of it."""
-    bom_parts = boms.drop_duplicates("part_number")[["part_number", "description"]].reset_index(drop=True)
+    bought_rows = boms[boms["make_buy"] != "make"] if "make_buy" in boms else boms
+    bom_parts = bought_rows.drop_duplicates("part_number")[["part_number", "description"]].reset_index(drop=True)
     bom_parts["desc_norm"] = bom_parts["description"].map(norm_desc)
     ok = lines[lines["decision"] == "accept"]
     prod, spares = ok[ok["bucket"] == "production"], ok[ok["bucket"] == "spares"]
@@ -166,10 +241,12 @@ def find_leads(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
     parts = bom_parts.assign(family=bom_parts["part_number"].str.split("-").str[0],
                              words=bom_parts["desc_norm"].map(lambda d: frozenset(d.split())), nums=bom_parts["desc_norm"].map(numbers_in))
     price = _vwap(prod, "part")
+    same_part = {}  # duplicate number -> the number it duplicates, so quantities can be pooled below
     for _, g in parts.groupby(["family", "words", "nums"]):
         if len(g) < 2:
             continue
         a, b = sorted(g["part_number"])[:2]
+        same_part[b] = a
         if a in price.index and b in price.index:
             cheap, dear = sorted([a, b], key=lambda x: price.at[x, "price"])
             gap = (price.at[dear, "price"] - price.at[cheap, "price"]) * price.at[dear, "qty"]
@@ -187,6 +264,26 @@ def find_leads(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
                           detail=f"spares at ${r['price_spares']:.4f} vs production at ${r['price_prod']:.4f} (+{r['price_spares'] / r['price_prod'] - 1:.0%})",
                           gap_usd=(r["price_spares"] - r["price_prod"]) * r["qty_spares"]))
 
+    # 4. bought more than the builds required, over the trailing 12 months. A gap, not a diagnosis.
+    if builds is not None and len(prod):
+        dates = pd.to_datetime(prod["po_date"])
+        end = pd.to_datetime(lines["po_date"]).max()
+        start = end - pd.DateOffset(months=12)
+        pooled = prod[dates > start].assign(part=lambda d: d["part"].replace(same_part))  # duplicates are one physical part
+        recent = _vwap(pooled, "part")
+        months = pd.to_datetime(builds["period"]).dt.to_period("M")
+        units = builds[(months > start.to_period("M")) & (months <= end.to_period("M"))].groupby("product_id")["units_built"].sum()
+        flat = flatten_bom(boms)
+        flat = flat.assign(need=flat["qty_per_unit"] * flat["product_id"].map(units).fillna(0), part_number=flat["part_number"].replace(same_part))
+        need, uom = flat.groupby("part_number")["need"].sum(), flat.drop_duplicates("part_number").set_index("part_number")["uom"]
+        for part, r in recent.iterrows():
+            required = need.get(part, 0.0)
+            if required > 0 and r["qty"] > required * (1 + OVER_PURCHASE_MIN):
+                leads.append(dict(lead_type="over_purchase", part_number=part, related="",
+                                  detail=f"bought {r['qty']:,.0f} {uom[part]} against {required:,.0f} required by builds in the 12 months to "
+                                         f"{end:%b %Y} (+{r['qty'] / required - 1:.0%}); cause not determined",
+                                  gap_usd=(r["qty"] - required) * r["price"]))
+
     out = pd.DataFrame(leads, columns=["lead_type", "part_number", "related", "detail", "gap_usd"])
     out["low_usd"], out["high_usd"] = (out["gap_usd"] * LEAD_LOW).round(0), out["gap_usd"].round(0)
     desc = bom_parts.set_index("part_number")["description"]
@@ -196,9 +293,9 @@ def find_leads(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
 
 def run(decisions_path: str | Path = "out/decisions.csv", data_dir: str | Path = "data", materiality: float = MATERIALITY_USD):
     inp = load_inputs(data_dir)
-    lines = assign_buckets(apply_materiality(load_lines(inp, decisions_path), materiality))
+    lines = assign_buckets(apply_units(apply_materiality(load_lines(inp, decisions_path), materiality), inp.boms))
     alloc, products = allocate(lines, inp.boms, inp.builds)
-    return inp, lines, alloc, products, find_leads(lines, inp.boms)
+    return inp, lines, alloc, products, find_leads(lines, inp.boms, inp.builds)
 
 
 def write_outputs(inp: Inputs, lines, alloc, products, leads, out: str | Path = "out"):

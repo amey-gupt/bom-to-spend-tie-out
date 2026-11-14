@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A 25-pack of PH2 screwdriver bits from a safety/shop supplier at $25.71 is a shop consumable, not a BOM part; no candidate (bit holder, screws) is a screwdriver bit.", "model": "claude-opus-5-5", "input_tokens": 1367, "output_tokens": 97}

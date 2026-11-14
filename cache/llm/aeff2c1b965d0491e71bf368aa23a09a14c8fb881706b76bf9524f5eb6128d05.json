@@ -1,0 +1,1 @@
+{"part_number": "CON-20082", "confidence": 0.88, "reason": "6-position 2.54 mm pitch wire-to-board matches only CON-20082; price $0.1369 vs $0.1575 is within supplier variance, and the part-number field looks like a supplier catalog number.", "model": "claude-opus-5-5", "input_tokens": 1443, "output_tokens": 98}

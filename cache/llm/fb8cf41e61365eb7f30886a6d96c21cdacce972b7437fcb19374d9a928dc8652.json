@@ -1,0 +1,1 @@
+{"part_number": "MTR-75173", "confidence": 0.82, "reason": "Description (brushed, 0.4 kW = 400 W, 20 V) matches MTR-75173 exactly, and the PO number MTR-75713 looks like a digit transposition of it; the $18.16 service price is about 2x the $8.96 production price, which fits a spares buy.", "model": "claude-opus-5-5", "input_tokens": 1387, "output_tokens": 123}

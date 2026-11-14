@@ -1,0 +1,1 @@
+{"part_number": "SGR-63452", "confidence": 0.4, "reason": "Steel, 13 teeth and module 0.5 all match SGR-63452, but the line says planet gear (PLNT) while the candidate is a sun gear, and the Ningbo price of $0.1325 is about 65% below the confirmed $0.3832.", "model": "claude-haiku-5-5", "input_tokens": 1400, "output_tokens": 466}

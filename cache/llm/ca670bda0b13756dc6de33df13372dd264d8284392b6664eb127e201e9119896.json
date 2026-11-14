@@ -1,0 +1,1 @@
+{"part_number": "BCL-69304", "confidence": 0.8, "reason": "The purchase line says belt clip, spring steel, L45, which matches BCL-69304 (45 mm long belt clip, spring steel), and the price of $0.3379 is within the allowed range of its confirmed $0.2720 price; BCL-69302 is 55 mm, a conflicting length.", "model": "claude-haiku-5-5", "input_tokens": 1388, "output_tokens": 129}

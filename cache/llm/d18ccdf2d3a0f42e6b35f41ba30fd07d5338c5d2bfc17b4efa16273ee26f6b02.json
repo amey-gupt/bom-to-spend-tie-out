@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.75, "reason": "The purchase line specifies a 55 mm cooling fan with 7 blades, but both 55 mm candidates have different blade counts (FAN-30241 has 9, FAN-30248 has 11), so the stated blade count rules them out and no other candidate matches the fan.", "model": "claude-haiku-5-5", "input_tokens": 1400, "output_tokens": 362}

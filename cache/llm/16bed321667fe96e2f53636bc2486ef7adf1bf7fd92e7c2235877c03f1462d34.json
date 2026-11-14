@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a calibration service for a torque analyzer (a shop service at $368.92, no part number), not a BOM part, so it matches none of the clutch rings or spindle priced under $2.", "model": "claude-opus-5-5", "input_tokens": 1367, "output_tokens": 85}

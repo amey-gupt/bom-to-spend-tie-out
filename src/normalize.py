@@ -61,15 +61,33 @@ def canonical_suppliers(keys) -> dict:
     return out
 
 
-def units_per_uom(raw: str) -> int:
-    """Base units (each) in one purchase unit. 'BX100' -> 100, 'C' -> 100, 'M' -> 1000, 'PCS' -> 1."""
+# unit -> (dimension, size in the dimension's base unit: each, gram, metre, square metre)
+UNITS = {
+    "EA": ("count", 1.0), "EACH": ("count", 1.0), "PC": ("count", 1.0), "PCS": ("count", 1.0), "C": ("count", 100.0),
+    "G": ("mass", 1.0), "GM": ("mass", 1.0), "GR": ("mass", 1.0), "KG": ("mass", 1000.0), "LB": ("mass", 453.592), "LBS": ("mass", 453.592),
+    "MTR": ("length", 1.0), "FT": ("length", 0.3048), "KM": ("length", 1000.0),
+    "M2": ("area", 1.0), "SQM": ("area", 1.0), "FT2": ("area", 0.092903), "SQFT": ("area", 0.092903),
+}
+
+
+def parse_uom(raw: str, bom_side: bool = False) -> tuple[str, float]:
+    """(dimension, size in base units). 'BX100' -> (count, 100), 'KG' -> (mass, 1000), 'FT' -> (length, 0.3048).
+
+    'M' is ambiguous: on a purchase line it usually means per thousand, on a BOM it means metres. A purchase line
+    is read as per thousand here and re-read as metres after matching, if the matched part is measured in length.
+    """
     s = str(raw).upper().strip()
-    if s == "C":
-        return 100
     if s == "M":
-        return 1000
+        return ("length", 1.0) if bom_side else ("count", 1000.0)
+    if s in UNITS:
+        return UNITS[s]
     digits = re.search(r"\d+", s)
-    return int(digits.group()) if digits else 1
+    return "count", float(digits.group()) if digits else 1.0
+
+
+def units_per_uom(raw: str) -> float:
+    """Base units in one purchase unit. 'BX100' -> 100, 'C' -> 100, 'M' -> 1000, 'PCS' -> 1, 'KG' -> 1000 (grams)."""
+    return parse_uom(raw)[1]
 
 
 @dataclass
@@ -100,9 +118,14 @@ def prepare(purchases: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame, x
     p["unit_price_usd"] = p["spend_usd"] / p["base_qty"]  # per base unit, comparable across suppliers
 
     boms = boms.copy()
+    for col, default in (("scrap_pct", 0.0), ("parent_part", ""), ("make_buy", "buy")):  # single-level BOMs need none of these
+        if col not in boms:
+            boms[col] = default
     boms["qty_per_unit"] = boms["qty_per_unit"].astype(float)
-    boms["std_cost"] = boms["std_cost"].astype(float)
-    parts = boms.drop_duplicates("part_number")[["part_number", "revision", "description"]].reset_index(drop=True)
+    boms["std_cost"] = pd.to_numeric(boms["std_cost"], errors="coerce")
+    boms["scrap_pct"] = pd.to_numeric(boms["scrap_pct"], errors="coerce").fillna(0.0)
+    # only bought parts can appear on a purchase order; in-house subassemblies are never match candidates
+    parts = boms[boms["make_buy"] != "make"].drop_duplicates("part_number")[["part_number", "revision", "description"]].reset_index(drop=True)
     parts["pn_key"] = parts["part_number"].map(norm_pn)
     parts["desc_norm"] = parts["description"].map(norm_desc)
 

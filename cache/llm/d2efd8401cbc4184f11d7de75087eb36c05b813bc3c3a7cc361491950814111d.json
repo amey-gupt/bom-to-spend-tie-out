@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a 12-piece screw kit, a service kit that is not a BOM part, and its SVC- number is not a candidate's part number, so none of the five screws should be matched.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 83}

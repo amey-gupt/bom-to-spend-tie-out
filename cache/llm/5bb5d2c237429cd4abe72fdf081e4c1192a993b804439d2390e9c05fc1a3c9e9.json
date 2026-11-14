@@ -1,0 +1,1 @@
+{"part_number": "SPD-62936", "confidence": 0.55, "reason": "Description 'Output spindle 1/2-20' fits both SPD-62933 and SPD-62936 since no length is given; the $2.36 price is within about 7% of SPD-62936's $2.53, whereas it is about 41% above SPD-62933's $1.68, which slightly favors SPD-62936.", "model": "claude-opus-5-5", "input_tokens": 1452, "output_tokens": 131}

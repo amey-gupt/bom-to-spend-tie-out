@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase is a service-type PO for a complete 'GEARBOX ASSEMBLY 18V S', which is an assembly or service kit rather than a single BOM part, and no candidate is a gearbox assembly for the 18 V model.", "model": "claude-haiku-5-5", "input_tokens": 1384, "output_tokens": 185}

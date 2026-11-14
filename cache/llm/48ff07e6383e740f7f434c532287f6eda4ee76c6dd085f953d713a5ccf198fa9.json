@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Cutting fluid in a 5 gal pail is a shop consumable, not a BOM part, and no candidate (heat sinks, threaded inserts, vent cover) matches it in description or price.", "model": "claude-opus-5-5", "input_tokens": 1392, "output_tokens": 88}

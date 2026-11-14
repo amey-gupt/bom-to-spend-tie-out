@@ -1,0 +1,1 @@
+{"part_number": "CON-20082", "confidence": 0.2, "reason": "The description is generic (no pitch or position count), so it fits all five candidates; CON-20082 is chosen only because its confirmed price of $0.1575 is closest to the $0.1859 paid, while CON-20104's $0.1010 from the same supplier is far off.", "model": "claude-haiku-5-5", "input_tokens": 1420, "output_tokens": 429}

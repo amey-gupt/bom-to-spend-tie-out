@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "PO number HSR-28972 is an internal housing-shell number not among the candidates, and the only housing shell right candidate (HSR-28957) is yellow while the line specifies black, so no candidate matches.", "model": "claude-opus-5-5", "input_tokens": 1325, "output_tokens": 91}

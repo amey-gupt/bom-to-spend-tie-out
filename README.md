@@ -38,42 +38,52 @@ The Upload tab takes a BOM, purchase lines and production volumes as CSV or Exce
 
 Uploaded data is matched with rules, embeddings and Claude only. The classifier is skipped: it has to be trained on a company's own confirmed matches, and the external tests show one trained elsewhere does not transfer. There is no ground truth for uploaded files, so the app reports how lines were decided, not accuracy.
 
-`samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Load the second sample" in the Upload tab uses it. On that slice the mapping was right for all 22 columns, and matching reached 100% precision and 97% recall against the planted truth (256 Claude calls, $2.00, about 85 seconds uncached).
+`samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Load the second sample" in the Upload tab uses it. It includes the multi-level BOM columns and the continuous materials. On that slice the mapping was right for all 25 columns, and matching reached 99.7% precision and 97.5% recall against the planted truth (259 Claude calls, $2.03, about 85 seconds uncached).
 
-## Results so far (held-out noise styles, 1,669 lines, $9.8M, true tie-out rate 98.7%)
+## Results so far (held-out noise styles, 1,708 lines, $10.1M, true tie-out rate 98.8%)
 
 | Stage | Tied-out spend | Precision of accepted matches | Recall | Review queue | Wrong-match dollars |
 |---|---|---|---|---|---|
-| Naive exact part number | 28.2% | 100.0% | 21.8% | n/a | $0 |
-| Rules only | 34.4% | 100.0% | 40.0% | n/a | $0 |
-| Rules + embeddings, fixed threshold | 85.4% | 95.2% | 86.9% | n/a | $86,119 |
-| Rules + classifier | 77.7% | 100.0% | 87.0% | 287 lines, $2.23M | $0 |
-| Rules + classifier + Claude | 98.0% | 100.0% | 99.1% | 13 lines, $48K | $0 |
+| Naive exact part number | 27.5% | 100.0% | 21.3% | n/a | $0 |
+| Rules only | 34.2% | 100.0% | 40.1% | n/a | $0 |
+| Rules + embeddings, fixed threshold | 84.1% | 95.3% | 86.3% | n/a | $86,119 |
+| Rules + classifier | 77.1% | 100.0% | 83.7% | 315 lines, $2.29M | $0 |
+| Rules + classifier + Claude | 97.9% | 100.0% | 98.8% | 11 lines, $25K | $0 |
 
 How the numbers are kept honest:
 
 - The classifier is trained on the tuning split only. Its accept threshold is set for at least 99% precision using leave-one-noise-style-out cross-validation, so the threshold is chosen on styles the model had not seen.
-- Claude sees only the review band (647 lines, 451 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
-- Claude cost: 451 calls on `claude-opus-5-5` used 623,414 input and 51,015 output tokens, $3.51 at list price. The same calls on `claude-haiku-5-5` cost $0.11, but its picks never reached 99% precision on the tuning split, so none were auto-accepted and the held-out review queue stayed at 216 lines ($2.13M).
+- Claude sees only the review band (534 lines, 345 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
+- Claude cost: 345 calls on `claude-opus-5-5` used 478,128 input and 42,619 output tokens, $2.76 at list price. The same calls on `claude-haiku-5-5` cost $0.09, but its picks never reached 99% precision on the tuning split, so none were auto-accepted and the held-out review queue stayed at 267 lines ($2.22M).
+- "No match" calls are the weak spot: on held-out, 92.3% of them are right, and $43,572 of spend that does have a BOM part is dropped. Most of it is truncated descriptions.
 - On the tuning split the full pipeline is not perfect: 99.95% precision and $18,953 of wrong-match spend.
 - All of this is measured on synthetic noise. Real exports will be messier in ways the generator does not model.
 
-Embedding backends on the same held-out lines (rules + classifier, before Claude): OpenAI `text-embedding-3-small` puts the true part first for 95.6% of open lines and auto-accepts 79.3% of lines; local `all-MiniLM-L6-v2` gets 89.9% and 74.5%. Both reach 100% precision on accepted matches.
+Embedding backends on the same held-out lines (rules + classifier, before Claude): OpenAI `text-embedding-3-small` puts the true part first for 95.7% of open lines and auto-accepts 76.4% of lines; local `all-MiniLM-L6-v2` gets 90.2% and 74.8%. Both reach 100% precision on accepted matches. The backend for the Claude stage is chosen on the tuning split, by how often the true part is the top candidate.
 
-## Buckets, product cost and leads (all 4,421 lines, $29.3M)
+## Buckets, product cost and leads (all 4,487 lines, $29.7M)
 
 | Bucket | Tool | Truth |
 |---|---|---|
-| Production | 81.8% | 87.3% |
-| Spares | 6.1% | 6.2% |
+| Production | 81.5% | 87.4% |
+| Spares | 6.0% | 6.1% |
 | Warranty | 1.1% | 1.3% |
-| Unassigned | 11.0% | 5.2% |
+| Unassigned | 11.4% | 5.1% |
 
-The tool reports an 89.0% tie-out rate against a true 94.8%. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 94.4% and the bucket is right for 99.1% of spend.
+The tool reports an 88.6% tie-out rate against a true 94.9%. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 93.9% and the bucket is right for 98.6% of spend.
 
-Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15. Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
+Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2. Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
 
-Product cost is an estimate: matched production spend is split across products by BOM quantity x units built per quarter, and shown beside the BOM standard cost.
+Product cost is an estimate: matched production spend is split across products by gross BOM quantity x units built per quarter, and shown beside the BOM standard cost.
+
+## Units of measure, scrap and multi-level BOMs
+
+- **BOM columns:** `uom`, `scrap_pct`, `parent_part` and `make_buy`. The gearbox and motor are in-house subassemblies with their own components; the gearbox carries 1% scrap.
+- **Continuous materials:** steel sheet by area, magnet wire by length, grease and potting resin by mass, each with scrap, bought in assorted units (KG, LB, FT, FT2 and so on). 66 purchase lines.
+- **Unit conversion:** purchase quantities are converted to the BOM unit within the same dimension (713 accepted lines, including boxes to each). A line bought in another dimension, such as wire by weight against a BOM in metres, cannot be converted without a factor: it goes to review with that reason. All 4 such lines were caught and no other line was flagged. On a purchase line the unit `M` is read as "per thousand" unless the matched part is measured in length.
+- **Flattening:** the BOM tree is exploded to bought parts before allocation. Gross requirement is net quantity divided by (1 - scrap), multiplied down the tree. A cycle or a parent that is not on the BOM raises an error that names the path.
+- **Purchased versus required:** a lead when production purchases over the trailing 12 months exceed the gross requirement by more than 15%. It is shown as a gap and no cause is assigned. Duplicate part numbers are pooled first, otherwise one half of each pair looks over-bought.
+- **What it found:** two materials were planted at about 1.3x their requirement. Grease is found (+30%, a $2,840 to $5,681 lead). Magnet wire is missed: two of its lines were bought by weight and are held for a unit conversion, so its counted purchases fall below the threshold.
 
 Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. To rebuild `out/` from scratch, step 3 needs `OPENAI_API_KEY` for the embeddings (in the environment or in `.env.local`); the embedding cache is not committed. Claude's responses are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
 
@@ -103,12 +113,12 @@ The benchmark's validation split was used only to check the model-code rule and 
 
 | Condition | Stage | Right | Same-spec alternate | Wrong | In review | Called no match | Precision | Recall | No-match lines right |
 |---|---|---|---|---|---|---|---|---|---|
-| MPN visible | Rules + classifier | 145 | 0 | 0 | 63 | 0 | 1.00 | 0.70 | 4.4% |
-| MPN visible | + Claude | 163 | 0 | 1 | 5 | 39 | 0.99 | 0.78 | 99.6% |
-| MPN hidden | Rules + classifier | 1 | 0 | 0 | 204 | 3 | 1.00 | 0.00 | 0.0% |
-| MPN hidden | + Claude | 59 | 0 | 2 | 18 | 129 | 0.97 | 0.28 | 99.4% |
+| MPN visible | Rules + classifier | 145 | 0 | 0 | 54 | 9 | 1.00 | 0.70 | 54.8% |
+| MPN visible | + Claude | 159 | 0 | 1 | 5 | 43 | 0.99 | 0.76 | 99.6% |
+| MPN hidden | Rules + classifier | 1 | 0 | 0 | 104 | 103 | 1.00 | 0.00 | 37.0% |
+| MPN hidden | + Claude | 34 | 0 | 1 | 13 | 160 | 0.97 | 0.16 | 99.4% |
 
-What this shows: the classifier, trained on synthetic drill parts, does not transfer and sends nearly every real line to review; rules and Claude carry the test. With the MPN hidden, recall is low because a BOM line like "Red LED 5mm" does not identify one catalog part, and the tool declines instead of guessing. Two or three no-match lines were wrongly accepted, all by the classifier.
+What this shows: the classifier, trained on synthetic drill parts, does not transfer; rules and Claude carry the test. How it fails depends on the training run: an earlier classifier sent nearly every real line to review, while the current one calls about half the hidden-MPN lines "no match" outright, which cut recall after Claude from 0.28 to 0.16. With the MPN hidden, recall is low because a BOM line like "Red LED 5mm" does not identify one catalog part, and the tool declines instead of guessing. Two or three no-match lines were wrongly accepted, all by the classifier.
 
 Data sources and their terms, as checked on 2026-11-14:
 
@@ -130,27 +140,27 @@ uv run python -m src.evaluate selftrain
 uv run python -m src.external.selftrain_parts     # needs the external data
 ```
 
-**(a) Synthetic data, held-out split** (self-trained on 2,229 rule-matched lines from the whole dataset):
+**(a) Synthetic data, held-out split** (self-trained on 2,254 rule-matched lines from the whole dataset):
 
 | Classifier | Stage | Precision | Recall | Review queue | Wrong-match dollars |
 |---|---|---|---|---|---|
-| Truth-trained | Rules + classifier | 100.00% | 87.0% | 287 lines, $2.23M | $0 |
-| Truth-trained | + Claude | 100.00% | 99.1% | 13 lines, $48K | $0 |
-| Self-trained | Rules + classifier | 97.44% | 95.3% | 168 lines, $1.02M | $67,154 |
-| Self-trained | + Claude | 97.53% | 98.8% | 19 lines, $38K | $67,154 |
+| Truth-trained | Rules + classifier | 100.00% | 83.7% | 315 lines, $2.29M | $0 |
+| Truth-trained | + Claude | 100.00% | 98.8% | 11 lines, $25K | $0 |
+| Self-trained | Rules + classifier | 96.51% | 95.8% | 145 lines, $1.01M | $75,999 |
+| Self-trained | + Claude | 96.60% | 98.4% | 16 lines, $37K | $75,999 |
 
 **(b) Real parts** (trained on 70 rule-matched lines from half the parts, of which 24 gave a usable positive; tested on 97 lines from the other half with the part number hidden, plus 500 no-match lines):
 
 | Classifier | Stage | Right | Wrong | Precision | Recall | Review queue | No-match lines wrongly accepted |
 |---|---|---|---|---|---|---|---|
-| Transferred from synthetic | Rules + classifier | 0 | 0 | n/a | 0.00 | 593 lines | 3 |
-| Transferred from synthetic | + Claude | 26 | 1 | 0.96 | 0.27 | 10 lines | 3 |
+| Transferred from synthetic | Rules + classifier | 0 | 0 | n/a | 0.00 | 361 lines | 3 |
+| Transferred from synthetic | + Claude | 17 | 0 | 1.00 | 0.18 | 8 lines | 3 |
 | Self-trained | Rules + classifier | 2 | 0 | 1.00 | 0.02 | 595 lines | 0 |
 | Self-trained | + Claude | 26 | 1 | 0.96 | 0.27 | 10 lines | 0 |
 
 The catalog has no quantities, so wrong-match dollars cannot be computed for (b).
 
-Self-training is not a shortcut. On the synthetic data it accepts more lines but loses the 99% precision guarantee: rule-matched lines always have a true part, so the model never sees a line that should stay unmatched, and its own cross-validated precision estimate (99.7%) is optimistic. On real parts the training set is too small and too weak, the accept threshold collapses to 1.0, and recall moves from 0.00 to 0.02. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
+Self-training is not a shortcut. On the synthetic data it accepts more lines but loses the 99% precision guarantee: rule-matched lines always have a true part, so the model never sees a line that should stay unmatched, and its own cross-validated precision estimate (99.3%) is optimistic. On real parts the training set is too small and too weak, the accept threshold collapses to 1.0, and recall moves from 0.00 to 0.02. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
 
 ## Generate the data
 
@@ -162,7 +172,7 @@ The generator uses the standard library only, with a fixed seed, and gives the s
 
 | File | Contents |
 |---|---|
-| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models, with standard cost |
+| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models; standard cost, unit of measure, scrap, parent part and make/buy |
 | `data/builds.csv` | units built per product per month, Jan 2025 to Jun 2026 |
 | `data/purchases.csv` | purchase lines with noisy part numbers, descriptions, units and supplier names |
 | `data/supplier_xref.csv` | partial supplier-part-number crosswalk (about 40% coverage) |

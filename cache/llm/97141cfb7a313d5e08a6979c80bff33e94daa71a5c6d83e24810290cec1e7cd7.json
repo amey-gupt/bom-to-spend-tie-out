@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase text says yellow latch, but the only latch candidate, LAT-54794, is black, and LAT-54802 is a same-family internal number that matches none of the candidates, pointing to a part outside this BOM set.", "model": "claude-haiku-5-5", "input_tokens": 1353, "output_tokens": 216}

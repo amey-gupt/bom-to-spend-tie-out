@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is cutting fluid in a 5 gal pail, a shop consumable that matches none of the five candidates, which are heat sinks, threaded inserts, and a vent cover.", "model": "claude-haiku-5-5", "input_tokens": 1390, "output_tokens": 86}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies an orange PC/ABS nameplate, but no candidate nameplate is orange (NPL-67932 is red, NPL-67921 grey, NPL-67926 yellow ABS), and BTH-20635 is an orange bit holder rather than a nameplate.", "model": "claude-haiku-5-5", "input_tokens": 1344, "output_tokens": 269}

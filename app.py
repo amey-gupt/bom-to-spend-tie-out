@@ -30,6 +30,7 @@ HOW = {
     "rule_pn_exact": "Rule: part number", "rule_xref": "Rule: supplier crosswalk", "rule_xref_offbom": "Rule: crosswalk to a part on no BOM",
     "rule_pn_in_text": "Rule: part number in the description", "rule_crosswalk": "Reviewer crosswalk", "rule_crosswalk_none": "Reviewer crosswalk",
     "classifier": "Classifier", "embedding": "Nearest description only", "llm": "Claude", "llm_material": "Claude, held by the materiality rule",
+    "uom_mismatch": "Held: bought in a unit that cannot be converted",
     "crosswalk": "Reviewer crosswalk",
 }
 MAIN_MODEL, SMALL_MODEL = "claude-opus-5-5", "claude-haiku-5-5"
@@ -75,11 +76,18 @@ def compute(base: pd.DataFrame, bom: pd.DataFrame, builds: pd.DataFrame, materia
     lines["decision"], lines["source"] = lines["decision_pre"], lines["source_pre"]
     lines = allocate.apply_materiality(lines, materiality)
     lines = allocate.apply_crosswalk(lines, {k: (d, part) for k, d, part in rules})
+    lines = allocate.apply_units(lines, bom)
     lines = lines[(lines["quarter"] >= q_from) & (lines["quarter"] <= q_to)].reset_index(drop=True)
     in_range = quarter_of(builds["period"]).between(q_from, q_to)
     lines = allocate.assign_buckets(lines)
     alloc, products = allocate.allocate(lines, bom, builds[in_range])
-    return lines, alloc, products, allocate.find_leads(lines, bom)
+    return lines, alloc, products, allocate.find_leads(lines, bom, builds[in_range])
+
+
+@st.cache_data
+def flat_bom(bom: pd.DataFrame) -> pd.DataFrame:
+    """The BOM exploded to bought parts, with gross (scrap-adjusted) quantities per finished unit."""
+    return allocate.flatten_bom(bom)
 
 
 sample_base, sample_bom, sample_builds, evals = load()
@@ -220,6 +228,8 @@ with tab_queue:
         st.success("Nothing is waiting for review.")
     else:
         def why(r) -> str:
+            if r["source"] == "uom_mismatch":
+                return r["uom_issue"]
             if r["source"] == "llm_material":
                 return f"Claude matched it, but the line is above the {usd(materiality)} materiality threshold"
             if pd.notna(r["llm_conf"]) and r["llm_part"]:
@@ -244,7 +254,7 @@ with tab_queue:
             st.table(pd.DataFrame({"": {
                 "Description": r["item_description"], "Part-number field": r["supplier_part_number"] or "(blank)", "Supplier": r["supplier"],
                 "Plant": r["plant"], "PO date": r["po_date"], "PO type": r["po_type"] or "(blank)",
-                "Quantity": f"{r['base_qty']:,.0f} units (bought per {r['uom']})", "Price per unit": f"${r['unit_price_usd']:.4f}"}}))
+                "Quantity": f"{r['qty']:,.2f} {r['uom']}", "Price per unit": f"${r['unit_price_usd']:.4f}"}}))
         with b:
             st.markdown("**The suggested match**")
             st.markdown(f"`{sug}` {part_desc.get(sug, '')}")
@@ -299,7 +309,8 @@ with tab_cost:
 
     product = st.selectbox("Parts driving the difference for", products["product_id"])
     units = products.set_index("product_id").at[product, "units_built"]
-    use = bom[bom["product_id"] == product].groupby("part_number").agg(
+    flat = flat_bom(bom)
+    use = flat[flat["product_id"] == product].groupby("part_number").agg(
         description=("description", "first"), assembly=("assembly_id", "first"), qty=("qty_per_unit", "sum"), std_cost=("std_cost", "first"))
     use["std_per_unit"] = (use["qty"] * use["std_cost"]).fillna(0.0)
     use["actual_per_unit"] = alloc[alloc["product_id"] == product].groupby("part_number")["allocated_usd"].sum().reindex(use.index).fillna(0.0) / units
@@ -330,6 +341,7 @@ with tab_leads:
     st.caption("Each lead is a price difference worth a conversation, shown as a range: half the gap closed, up to all of it. "
                "None of it is booked. Volume commitments, timing, quality and logistics can explain a gap.")
     names = {"supplier_price_gap": "Same part, different supplier prices", "duplicate_part": "Duplicate internal part numbers",
+             "over_purchase": "Bought more than the builds required",
              "spares_premium": "Spares bought at a premium"}
     chosen = st.multiselect("Lead type", list(names), default=list(names), format_func=names.get)
     shown = leads[leads["lead_type"].isin(chosen)].reset_index(drop=True)
@@ -353,7 +365,7 @@ with tab_leads:
                     "Select a row above to change the lead.")
         st.dataframe(pd.DataFrame({
             "PO line": under["po_id"], "Date": under["po_date"], "Plant": under["plant"], "Supplier": under["supplier"], "Part": under["part"],
-            "Bucket": under["bucket"], "Units": under["base_qty"].map("{:,.0f}".format), "Price per unit": under["unit_price_usd"].map("${:.4f}".format),
+            "Bucket": under["bucket"], "Quantity (BOM unit)": under["qty_bom"].map("{:,.0f}".format), "Price per unit": under["unit_price_usd"].map("${:.4f}".format),
             "Spend": under["spend_usd"].map(usd), "Description on the PO": under["item_description"],
             "Matched by": under["source"].map(HOW)}), hide_index=True, width="stretch", height=320)
 
@@ -432,9 +444,9 @@ with tab_eval:
                               "No-match lines right": f"{m['no_match_accuracy']:.1%}", "No-match wrongly accepted": m["no_match_wrongly_accepted"]})
         st.dataframe(pd.DataFrame(table), hide_index=True, width="stretch")
         st.markdown("""
-- **The classifier does not transfer.** Trained on synthetic drill parts, it sends almost every real electronics line to review. Rules and Claude carry this test. A real deployment needs the client's own confirmed matches to train on.
+- **The classifier does not transfer.** Trained on synthetic drill parts, it either sends real electronics lines to review or calls them "no match" outright, depending on the training run. Rules and Claude carry this test. A real deployment needs the client's own confirmed matches to train on.
 - **With the part number in the text, the rule that looks for it does most of the work**, and precision stays at 0.99.
-- **With the part number hidden, recall is low (0.28) and precision holds (0.97).** A hobbyist BOM line such as "Red LED 5mm" does not carry enough to pick one catalog part, and the tool declines instead of guessing.
+- **With the part number hidden, recall is low and precision holds (0.97).** A hobbyist BOM line such as "Red LED 5mm" does not carry enough to pick one catalog part, and the tool declines instead of guessing.
 - **Real no-match lines are rejected correctly more than 99% of the time** after Claude. The two or three accepted in error were accepted by the classifier, not by Claude.
 """)
 
@@ -467,7 +479,7 @@ with tab_eval:
         st.caption("The catalog has prices but no quantities, so wrong-match dollars cannot be computed for the real-parts test.")
     if sa or sb:
         st.markdown("""
-- **It does not replace confirmed labels.** On the synthetic data the self-trained classifier accepts more lines, but its precision falls from 100% to about 97.4% and it produces wrong-match dollars where the truth-trained one has none. Rule-matched lines always have a true part, so the model never sees a line that should be left unmatched.
+- **It does not replace confirmed labels.** On the synthetic data the self-trained classifier accepts more lines, but its precision falls from 100% to about 96.5% and it produces wrong-match dollars where the truth-trained one has none. Rule-matched lines always have a true part, so the model never sees a line that should be left unmatched.
 - **On real parts it barely moves.** Only a third of the training lines had their true part among the five nearest candidates, the thresholds collapse to "accept almost nothing", and recall goes from 0.00 to 0.02. Its one gain: it stops wrongly accepting no-match lines.
 - **Conclusion:** self-training is not a shortcut. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
 """)
@@ -476,7 +488,9 @@ with tab_eval:
     st.markdown("""
 - **The data is synthetic.** Accuracy is measured on noise this project generated. Real exports are messier in ways the generator does not model, so treat these numbers as a ceiling, not a forecast.
 - **The classifier is specific to the data it was trained on.** On real electronics parts it abstained on almost everything (see the external tests above).
-- **One product family.** Four drill models and 276 parts. A real manufacturer has thousands of parts and many near-identical ones.
+- **One product family.** Four drill models and 280 bought parts. A real manufacturer has thousands of parts and many near-identical ones.
+- **Units convert only within a dimension.** Kilograms to grams or feet to metres are converted; wire bought by weight against a BOM in metres is not, and goes to review. On a purchase line the unit "M" is read as "per thousand" unless the matched part is measured in length.
+- **Purchased versus required is a gap, not a finding.** It can mean stock build, scrap above standard, service use, or a BOM quantity that is too low.
 - **Allocation is an estimate.** Spend is split by BOM quantity and build volume. It ignores inventory, scrap and timing between buying and building.
 - **Buckets lean on the PO type.** Where it is blank, the bucket is inferred from the match and the plant. A blank, unmatched spare is counted as unassigned.
 - **Duplicate detection is narrow.** It finds part numbers whose descriptions use the same words and numbers. Duplicates described differently are missed.
@@ -521,15 +535,16 @@ with tab_trend:
         st.caption("An estimate. Parts are bought ahead of the builds that use them, so a single quarter can swing; lines still in review are not included.")
 
     st.subheader("Estimated inventory: bought minus built")
-    st.caption("An estimate, not a stock count: cumulative production purchases minus BOM quantity x units built, over the selected date range. "
+    st.caption("An estimate, not a stock count: cumulative production purchases minus the gross BOM requirement (scrap included, multi-level BOMs "
+               "flattened) x units built, in the BOM's unit of measure, over the selected date range. "
                "It ignores opening stock, scrap and parts issued to service.")
-    need = bom.groupby(["part_number", "product_id"])["qty_per_unit"].sum().reset_index().merge(units_q.reset_index(), on="product_id")
+    need = flat_bom(bom)[["part_number", "product_id", "qty_per_unit"]].merge(units_q.reset_index(), on="product_id")
     need["need"] = need["qty_per_unit"] * need["units_built"]
     need_q = need.groupby(["part_number", "quarter"])["need"].sum()
     bought = lines[(lines["decision"] == "accept") & (lines["bucket"] == "production")]
-    bought_q = bought.groupby(["part", "quarter"])["base_qty"].sum().rename_axis(["part_number", "quarter"])
+    bought_q = bought.groupby(["part", "quarter"])["qty_bom"].sum().rename_axis(["part_number", "quarter"])
     inv = pd.DataFrame({"bought": bought_q.groupby("part_number").sum(), "needed": need_q.groupby("part_number").sum()}).fillna(0.0)
-    price = bought.groupby("part")["spend_usd"].sum() / bought.groupby("part")["base_qty"].sum()
+    price = bought.groupby("part")["spend_usd"].sum() / bought.groupby("part")["qty_bom"].sum()
     inv["units"] = inv["bought"] - inv["needed"]
     inv["value"] = inv["units"] * price.reindex(inv.index)
     inv = inv.dropna(subset=["value"])

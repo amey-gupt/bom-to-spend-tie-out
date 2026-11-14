@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line specifies a teal TPE overmold grip, but every overmold grip candidate is a different color or material (GRP-62242 yellow TPE, GRP-62234 grey PA6-GF30, GRP-62236 black ABS), and the teal lever LVR-69919 is not a grip.", "model": "claude-haiku-5-5", "input_tokens": 1363, "output_tokens": 252}

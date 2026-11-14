@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.7, "reason": "The purchase line describes a planet gear (PLNT), but the only steel 13-tooth, module 0.5 candidate, SGR-63452, is a sun gear, and the $0.1325 price is about 65% below its confirmed $0.3832, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1400, "output_tokens": 450}

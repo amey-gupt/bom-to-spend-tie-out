@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies 7 blades, which conflicts with both 55 mm fans on the BOM (FAN-30241 has 9 blades and FAN-30248 has 11), and the purchase part number GV-3250435 matches none of the candidate numbers.", "model": "claude-haiku-5-5", "input_tokens": 1408, "output_tokens": 316}

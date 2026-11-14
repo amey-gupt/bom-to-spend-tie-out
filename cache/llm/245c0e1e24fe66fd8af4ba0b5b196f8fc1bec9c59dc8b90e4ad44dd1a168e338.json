@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.86, "reason": "The purchase line specifies 16 AWG and 20 mm length, but no candidate matches: the 16 AWG candidates are 80, 120 and 200 mm long, WHR-16755 is 18 AWG, and WHR-16757 is 14 AWG at 250 mm, and the purchase's MX-7762794 part number matches none of them.", "model": "claude-haiku-5-5", "input_tokens": 1356, "output_tokens": 298}

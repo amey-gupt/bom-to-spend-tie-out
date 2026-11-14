@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line is a red ABS overmold grip, but every grip candidate conflicts on color or material (GRP-62236 is black, GRP-62242 is yellow TPE, GRP-62234 is grey PA6-GF30), and the red PC/ABS item is a trigger, not a grip.", "model": "claude-opus-5-5", "input_tokens": 1348, "output_tokens": 119}

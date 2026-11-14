@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "No candidate is a 698 open bearing: BRG-65675 is 698 ZZ (shielded, a seal conflict), and the purchase part number BRG-65737 matches none of the candidate numbers, pointing to a BOM outside this set.", "model": "claude-haiku-5-5", "input_tokens": 1404, "output_tokens": 326}

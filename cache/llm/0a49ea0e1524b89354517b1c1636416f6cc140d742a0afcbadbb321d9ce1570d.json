@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.82, "reason": "The purchase line specifies M4x20 zinc self-tapping screws, but every M4 candidate is a different length (SCR-66791 is M4x16, SCR-66734 is M4x12, SCR-66685 is M4x8), so the stated length conflicts with all of them and none is the same part.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 372}

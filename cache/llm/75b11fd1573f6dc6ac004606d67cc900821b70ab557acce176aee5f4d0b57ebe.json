@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line is a self-tapping (ST) M4x20 zinc screw, and no candidate has a 20 mm length (the self-tapping options are M4x16 and M4x12, the Torx is M4x8), so every screw candidate conflicts on length.", "model": "claude-opus-5-5", "input_tokens": 1378, "output_tokens": 106}

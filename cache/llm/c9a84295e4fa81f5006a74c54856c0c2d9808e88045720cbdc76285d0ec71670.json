@@ -1,0 +1,1 @@
+{"part_number": "HCM-34673", "confidence": 0.8, "reason": "The purchase line describes a hammer cam, 30 mm diameter, 14 teeth, which matches HCM-34673 exactly; HCM-34670 has 12 teeth, a conflict, and the other candidates are clutch rings or bearings.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 111}

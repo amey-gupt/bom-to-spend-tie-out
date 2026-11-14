@@ -1,0 +1,1 @@
+{"part_number": "WHR-16757", "confidence": 0.85, "reason": "Description 'WR HARN 14AWG L250' matches WHR-16757 (14 AWG, 250 mm); WHR-16777 is 120 mm, and the price $0.4283 is within about 11% of the confirmed $0.3849; GV-6829063 appears to be the supplier's own number rather than an internal one.", "model": "claude-opus-5-5", "input_tokens": 1394, "output_tokens": 136}

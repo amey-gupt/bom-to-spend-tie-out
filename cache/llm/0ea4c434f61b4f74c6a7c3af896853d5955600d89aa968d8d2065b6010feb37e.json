@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line specifies 300 W at 40 V, but no candidate matches: MTR-75173 is 400 W/20 V, MTR-75169 is 400 W/18 V, and MTR-75168 is 200 W/12 V, while MTR-75180 is an internal number of the same family that belongs to none of the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1351, "output_tokens": 280}

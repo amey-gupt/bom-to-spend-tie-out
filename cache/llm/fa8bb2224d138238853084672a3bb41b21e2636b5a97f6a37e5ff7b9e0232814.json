@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line is air tool oil, a shop consumable, and none of the candidates is a lubricant of that kind; the closest, GRS-58141, is a gearbox grease with no confirmed purchase history and does not match an oil description.", "model": "claude-haiku-5-5", "input_tokens": 1393, "output_tokens": 100}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a black TPE right-hand housing shell with internal number HSR-28972; the only housing-shell candidate, HSR-28957, is yellow and has a different number, so the line points to a same-family part that is not among these BOMs.", "model": "claude-opus-5-5", "input_tokens": 1333, "output_tokens": 100}

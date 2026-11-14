@@ -1,0 +1,1 @@
+{"part_number": "BRG-65703", "confidence": 0.8, "reason": "The purchase text '607 2RS' matches only BRG-65703 (deep groove 607, 2RS), and the $0.4556 price is within a plausible range of its confirmed $0.3703 Brennan price for a service spare, with no conflicting attributes.", "model": "claude-haiku-5-5", "input_tokens": 1369, "output_tokens": 388}

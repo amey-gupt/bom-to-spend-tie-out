@@ -1,0 +1,1 @@
+{"part_number": "WHR-16766", "confidence": 0.8, "reason": "The purchase description specifies a 16 AWG cable assembly of 120 mm length, which matches WHR-16766 exactly (16 AWG, 120 mm), while the other harnesses are 200 mm or 80 mm and the part-number field CD-395421 does not match any candidate directly.", "model": "claude-haiku-5-5", "input_tokens": 1379, "output_tokens": 125}

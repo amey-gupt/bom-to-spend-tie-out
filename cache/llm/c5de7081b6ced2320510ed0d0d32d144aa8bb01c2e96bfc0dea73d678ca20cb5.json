@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.72, "reason": "The line asks for a 30x50 mm rating label, but no candidate is both a rating label and 30x50 mm: LBL-74774 matches the size but is a warning label, and every rating-label candidate (40x60, 25x25, 50x80, 20x40 mm) conflicts on size.", "model": "claude-opus-5-5", "input_tokens": 1337, "output_tokens": 119}

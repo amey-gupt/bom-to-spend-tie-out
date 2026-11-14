@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for a 21-position clutch ring, and none of the candidates is 21-position (they are 24, 18 and 15-position); MR5672-26 looks like a supplier number, so the line likely belongs to a product whose BOM is not in this set.", "model": "claude-opus-5-5", "input_tokens": 1370, "output_tokens": 106}

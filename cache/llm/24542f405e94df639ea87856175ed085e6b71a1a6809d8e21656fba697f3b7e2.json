@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO references internal number MTR-75180 (brushed motor, 300 W, 40 V), which is not among the candidates, and no candidate matches both 300 W and 40 V: the closest motors are 400 W/20 V, 400 W/18 V and 200 W/12 V.", "model": "claude-opus-5-5", "input_tokens": 1351, "output_tokens": 116}

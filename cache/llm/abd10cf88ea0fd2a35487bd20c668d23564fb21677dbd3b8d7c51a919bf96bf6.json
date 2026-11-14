@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The line asks for an M5x12 zinc screw marked 'ST' (likely set or self-tapping), not a socket cap screw, and its $0.0308 unit price is about 4x the $0.0075 that Apex is confirmed to charge for SCR-66712, beyond normal variation for a production buy.", "model": "claude-opus-5-5", "input_tokens": 1345, "output_tokens": 293}

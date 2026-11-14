@@ -231,6 +231,9 @@ _SUPPLIERS = [
     ("Service", "ProTool Service Parts Distribution LLC"), ("Service", "Allied Aftermarket Supply Inc."),
     ("MRO", "Fairmont Industrial Supply Co."), ("MRO", "SafetyFirst Direct LLC"),
     ("MRO", "Monterrey Suministros Industriales S.A. de C.V."),
+    # raw-material suppliers are appended last so the suppliers above keep their ids
+    ("Materials", "Great Lakes Steel Service Inc."), ("Materials", "Essex Ridge Magnet Wire Co."),
+    ("Materials", "Lubritech Industrial Greases LLC"), ("Materials", "Polymer Supply Partners Inc."),
 ]
 SUPPLIERS = [Supplier(f"S{i + 1:02d}", s[1], s[0], s[2] if len(s) > 2 else "USD") for i, s in enumerate(_SUPPLIERS)]
 
@@ -268,4 +271,23 @@ INDIRECT = [
     ("Air tool oil, 1 qt", 9, 16), ("Zip ties 8 in black, 1000-pack", 14, 24), ("Bin, stackable 11 x 16 in", 6, 12),
     ("Dunnage foam sheet 1/2 in", 3, 7), ("Desiccant bulk 5 kg", 20, 38), ("First aid kit refill", 25, 60),
     ("Welding tip, ultrasonic horn", 250, 700), ("Barcode scanner, handheld", 140, 260), ("Freight, expedite charge", 150, 1200),
+]
+
+
+# In-house subassemblies: every part in these assemblies becomes a child of a "make" item, one per product.
+SUBASSEMBLIES = {"GEARBOX": ("GBX", "Gearbox subassembly", 0.01), "MOTOR": ("MOT", "Motor subassembly", 0.0)}  # prefix, name, scrap
+
+# Continuous materials, measured and bought in units other than "each".
+#   qty: BOM quantity per parent, by product index.  units: purchase units in the BOM's dimension (text, BOM units per purchase unit).
+#   cross: a purchase unit in another dimension (text, that unit per BOM unit, share of lines), or None.
+#   over: purchased quantity relative to the gross requirement. Above ~1.15 is a planted over-purchase.
+MATERIALS = [
+    dict(prefix="STL", noun="steel sheet", qual="cold rolled", attrs=(("thk", 0.8),), uom="M2", price=9.40, assembly="MOTOR",
+         qty=(0.011, 0.014, 0.014, 0.016), scrap=0.08, units=(("M2", 1.0), ("SQM", 1.0), ("FT2", 0.092903)), cross=("KG", 6.28, 0.25), over=1.0),
+    dict(prefix="MWR", noun="magnet wire", qual="enamelled copper", attrs=(("dia", 0.5),), uom="M", price=0.036, assembly="MOTOR",
+         qty=(11, 14, 14, 16), scrap=0.03, units=(("M", 1.0), ("MTR", 1.0), ("FT", 0.3048)), cross=("KG", 0.00175, 0.25), over=1.32),
+    dict(prefix="GRS", noun="gearbox grease", qual="lithium EP2", attrs=(("txt", "NLGI 2"),), uom="G", price=0.011, assembly="GEARBOX",
+         qty=(6, 8, 9, 8), scrap=0.05, units=(("KG", 1000.0), ("G", 1.0), ("LB", 453.592)), cross=None, over=1.27),
+    dict(prefix="RSN", noun="potting resin", qual="epoxy two-part", attrs=(("txt", "UL94 V-0"),), uom="G", price=0.019, assembly="ELECTRONICS",
+         qty=(10, 12, 12, 14), scrap=0.04, units=(("KG", 1000.0), ("G", 1.0)), cross=None, over=1.0),
 ]

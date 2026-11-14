@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for an FKM 75 seal ring of 20 mm ID and 2 mm section, but ORG-40045 matches the size and price ($0.0603) while being NBR 70, a clear material conflict; ORG-40036 is FKM but 12 mm ID, 1.5 mm section, so no candidate fits.", "model": "claude-opus-5-5", "input_tokens": 1462, "output_tokens": 131}

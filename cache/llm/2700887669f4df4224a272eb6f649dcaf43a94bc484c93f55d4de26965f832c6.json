@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase is a service-type 'HOUSING KIT' (SVC- number, PO type service), which is a kit rather than a BOM part, and the closest candidate BHU-18894 is only a single upper housing whose price and supplier do not match the $5.5484 aftermarket kit.", "model": "claude-haiku-5-5", "input_tokens": 1359, "output_tokens": 119}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line calls for a rating label of 30 x 50 mm, and no candidate matches both: LBL-74774 matches the size but is a warning label, a clear conflict with 'RATING', and the other rating labels are 40x60, 25x25, 50x80 and 20x40 mm.", "model": "claude-haiku-5-5", "input_tokens": 1334, "output_tokens": 238}

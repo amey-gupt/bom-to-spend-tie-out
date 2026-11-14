@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "PO number CHK-47582 is an internal chuck number not among the candidates, and the 13 mm capacity conflicts with both candidate chucks (10 mm), so this is likely a part for a product outside this BOM set.", "model": "claude-opus-5-5", "input_tokens": 1441, "output_tokens": 96}

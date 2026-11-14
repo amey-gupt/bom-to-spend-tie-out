@@ -1,0 +1,1 @@
+{"part_number": "HSL-37888", "confidence": 0.85, "reason": "The purchase text says CARCASA CUBIERTA IZQ (left housing shell), grey, PA6-GF30, which matches HSL-37888 exactly; HSR-28954 is right-side red and GRP-62234 is an overmold grip, both ruled out by conflicting attributes.", "model": "claude-haiku-5-5", "input_tokens": 1340, "output_tokens": 126}

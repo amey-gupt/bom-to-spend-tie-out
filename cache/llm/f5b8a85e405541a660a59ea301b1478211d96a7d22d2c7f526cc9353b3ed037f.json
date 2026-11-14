@@ -1,0 +1,1 @@
+{"part_number": "LBL-74774", "confidence": 0.45, "reason": "The purchase line describes a 30X50MM label and LBL-74774 is the only 30 x 50 mm candidate, though it is a warning label while the purchase says RATING, and the purchase part-number 89349X725 matches no candidate family, so the match is uncertain.", "model": "claude-haiku-5-5", "input_tokens": 1336, "output_tokens": 117}

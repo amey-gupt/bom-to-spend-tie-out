@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A 25-pack of PH2 screwdriver bits is a shop consumable, not a BOM part; none of the candidates is a bit (the bit holder is a molded housing part), and the $18.91 price fits a tool pack.", "model": "claude-opus-5-5", "input_tokens": 1368, "output_tokens": 98}

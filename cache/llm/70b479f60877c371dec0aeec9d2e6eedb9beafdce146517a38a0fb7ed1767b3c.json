@@ -1,0 +1,1 @@
+{"part_number": "WHR-16755", "confidence": 0.85, "reason": "The purchase text (18 AWG, 160 mm long wire harness) matches WHR-16755 exactly on gauge and length, and the part-number field WHR-1675 is a truncated form of WHR-16755; all other candidates conflict on AWG or length.", "model": "claude-haiku-5-5", "input_tokens": 1356, "output_tokens": 270}

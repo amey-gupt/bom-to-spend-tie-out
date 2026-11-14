@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.75, "reason": "The line is an ID20 x CS2 O-ring in FKM 75. ORG-40045 matches the 20 mm ID and 2 mm section but is NBR 70, a material conflict. ORG-40036 is FKM 75 but 12 mm ID x 1.5 mm, a size conflict. The other three candidates are not O-rings.", "model": "claude-opus-5-5", "input_tokens": 1441, "output_tokens": 137}

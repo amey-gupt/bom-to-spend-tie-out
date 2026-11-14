@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line specifies 16 AWG and L20 (20 mm long), but every 16 AWG candidate is 80 to 200 mm long, the 18 AWG and 14 AWG candidates conflict on gauge, and the MX-7762794 number matches none of the WHR candidates.", "model": "claude-haiku-5-5", "input_tokens": 1363, "output_tokens": 284}

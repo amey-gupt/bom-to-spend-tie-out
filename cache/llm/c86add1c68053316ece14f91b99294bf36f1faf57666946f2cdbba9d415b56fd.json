@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a calibration service for a torque analyzer (shop equipment service at $323.67), not a BOM part, and neither part number 658616 nor the description matches any clutch ring or spindle candidate.", "model": "claude-opus-5-5", "input_tokens": 1387, "output_tokens": 90}

@@ -1,0 +1,1 @@
+{"part_number": "WHR-16766", "confidence": 0.8, "reason": "The purchase line describes a 16 AWG cable assembly 120 mm long (L120), which matches WHR-16766 (16 AWG, 120 mm); the other harness candidates are 200 mm or 80 mm, and the springs are not cable assemblies.", "model": "claude-haiku-5-5", "input_tokens": 1382, "output_tokens": 115}

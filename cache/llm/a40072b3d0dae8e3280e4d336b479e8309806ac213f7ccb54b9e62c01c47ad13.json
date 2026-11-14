@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a screwdriver bit set (PH2 25-pack, a shop consumable), and none of the candidates is a screwdriver bit; the bit holder BTH-20629 is a plastic housing component, not a driver bit, and the screws do not match the bit description.", "model": "claude-haiku-5-5", "input_tokens": 1370, "output_tokens": 114}

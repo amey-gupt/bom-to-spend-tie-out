@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a 1 lb spool of SAC305 solder wire, a shop consumable that does not match any of the springs or the magnet wire, and its part number 324170 is not one of the candidates.", "model": "claude-opus-5-5", "input_tokens": 1444, "output_tokens": 87}

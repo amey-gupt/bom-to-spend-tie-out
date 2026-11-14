@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 698 open bearing, but the only 698 candidate, BRG-65675, is a ZZ (shielded) bearing, which conflicts with the open type stated in the purchase text, and no open 698 exists among the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1398, "output_tokens": 108}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is a 25-pack of PH2 screwdriver bits, a consumable shop supply rather than any of the five candidates, which are a bit holder, chuck screws, and self-tapping screws with no bit or 25-pack item among them.", "model": "claude-haiku-5-5", "input_tokens": 1368, "output_tokens": 107}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a complete 'GEARBOX ASSEMBLY 18V' bought on a service PO under SVC-17009, and complete assemblies are not BOM parts; none of the candidates is a gearbox assembly, since they are single gears, a clutch ring, a motor and a PCBA.", "model": "claude-opus-5-5", "input_tokens": 1384, "output_tokens": 121}

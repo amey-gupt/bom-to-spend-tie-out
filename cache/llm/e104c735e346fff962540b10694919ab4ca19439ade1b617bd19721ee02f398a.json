@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase part number LAT-54809 is the same family as LAT-54794 (battery latch) but matches no candidate, and the teal color conflicts with LAT-54794's black, so the line most likely belongs to a BOM outside this set.", "model": "claude-haiku-5-5", "input_tokens": 1366, "output_tokens": 102}

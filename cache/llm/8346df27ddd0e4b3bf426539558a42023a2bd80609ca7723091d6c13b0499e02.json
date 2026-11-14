@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "Purchase line is for 1 qt air tool oil, a shop consumable, and none of the candidates is an air tool oil; the closest match GRS-58141 is a gearbox grease, which is a different product.", "model": "claude-haiku-5-5", "input_tokens": 1383, "output_tokens": 91}

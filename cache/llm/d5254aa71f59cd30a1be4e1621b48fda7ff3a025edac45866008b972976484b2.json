@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is cutting fluid sold in a 5-gallon pail, a shop consumable that matches none of the candidate electronic heat sinks, inserts, or vent covers, and no part number is given to tie it to the BOM.", "model": "claude-haiku-5-5", "input_tokens": 1389, "output_tokens": 100}

@@ -1,0 +1,1 @@
+{"part_number": "WSH-19110", "confidence": 0.93, "reason": "Purchase text 'THRUST M6 STAINLESS' matches WSH-19110 (thrust washer, M6, stainless), the part-number field WSH-91110 is a digit transposition of WSH-19110, and the $0.0053 price matches the confirmed Apex Screw & Rivet purchase price exactly.", "model": "claude-haiku-5-5", "input_tokens": 1364, "output_tokens": 136}

@@ -1,0 +1,1 @@
+{"part_number": "CAP-40030", "confidence": 0.96, "reason": "The part-number field CAP-4O030 is a letter-O typo of CAP-40030, and the description (ceramic, 220 uF, 35 V) and supplier Corvin match it exactly, with the price $0.1037 within normal variation of $0.1216.", "model": "claude-opus-5-5", "input_tokens": 1415, "output_tokens": 114}

@@ -1,0 +1,1 @@
+{"part_number": "BRG-65703", "confidence": 0.88, "reason": "The description 'BALL BEARING 607 2RS' matches only BRG-65703 (607, 2RS), and the $0.4556 price is about 1.23x its $0.3703 confirmed price, which fits a service buy from a different supplier; the GV- part number looks like a supplier code.", "model": "claude-opus-5-5", "input_tokens": 1369, "output_tokens": 124}

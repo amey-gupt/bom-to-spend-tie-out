@@ -1,0 +1,1 @@
+{"part_number": "SPR-38668", "confidence": 0.85, "reason": "The purchase description (D4, L8, 1.0 mm wire) matches SPR-38668 exactly, the supplier is the same Calloway Spring & Stamping, the part number differs only by a digit transposition, and the $0.08 price is within range of the confirmed $0.074.", "model": "claude-haiku-5-5", "input_tokens": 1459, "output_tokens": 271}

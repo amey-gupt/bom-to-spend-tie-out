@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line describes an assembly fixture (tooling), which is not a BOM part, and none of the five candidates is a fixture; the candidates are grease, gears and a screw.", "model": "claude-haiku-5-5", "input_tokens": 1381, "output_tokens": 82}

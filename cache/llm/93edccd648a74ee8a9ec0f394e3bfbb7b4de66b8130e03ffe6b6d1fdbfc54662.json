@@ -1,0 +1,1 @@
+{"part_number": "SPR-38668", "confidence": 0.85, "reason": "Description (4 mm dia, 8 mm long, 1.0 mm wire), supplier Calloway and price $0.080 vs $0.074 all match SPR-38668; the PO number SPR-38686 looks like a digit transposition of 38668.", "model": "claude-opus-5-5", "input_tokens": 1459, "output_tokens": 112}

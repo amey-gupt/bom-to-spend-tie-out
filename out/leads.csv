@@ -6,7 +6,7 @@ spares_premium,PCB-45440,"Motor controller PCBA, 18 V, 30 A",,spares at $15.1350
 supplier_price_gap,RGR-62085,"Nylon ring gear, 54 teeth, 48 mm dia",Kessler Praezision GmbH; Lakeshore Powder Metal Inc.,"Ningbo Tianyu Gear Co., Ltd. at $1.5179; Kessler Praezision GmbH at $1.7595 (+16%); Lakeshore Powder Metal Inc. at $1.9567 (+29%)",15983.0,31966.0
 spares_premium,CHK-47564,"Metal sleeve keyless chuck, 10 mm capacity, 1/2-20 UNF",,spares at $9.3992 vs production at $5.2388 (+79%),15753.0,31507.0
 supplier_price_gap,ROT-73041,"Rotor assembly, 36 mm dia, 35 mm long",Dunmore Electric Motor Co.,Nordlicht Antriebstechnik GmbH at $3.0242; Dunmore Electric Motor Co. at $3.7800 (+25%),12902.0,25804.0
-supplier_price_gap,SPD-62936,"Output spindle, 1/2-20 UNF, 60 mm long",Lakeshore Powder Metal Inc.,Kessler Praezision GmbH at $2.4194; Lakeshore Powder Metal Inc. at $2.9272 (+21%),12767.0,25535.0
+supplier_price_gap,SPD-62936,"Output spindle, 1/2-20 UNF, 60 mm long",Lakeshore Powder Metal Inc.,Kessler Praezision GmbH at $2.4306; Lakeshore Powder Metal Inc. at $2.9272 (+20%),12485.0,24970.0
 spares_premium,CHK-47572,"Single sleeve keyless chuck, 10 mm capacity, 3/8-24 UNF",,spares at $8.9949 vs production at $4.7939 (+88%),11408.0,22816.0
 spares_premium,SWT-28086,"Variable speed trigger switch, 18 V, 16 A",,spares at $4.9164 vs production at $2.7850 (+77%),9198.0,18396.0
 spares_premium,MTR-75173,"Brushed motor, 400 W, 20 V",,spares at $16.8259 vs production at $9.0302 (+86%),8907.0,17813.0
@@ -22,6 +22,7 @@ spares_premium,BMS-19537,"Battery management PCBA, 12 V, 30 A",,spares at $4.460
 spares_premium,BMS-19554,"Battery management PCBA, 18 V, 40 A",,spares at $8.3183 vs production at $3.9238 (+112%),2979.0,5959.0
 spares_premium,PCB-45448,"Motor controller PCBA, 20 V, 20 A",,spares at $15.2020 vs production at $8.7461 (+74%),2973.0,5946.0
 spares_premium,BRS-17975,"Carbon brush, 6 x 9 x 14 mm",,spares at $0.3919 vs production at $0.1824 (+115%),2933.0,5867.0
+over_purchase,GRS-58141,"Lithium EP2 gearbox grease, NLGI 2",,"bought 2,213,462 G against 1,696,730 required by builds in the 12 months to Jun 2026 (+30%); cause not determined",2840.0,5681.0
 supplier_price_gap,FET-20827,"N-channel MOSFET, 40 V, 100 A, TO-220",Corvin Electronic Components Inc.,Pacific Rim Semiconductor Distribution LLC at $0.3855; Corvin Electronic Components Inc. at $0.4757 (+23%),2114.0,4229.0
 spares_premium,BMS-19562,"Battery management PCBA, 20 V, 40 A",,spares at $4.9127 vs production at $2.8089 (+75%),2113.0,4227.0
 duplicate_part,CLR-37713,"Torque clutch ring, 15-position",CLR-37722,CLR-37713 at $0.3584; CLR-37722 at $0.4144 (+16%),1911.0,3823.0
@@ -43,7 +44,7 @@ supplier_price_gap,CHK-47564,"Metal sleeve keyless chuck, 10 mm capacity, 1/2-20
 supplier_price_gap,VNT-77368,"Vent cover, teal, PA6-GF30",Greer Injection Molding Inc.; Moldeados Regiomontanos S.A. de C.V.,"Dongguan Yusheng Plastics Co., Ltd. at $0.0685; Greer Injection Molding Inc. at $0.0852 (+24%); Moldeados Regiomontanos S.A. de C.V. at $0.0879 (+28%)",542.0,1084.0
 supplier_price_gap,PIN-61268,"Hardened dowel pin, 2 x 10 mm",Midwest Threaded Products LLC,Hanlon Fastener Supply Inc. at $0.0293; Midwest Threaded Products LLC at $0.0360 (+23%),526.0,1052.0
 supplier_price_gap,BHL-56005,"Battery housing lower, 20 V, yellow",Moldeados Regiomontanos S.A. de C.V.,"Dongguan Yusheng Plastics Co., Ltd. at $0.8452; Moldeados Regiomontanos S.A. de C.V. at $0.9851 (+17%)",494.0,989.0
-duplicate_part,SCR-66781,"Socket cap screw, M2.5 x 8, stainless",SCR-66836,SCR-66781 at $0.0290; SCR-66836 at $0.0341 (+17%),475.0,951.0
+duplicate_part,SCR-66781,"Socket cap screw, M2.5 x 8, stainless",SCR-66836,SCR-66781 at $0.0290; SCR-66836 at $0.0341 (+17%),475.0,950.0
 supplier_price_gap,SPR-38665,"Compression spring, 4 mm dia, 12 mm long, 0.8 mm wire",Calloway Spring & Stamping Co.,Precision Wireform Inc. at $0.0560; Calloway Spring & Stamping Co. at $0.0625 (+12%),475.0,949.0
 supplier_price_gap,RES-69295,"Shunt resistor, 10 ohm, 0805",Pacific Rim Semiconductor Distribution LLC,Corvin Electronic Components Inc. at $0.0202; Pacific Rim Semiconductor Distribution LLC at $0.0227 (+13%),464.0,928.0
 supplier_price_gap,SCR-66685,"Torx pan head screw, M4 x 8, zinc",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0111; Apex Screw & Rivet Corp. at $0.0122 (+10%),408.0,816.0
@@ -62,9 +63,9 @@ supplier_price_gap,BAL-68336,"Steel ball, 6 mm dia, G25",Tri-State Bearing & Dri
 supplier_price_gap,SGR-63446,"Sintered sun gear, 11 teeth, module 0.8",Lakeshore Powder Metal Inc.,"Ningbo Tianyu Gear Co., Ltd. at $0.2307; Lakeshore Powder Metal Inc. at $0.2819 (+22%)",157.0,315.0
 supplier_price_gap,SPR-38659,"Compression spring, 8 mm dia, 16 mm long, 0.5 mm wire",Calloway Spring & Stamping Co.,Precision Wireform Inc. at $0.0316; Calloway Spring & Stamping Co. at $0.0408 (+29%),142.0,284.0
 supplier_price_gap,CON-20105,"Wire-to-board connector, 3-position, 2.0 mm pitch",Pacific Rim Semiconductor Distribution LLC,Corvin Electronic Components Inc. at $0.1389; Pacific Rim Semiconductor Distribution LLC at $0.1634 (+18%),93.0,186.0
-duplicate_part,CON-20091,"Wire-to-board connector, 2-position, 2.0 mm pitch",CON-20113,CON-20091 at $0.0997; CON-20113 at $0.1041 (+4%),71.0,142.0
 supplier_price_gap,LBL-74773,"Barcode label, 25 x 25 mm",Palmetto Print & Label Inc.,Empaques del Norte S.A. de C.V. at $0.0233; Palmetto Print & Label Inc. at $0.0281 (+20%),52.0,105.0
 supplier_price_gap,SCR-66734,"Self-tapping screw, M4 x 12, zinc",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0185; Apex Screw & Rivet Corp. at $0.0226 (+22%),49.0,98.0
 supplier_price_gap,LBL-74779,"Rating label, 40 x 60 mm",Empaques del Norte S.A. de C.V.,Palmetto Print & Label Inc. at $0.0175; Empaques del Norte S.A. de C.V. at $0.0219 (+25%),49.0,97.0
 supplier_price_gap,WSH-19114,"Thrust washer, M8, zinc",Apex Screw & Rivet Corp.,Midwest Threaded Products LLC at $0.0052; Apex Screw & Rivet Corp. at $0.0067 (+29%),19.0,39.0
 duplicate_part,SCR-66772,"Socket cap screw, M4 x 20, stainless",SCR-66822,same description; no matched purchases on one of them yet,0.0,0.0
+duplicate_part,CON-20091,"Wire-to-board connector, 2-position, 2.0 mm pitch",CON-20113,same description; no matched purchases on one of them yet,0.0,0.0

@@ -1,0 +1,1 @@
+{"part_number": "BRG-65712", "confidence": 0.9, "reason": "Description '6200 OPEN' matches only BRG-65712 (6200, open), the PO number BRG-6571 reads as a truncation of BRG-65712, and the $0.4870 price is nearly identical to its $0.4882 confirmed price.", "model": "claude-opus-5-5", "input_tokens": 1378, "output_tokens": 112}

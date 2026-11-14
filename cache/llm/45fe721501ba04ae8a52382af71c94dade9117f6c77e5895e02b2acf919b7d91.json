@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.82, "reason": "The purchase specifies an M4x20 zinc screw, but every M4 candidate has a different length (SCR-66685 is M4x8, SCR-66734 is M4x12, SCR-66791 is M4x16), and a stated dimension conflict rules each one out.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 351}

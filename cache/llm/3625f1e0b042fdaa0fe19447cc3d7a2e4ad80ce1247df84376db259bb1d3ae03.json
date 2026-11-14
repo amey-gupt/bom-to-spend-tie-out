@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line specifies an M4 x 20 self-tapping screw, but the closest candidates are M4 x 16 (SCR-66791) and M4 x 12 (SCR-66734), and the Torx M4 x 8 (SCR-66685) conflicts on both length and drive type, so no candidate has the stated length.", "model": "claude-haiku-5-5", "input_tokens": 1385, "output_tokens": 353}

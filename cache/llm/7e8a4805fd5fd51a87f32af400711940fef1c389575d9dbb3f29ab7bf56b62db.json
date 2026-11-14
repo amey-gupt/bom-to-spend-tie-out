@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line is a 25-pack of PH2 screwdriver bits, a consumable tool accessory that matches none of the candidates: BTH-20629 is a bit holder, the others are screws or a chuck retaining screw, and no BOM part is a screwdriver bit.", "model": "claude-haiku-5-5", "input_tokens": 1367, "output_tokens": 115}

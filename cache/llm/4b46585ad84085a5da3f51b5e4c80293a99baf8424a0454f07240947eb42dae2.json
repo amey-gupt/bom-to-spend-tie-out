@@ -1,0 +1,1 @@
+{"part_number": "NPL-67926", "confidence": 0.8, "reason": "Purchase part number NPL-76926 is a digit-transposition typo of NPL-67926, and the description (nameplate, yellow ABS) and supplier Greer Injection Molding plus price $0.1442 near the confirmed $0.1459 all match that candidate.", "model": "claude-haiku-5-5", "input_tokens": 1360, "output_tokens": 118}

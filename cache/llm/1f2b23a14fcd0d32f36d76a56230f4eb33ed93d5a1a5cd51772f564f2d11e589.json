@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is cutting fluid, a consumable/shop supply that is not a BOM part, and none of the candidates (heat sinks, threaded inserts, vent cover) match it.", "model": "claude-haiku-5-5", "input_tokens": 1409, "output_tokens": 87}

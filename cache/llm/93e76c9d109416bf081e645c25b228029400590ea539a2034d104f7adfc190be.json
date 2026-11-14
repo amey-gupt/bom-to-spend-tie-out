@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "Purchase line is air tool oil from a safety supplier at $12.00 per quart, which matches none of the candidates; the candidates are grease, washers and a carbon brush, and the blank part number gives no internal-number match.", "model": "claude-haiku-5-5", "input_tokens": 1384, "output_tokens": 96}

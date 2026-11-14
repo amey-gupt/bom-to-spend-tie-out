@@ -1,0 +1,1 @@
+{"part_number": "VNT-77360", "confidence": 0.62, "reason": "The purchase text says black PC/ABS vent cover, which matches VNT-77360 exactly on material and color, while VNT-77379 is ABS (a material conflict despite its matching price) and the other candidates differ in color or material.", "model": "claude-haiku-5-5", "input_tokens": 1346, "output_tokens": 338}

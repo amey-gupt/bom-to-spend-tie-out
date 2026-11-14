@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line describes air tool oil, a shop consumable, and none of the five candidates is an oil; the only plausible match, GRS-58141, is a gearbox grease with no confirmed purchases, and the other four are washers or a carbon brush.", "model": "claude-haiku-5-5", "input_tokens": 1393, "output_tokens": 105}

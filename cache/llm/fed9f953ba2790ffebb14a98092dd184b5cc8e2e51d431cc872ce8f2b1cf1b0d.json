@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is a 5-gallon pail of cutting fluid, a shop consumable rather than any of the candidate heat sinks, inserts, or vent covers, and the $72 price is far above all candidate unit prices.", "model": "claude-haiku-5-5", "input_tokens": 1392, "output_tokens": 97}

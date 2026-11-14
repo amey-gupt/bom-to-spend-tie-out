@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "PO part number MNL-14616 (rev A) is an internal manual number of the same family that matches no candidate (closest are MNL-14606 and MNL-14614), and the EN-only description conflicts with both candidates' multilingual manuals.", "model": "claude-opus-5-5", "input_tokens": 1357, "output_tokens": 103}

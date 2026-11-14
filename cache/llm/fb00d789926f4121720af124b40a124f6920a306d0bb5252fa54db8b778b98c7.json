@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for a forklift propane cylinder exchange, which is a service or complete item not matching any BOM part here (grease, housing shells, lever, clutch ring), and the part number 345428 matches none of the candidates.", "model": "claude-haiku-5-5", "input_tokens": 1377, "output_tokens": 98}

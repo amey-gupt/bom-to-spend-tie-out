@@ -190,7 +190,9 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
         scorer, info = scoring.fit(train, y, style[train["line"]], np.arange(len(train)) < len(a), backend)
         dec = scoring.decide(rules, pairs, scorer)
         hits = same(cand_parts[held & open_ & (true_part != "")]) == true_part[held & open_ & (true_part != "")][:, None]
-        report["backends"][backend] = dict(fit=info, recall_at_1=float(hits[:, 0].mean()), recall_at_5=float(hits.any(axis=1).mean()),
+        tune_open = tune & open_ & (true_part != "")
+        tune_top1 = float((same(cand_parts[tune_open][:, 0]) == true_part[tune_open]).mean())
+        report["backends"][backend] = dict(fit=info, tune_recall_at_1=tune_top1, recall_at_1=float(hits[:, 0].mean()), recall_at_5=float(hits.any(axis=1).mean()),
                                            heldout=outcome_metrics(dec, truth, p, canon, held), tune=outcome_metrics(dec, truth, p, canon, tune))
         runs[backend] = (scorer, pairs, dec)
         print(f"\n=== embedding backend: {backend} ({match.BACKENDS[backend]}) ===")
@@ -199,8 +201,10 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
               f"(out-of-fold on tune: {info['oof_accept_share']:.1%} of open lines accepted at {info['oof_accept_precision']:.2%} precision)")
         print_outcomes("HELD-OUT, rules + classifier", report["backends"][backend]["heldout"])
 
-    # The LLM stage runs once, on the backend that auto-accepts more of the tuning split.
-    best = max(backends, key=lambda b: report["backends"][b]["fit"]["oof_accept_share"])
+    # The LLM stage runs once, on the backend whose top candidate is right more often on the tuning split.
+    # (Out-of-fold accept share was used before; it differs by a point or two between backends and flips with the data.)
+    best = max(backends, key=lambda b: report["backends"][b]["tune_recall_at_1"])
+    print("\ntuning-split top-candidate accuracy: " + ", ".join(f"{b} {report['backends'][b]['tune_recall_at_1']:.1%}" for b in backends) + f" -> {best}")
     scorer, pairs, dec = runs[best]
     report["chosen_backend"] = best
     if use_llm:
@@ -287,12 +291,23 @@ def step4(data_dir: str | Path = "data", materiality: float | None = None):
                                                       "allocated_production_spend_est": "${:,.0f}".format, "actual_vs_std": "{:+.1%}".format}))
     report["products"] = products.to_dict("records")
 
+    # Lines bought in a different dimension from the BOM unit must be held with a unit reason.
+    cross = truth["cross_dimension"] == "True"
+    flagged = lines["uom_issue"] != ""
+    held_for_units = lines["source"] == "uom_mismatch"
+    report["units"] = dict(cross_dimension_lines=int(cross.sum()), flagged=int((flagged & cross).sum()), held_in_review=int((held_for_units & cross).sum()),
+                           wrongly_flagged=int((flagged & ~cross & (lines["decision"] == "accept")).sum()),
+                           converted_lines=int((lines["qty_bom"].notna() & (lines["qty_bom"] != lines["qty"]) & (lines["decision"] == "accept")).sum()))
+    u = report["units"]
+    print(f"\nUNITS: {u['cross_dimension_lines']} lines bought in another dimension; {u['flagged']} flagged, {u['held_in_review']} held in review with a unit reason; "
+          f"{u['wrongly_flagged']} accepted lines wrongly flagged; {u['converted_lines']} accepted lines converted to the BOM unit")
+
     print("\nLEADS VS PLANTED FINDINGS")
     planted = pd.read_csv(Path(data_dir) / "truth" / "planted_findings.csv", dtype=str, keep_default_na=False)
     key = lambda df, kind, col: ({frozenset(x) for x in zip(df.loc[df[col] == kind, "part_number"], df.loc[df[col] == kind, "related"])}
                                  if kind == "duplicate_part" else set(df.loc[df[col] == kind, "part_number"]))
     report["leads"] = {}
-    for kind in ("supplier_price_gap", "duplicate_part", "spares_premium"):
+    for kind in ("supplier_price_gap", "duplicate_part", "spares_premium", "over_purchase"):
         found, want = key(leads, kind, "lead_type"), key(planted, kind, "finding_type")
         hit = found & want
         mine = leads[leads["lead_type"] == kind]

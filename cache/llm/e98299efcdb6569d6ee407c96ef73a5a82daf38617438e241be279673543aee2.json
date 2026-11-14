@@ -1,0 +1,1 @@
+{"part_number": "SPR-38665", "confidence": 0.8, "reason": "The purchase line's D4, L12, 0.8 mm wire matches SPR-38665 exactly, and the supplier Calloway's catalog wording fits the spring's family, while the other candidates conflict on length, wire size or diameter.", "model": "claude-haiku-5-5", "input_tokens": 1448, "output_tokens": 107}

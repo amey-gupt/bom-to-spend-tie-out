@@ -1,0 +1,1 @@
+{"part_number": "PCB-45433", "confidence": 0.88, "reason": "Description matches 'Motor controller PCBA, 12 V, 30 A' exactly, the supplier is Redfield Circuits, PCB-4543 looks like a truncated PCB-45433, and $8.03 is within about 12% of the $9.14 confirmed price.", "model": "claude-opus-5-5", "input_tokens": 1380, "output_tokens": 120}

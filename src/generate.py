@@ -22,7 +22,7 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from . import noise
-from .catalog import CAT, CATS, FX_USD_PER_UNIT, INDIRECT, PATTERNS, PRODUCTS, SERVICE_ONLY, SUPPLIERS, Supplier
+from .catalog import CAT, CATS, FX_USD_PER_UNIT, INDIRECT, MATERIALS, PATTERNS, PRODUCTS, SERVICE_ONLY, SUBASSEMBLIES, SUPPLIERS, Supplier
 
 SEED = 20261114
 MONTHS = [(2025 + m // 12, m % 12 + 1) for m in range(18)]  # 2025-01 .. 2026-06
@@ -310,6 +310,92 @@ def make_purchases(bb: Backbone, rng: random.Random):
     return purchases, truth, xref
 
 
+# ------------------------------------------------- structure and materials
+
+def add_structure(bb: Backbone, purchases: list, truth: list, seed: int):
+    """Multi-level BOMs, scrap, and continuous materials, layered on top of the flat discrete-part data.
+
+    Uses its own random stream and only appends, so every purchase line generated above keeps its content.
+    - Gearbox and motor become in-house ("make") subassemblies; their parts hang under them via parent_part.
+    - Four materials are measured in area, length or mass, with scrap, and bought in assorted units.
+      Some wire and steel lines are bought by weight: a different dimension that cannot be converted without a factor.
+    - Two materials are bought well above their gross requirement (planted, for the purchased-vs-required lead).
+    """
+    rng = random.Random(seed + 1)
+    for row in bb.bom:
+        row.update(scrap_pct=0.0, parent_part="", make_buy="buy")
+
+    sub_pn, sub_scrap, counter = {}, {}, {}
+    for prod in PRODUCTS:
+        for assembly, (prefix, name, scrap) in SUBASSEMBLIES.items():
+            counter[prefix] = counter.get(prefix, rng.randint(1000, 8000)) + rng.randint(1, 9)
+            pn = f"{prefix}-{counter[prefix]}"
+            sub_pn[prod.product_id, assembly], sub_scrap[prod.product_id, assembly] = pn, scrap
+            for row in bb.bom:
+                if row["product_id"] == prod.product_id and row["assembly_id"] == assembly:
+                    row["parent_part"] = pn
+            bb.bom.append(dict(product_id=prod.product_id, assembly_id=assembly, part_number=pn, revision="A", description=f"{name}, {prod.product_id}",
+                               qty_per_unit=1, uom="EA", std_cost="", scrap_pct=scrap, parent_part="", make_buy="make"))
+
+    quarter_units = defaultdict(lambda: [0] * N_QUARTERS)
+    for row in bb.builds:
+        y, mo = map(int, row["period"].split("-"))
+        quarter_units[row["product_id"]][((y - 2025) * 12 + mo - 1) // 3] += row["units_built"]
+    suppliers = [s for s in SUPPLIERS if s.commodity == "Materials"]
+    for row, t in zip(purchases, truth):
+        t["cross_dimension"] = False
+    extra = []
+    for m, sup in zip(MATERIALS, suppliers):
+        counter[m["prefix"]] = rng.randint(10000, 80000)
+        part = Part(f"{m['prefix']}-{counter[m['prefix']]}", "material", m["noun"], m["qual"], m["attrs"], "A", m["price"], "Materials")
+        part.description = noise.canonical(part)
+        gross_per_unit = {}
+        for i, prod in enumerate(PRODUCTS):
+            parent = sub_pn.get((prod.product_id, m["assembly"]), "")
+            bb.bom.append(dict(product_id=prod.product_id, assembly_id=m["assembly"], part_number=part.part_number, revision="A",
+                               description=part.description, qty_per_unit=m["qty"][i], uom=m["uom"], std_cost=m["price"],
+                               scrap_pct=m["scrap"], parent_part=parent, make_buy="buy"))
+            gross_per_unit[prod.product_id] = m["qty"][i] / (1 - m["scrap"]) / (1 - sub_scrap.get((prod.product_id, m["assembly"]), 0.0))
+        if m["over"] > 1.15:
+            bb.findings.append(dict(finding_type="over_purchase", part_number=part.part_number, related="",
+                                    detail=f"bought about {m['over']:.2f}x the gross requirement"))
+        supplier_pn, master = f"{''.join(w[0] for w in sup.name.split()[:2]).upper()}-{rng.randint(100000, 999999)}", {}
+        for plant in ("P01", "P02"):
+            code = f"{PLANT_PREFIX[plant]}-{rng.randint(1000000, 9999999)}"
+            for q in range(N_QUARTERS):
+                need = sum(gross_per_unit[p.product_id] * quarter_units[p.product_id][q] for p in PRODUCTS if p.plant == plant)
+                bought = need * rng.uniform(0.98, 1.06) * m["over"]
+                for piece in ([1.0] if rng.random() < 0.6 else [0.55, 0.45]):
+                    if bought * piece <= 0:
+                        continue
+                    cross = bool(m["cross"]) and rng.random() < m["cross"][2]
+                    if cross:
+                        uom, per_bom_unit = m["cross"][0], m["cross"][1]
+                        qty, price, factor = bought * piece * per_bom_unit, m["price"] / per_bom_unit, ""
+                    else:
+                        uom, factor = rng.choice(m["units"])
+                        qty, price = bought * piece / factor, m["price"] * factor
+                    if (plant, cross) not in master:  # one item-master text per plant and buying unit
+                        id_style, desc_style = noise.pick_styles(rng, plant)
+                        master[plant, cross] = (id_style, desc_style, noise.render_id(id_style, part.part_number, "A", supplier_pn, code, rng),
+                                                noise.render_desc(part, desc_style, rng))
+                    id_style, desc_style, id_text, desc = master[plant, cross]
+                    day = date(2025 + q // 4, 3 * (q % 4) + 1, 1) + timedelta(days=rng.randint(0, 88))
+                    extra.append((
+                        dict(po_id="", po_date=day.isoformat(), plant=plant, supplier=noise.supplier_name_variant(sup.name, rng),
+                             supplier_part_number=id_text, item_description=desc, qty=round(qty, 2), uom=uom,
+                             unit_price=round(price * rng.uniform(0.99, 1.01), 4), currency="USD", po_type="" if rng.random() < BLANK_PO_TYPE else "production"),
+                        dict(po_id="", true_part_number=part.part_number, true_bucket="production", line_kind="production", true_supplier=sup.name,
+                             units_per_uom=factor, id_style=id_style, desc_style=desc_style, noise_style=f"{id_style}+{desc_style}",
+                             split=noise.split_of(id_style, desc_style), cross_dimension=cross)))
+
+    merged = sorted(list(zip(purchases, truth)) + extra, key=lambda pair: pair[0]["po_date"])  # stable: existing lines keep their order
+    for n, (row, t) in enumerate(merged, start=1):
+        row["po_id"] = t["po_id"] = f"45{n:08d}"
+    purchases[:], truth[:] = [r for r, _ in merged], [t for _, t in merged]
+    return len(extra)
+
+
 # -------------------------------------------------------------------- output
 
 def write_csv(path: Path, rows: list[dict]):
@@ -324,6 +410,7 @@ def generate(out: Path, seed: int = SEED) -> dict:
     rng = random.Random(seed)
     bb = build_backbone(rng)
     purchases, truth, xref = make_purchases(bb, rng)
+    material_lines = add_structure(bb, purchases, truth, seed)
 
     write_csv(out / "boms.csv", bb.bom)
     write_csv(out / "builds.csv", bb.builds)
@@ -336,8 +423,8 @@ def generate(out: Path, seed: int = SEED) -> dict:
 
     # Self-checks: the files must agree with each other.
     assert len({p["po_id"] for p in purchases}) == len(purchases)
-    bom_pns = {r["part_number"] for r in bb.bom}
-    assert bom_pns == set(bb.parts), "every part is on a BOM and every BOM part is known"
+    bom_pns = {r["part_number"] for r in bb.bom if r["make_buy"] == "buy"}
+    assert set(bb.parts) <= bom_pns, "every discrete part is on a BOM"
     assert all(t["true_part_number"] in bom_pns for t in truth if t["true_part_number"])
 
     spend, by_split, by_style = defaultdict(float), defaultdict(int), defaultdict(int)
@@ -348,8 +435,9 @@ def generate(out: Path, seed: int = SEED) -> dict:
         by_style[t["desc_style"] + " (desc)"] += 1
     unit_cost = defaultdict(float)
     for r in bb.bom:
-        unit_cost[r["product_id"]] += r["qty_per_unit"] * bb.parts[r["part_number"]].base_price
-    return dict(parts=len(bb.parts), bom_lines=len(bb.bom), purchases=len(purchases), xref=len(xref), spend=dict(spend),
+        if r["make_buy"] == "buy":  # ignores scrap; the flattened, scrap-adjusted cost is computed in allocate.py
+            unit_cost[r["product_id"]] += r["qty_per_unit"] * r["std_cost"]
+    return dict(material_lines=material_lines, parts=len(bom_pns), bom_lines=len(bb.bom), purchases=len(purchases), xref=len(xref), spend=dict(spend),
                 split=dict(by_split), styles=dict(by_style), unit_cost=dict(unit_cost), findings=len(bb.findings))
 
 

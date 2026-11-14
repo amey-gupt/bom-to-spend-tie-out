@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.3, "reason": "The purchase line specifies 55 mm dia with 7 blades, which conflicts with FAN-30241 (9 blades) and FAN-30248 (11 blades); no candidate has 7 blades, and the DY-743958 part number does not match any candidate's family numbering.", "model": "claude-haiku-5-5", "input_tokens": 1405, "output_tokens": 114}

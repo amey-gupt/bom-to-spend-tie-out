@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "Part number GRP-62251 (rev A) is an internal grip number not among the candidates, and no candidate is a yellow PA6-GF30 grip: GRP-62234 is grey, GRP-62242 is TPE and GRP-62236 is black ABS.", "model": "claude-opus-5-5", "input_tokens": 1364, "output_tokens": 111}

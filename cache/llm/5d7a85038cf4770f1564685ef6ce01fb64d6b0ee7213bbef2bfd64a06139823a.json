@@ -1,0 +1,1 @@
+{"part_number": "TRM-27412", "confidence": 0.88, "reason": "Description '3P 20A' matches only TRM-27412 (3-position, 20 A); the other candidates differ in position count or current rating, EC7403-88 looks like a supplier number, and $0.63 is plausible next to similar blocks at $0.49\u20130.56.", "model": "claude-opus-5-5", "input_tokens": 1362, "output_tokens": 117}

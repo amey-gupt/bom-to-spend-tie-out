@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies 698 open, but the only 698 candidate, BRG-65675, is ZZ-shielded, a clear conflict with the open type; no open 698 candidate exists, and the other candidates are different sizes (608, 626, 6000, 6200).", "model": "claude-haiku-5-5", "input_tokens": 1401, "output_tokens": 113}

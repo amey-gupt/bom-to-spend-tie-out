@@ -1,0 +1,1 @@
+{"part_number": "LAT-54794", "confidence": 0.35, "reason": "The purchase line is a battery latch from Dongguan Yusheng, and LAT-54794 is the only candidate that is a battery latch, though its listed color is black where the purchase says orange, and the DY-240177 number matches no candidate.", "model": "claude-haiku-5-5", "input_tokens": 1363, "output_tokens": 107}

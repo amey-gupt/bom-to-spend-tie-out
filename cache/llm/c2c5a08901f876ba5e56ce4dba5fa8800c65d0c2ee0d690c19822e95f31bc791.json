@@ -1,0 +1,1 @@
+{"part_number": "CON-20082", "confidence": 0.2, "reason": "The purchase text gives no pitch or position count, so no attribute rules out any candidate; CON-20082 is weakly favored because its confirmed price ($0.1575) is closest to the $0.1716 paid, within the roughly 30% cross-supplier tolerance.", "model": "claude-haiku-5-5", "input_tokens": 1423, "output_tokens": 584}

@@ -1,0 +1,1 @@
+{"part_number": "HSL-37888", "confidence": 0.8, "reason": "The purchase line describes a left housing shell in grey PA6-GF30, which matches HSL-37888 exactly; HSR-28954 is the right-side red shell and BTH-20629 is orange, so both conflict on side and color.", "model": "claude-haiku-5-5", "input_tokens": 1356, "output_tokens": 105}

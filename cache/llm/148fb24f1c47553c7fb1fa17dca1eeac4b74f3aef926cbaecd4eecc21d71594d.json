@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line is a gearbox assembly (SVC service-kit style number, description 'GEARBOX ASSEMBLY'), which is a complete assembly rather than any single BOM part, and none of the candidates is a gearbox assembly or matches the SVC family.", "model": "claude-haiku-5-5", "input_tokens": 1387, "output_tokens": 112}

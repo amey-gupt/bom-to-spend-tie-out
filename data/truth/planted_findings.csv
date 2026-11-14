@@ -74,3 +74,5 @@ spares_premium,CEL-64003,,spares bought at about 1.82x production price
 spares_premium,BMS-19545,,spares bought at about 1.69x production price
 spares_premium,SWT-28086,,spares bought at about 1.55x production price
 spares_premium,CHK-47572,,spares bought at about 1.70x production price
+over_purchase,MWR-17455,,bought about 1.32x the gross requirement
+over_purchase,GRS-58141,,bought about 1.27x the gross requirement

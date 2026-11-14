@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase is a 12-piece service kit (PO type service, unit EACH, ProTool Service Parts supplier), which is not a BOM part, and none of the candidate screws is a 12-piece kit; the part number PS-278111 is not a candidate.", "model": "claude-haiku-5-5", "input_tokens": 1374, "output_tokens": 108}

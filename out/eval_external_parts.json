@@ -6,7 +6,7 @@
   "mpns_found_in_catalog": 208,
   "catalog_size": 4276372,
   "no_match_lines": 500,
-  "zero_shot": "classifier and cutoffs from the synthetic tuning split (accept at p >= 0.863, Claude pick at >= 0.72)",
+  "zero_shot": "classifier and cutoffs from the synthetic tuning split (accept at p >= 0.938, Claude pick at >= 0.72)",
   "conditions": {
     "MPN visible in the purchase text": {
       "rules": {
@@ -20,29 +20,29 @@
         "wrong": 0,
         "wrong_same_spec_alternate": 0,
         "wrong_other": 0,
-        "in_review": 63,
-        "called_no_match": 0,
+        "in_review": 54,
+        "called_no_match": 9,
         "precision": 1.0,
         "recall": 0.6971153846153846,
         "precision_counting_alternates": 1.0,
         "no_match_lines": 500,
-        "no_match_correct": 22,
-        "no_match_in_review": 476,
+        "no_match_correct": 274,
+        "no_match_in_review": 224,
         "no_match_wrongly_accepted": 2,
-        "no_match_accuracy": 0.044
+        "no_match_accuracy": 0.548
       },
       "with_claude": {
         "catalog_lines": 208,
-        "accepted": 164,
-        "correct": 163,
+        "accepted": 160,
+        "correct": 159,
         "wrong": 1,
         "wrong_same_spec_alternate": 0,
         "wrong_other": 1,
         "in_review": 5,
-        "called_no_match": 39,
-        "precision": 0.9939024390243902,
-        "recall": 0.7836538461538461,
-        "precision_counting_alternates": 0.9939024390243902,
+        "called_no_match": 43,
+        "precision": 0.99375,
+        "recall": 0.7644230769230769,
+        "precision_counting_alternates": 0.99375,
         "no_match_lines": 500,
         "no_match_correct": 498,
         "no_match_in_review": 0,
@@ -50,13 +50,13 @@
         "no_match_accuracy": 0.996
       },
       "claude": {
-        "lines_sent": 539,
+        "lines_sent": 278,
         "model": "claude-opus-5-5",
-        "calls": 525,
+        "calls": 275,
         "failed_calls": 0,
-        "input_tokens": 697184,
-        "output_tokens": 49964,
-        "cost_usd": 3.788
+        "input_tokens": 367162,
+        "output_tokens": 27355,
+        "cost_usd": 2.0157
       }
     },
     "MPN hidden": {
@@ -70,29 +70,29 @@
         "wrong": 0,
         "wrong_same_spec_alternate": 0,
         "wrong_other": 0,
-        "in_review": 204,
-        "called_no_match": 3,
+        "in_review": 104,
+        "called_no_match": 103,
         "precision": 1.0,
         "recall": 0.004807692307692308,
         "precision_counting_alternates": 1.0,
         "no_match_lines": 500,
-        "no_match_correct": 0,
-        "no_match_in_review": 497,
+        "no_match_correct": 185,
+        "no_match_in_review": 312,
         "no_match_wrongly_accepted": 3,
-        "no_match_accuracy": 0.0
+        "no_match_accuracy": 0.37
       },
       "with_claude": {
         "catalog_lines": 208,
-        "accepted": 61,
-        "correct": 59,
-        "wrong": 2,
+        "accepted": 35,
+        "correct": 34,
+        "wrong": 1,
         "wrong_same_spec_alternate": 0,
-        "wrong_other": 2,
-        "in_review": 18,
-        "called_no_match": 129,
-        "precision": 0.9672131147540983,
-        "recall": 0.28365384615384615,
-        "precision_counting_alternates": 0.9672131147540983,
+        "wrong_other": 1,
+        "in_review": 13,
+        "called_no_match": 160,
+        "precision": 0.9714285714285714,
+        "recall": 0.16346153846153846,
+        "precision_counting_alternates": 0.9714285714285714,
         "no_match_lines": 500,
         "no_match_correct": 497,
         "no_match_in_review": 0,
@@ -100,13 +100,13 @@
         "no_match_accuracy": 0.994
       },
       "claude": {
-        "lines_sent": 701,
+        "lines_sent": 416,
         "model": "claude-opus-5-5",
-        "calls": 687,
+        "calls": 404,
         "failed_calls": 0,
-        "input_tokens": 918254,
-        "output_tokens": 72463,
-        "cost_usd": 5.1223
+        "input_tokens": 537949,
+        "output_tokens": 42094,
+        "cost_usd": 2.9937
       }
     }
   }

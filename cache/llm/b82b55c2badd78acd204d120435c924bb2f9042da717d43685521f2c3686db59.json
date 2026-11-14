@@ -1,0 +1,1 @@
+{"part_number": "INS-43112", "confidence": 0.8, "reason": "The description 'INSULATION PAD PET FIL' matches INS-43112, the only PET film pad among the candidates; the other four are silicone foam, the part number field holds a supplier code, and the low $0.0205 price fits a PET film pad.", "model": "claude-opus-5-5", "input_tokens": 1386, "output_tokens": 109}

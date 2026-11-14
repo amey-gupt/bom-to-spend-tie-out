@@ -1,0 +1,1 @@
+{"part_number": "SCR-66688", "confidence": 0.88, "reason": "Description 'SCR ST M5X12 ZINC' reads as self-tapping screw M5 x 12 zinc, which matches SCR-66688 from the same supplier (APEX) at a close price ($0.0311 vs $0.0340); the socket cap screw is a different type, and the M4 screw has a size conflict.", "model": "claude-opus-5-5", "input_tokens": 1377, "output_tokens": 136}

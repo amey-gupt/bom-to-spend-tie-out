@@ -1,0 +1,1 @@
+{"part_number": "WHR-16755", "confidence": 0.8, "reason": "The purchase description (18 AWG, 160 mm long) matches WHR-16755 exactly and no other candidate, and the part-number field WHR-1675 is a truncation of WHR-16755 with the final digit dropped; no candidate has a conflicting attribute.", "model": "claude-haiku-5-5", "input_tokens": 1359, "output_tokens": 311}

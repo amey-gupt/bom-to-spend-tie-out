@@ -1,0 +1,1 @@
+{"part_number": "NPL-67926", "confidence": 0.88, "reason": "Description 'NMAEPLATE YELLOW ABS' is a typo of 'Nameplate, yellow, ABS'; part number NPL-76926 is a digit transposition of NPL-67926, and the same supplier (Greer) and near-identical price ($0.1450 vs $0.1459) confirm it.", "model": "claude-opus-5-5", "input_tokens": 1364, "output_tokens": 134}

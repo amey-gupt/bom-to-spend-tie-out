@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase's NTC-13048_C is a same-family internal number that matches no candidate, and the only NTC candidate, NTC-13041, is 47k ohm while the purchase specifies 100k ohm, a clear conflict.", "model": "claude-haiku-5-5", "input_tokens": 1386, "output_tokens": 227}

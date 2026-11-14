@@ -1,0 +1,1 @@
+{"part_number": "BMS-19537", "confidence": 0.4, "reason": "The description 'battery management PCB' with no voltage or current fits all BMS candidates, and the supplier Suntronix leaves BMS-19537 ($2.63) and BMS-19545 ($2.59) both close to the $2.81 warranty price, so nothing firmly separates them.", "model": "claude-opus-5-5", "input_tokens": 1379, "output_tokens": 123}

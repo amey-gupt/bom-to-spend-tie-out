@@ -26,6 +26,9 @@ CANONICAL = {
         ("revision", False, "engineering revision of the part"),
         ("uom", False, "unit of measure of the BOM quantity"),
         ("std_cost", False, "standard cost of one component, in USD"),
+        ("scrap_pct", False, "expected scrap or yield loss for the row, as a fraction or a percentage"),
+        ("parent_part", False, "for multi-level BOMs: the part number of the parent subassembly; blank at the top level"),
+        ("make_buy", False, "whether the item is made in-house or bought"),
     ],
     "purchases": [
         ("po_date", True, "purchase order or posting date"),
@@ -110,6 +113,9 @@ def apply_mapping(kind: str, df: pd.DataFrame, mapping: dict) -> tuple[pd.DataFr
     if kind == "boms":
         out["qty_per_unit"] = _num(out["qty_per_unit"])
         out["std_cost"] = _num(out["std_cost"])
+        scrap = _num(out["scrap_pct"]).fillna(0.0)
+        out["scrap_pct"] = scrap.where(scrap < 1, scrap / 100)  # 3 means 3%
+        out["make_buy"] = out["make_buy"].str.lower().map(lambda v: "make" if v.startswith("m") or "house" in v else "buy")
         out.loc[out["assembly_id"] == "", "assembly_id"] = "ALL"
         out.loc[out["uom"] == "", "uom"] = "EA"
         keep = (out["part_number"] != "") & out["qty_per_unit"].notna()

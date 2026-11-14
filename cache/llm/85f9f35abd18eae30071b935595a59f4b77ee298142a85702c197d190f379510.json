@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is for a 5-gallon pail of cutting fluid, a shop consumable, and none of the candidates are cutting fluid; the $106.65 price also fits no BOM part, which all cost under $0.31.", "model": "claude-haiku-5-5", "input_tokens": 1394, "output_tokens": 97}

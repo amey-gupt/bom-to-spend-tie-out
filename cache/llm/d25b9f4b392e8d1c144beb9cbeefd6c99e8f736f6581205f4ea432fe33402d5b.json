@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line calls for an M4x20 zinc screw, but the candidates are M4x8 (SCR-66685), M4x12 (SCR-66734) and M4x16 (SCR-66791), so the stated length conflicts with every one; the other candidates are a nut and a washer.", "model": "claude-haiku-5-5", "input_tokens": 1378, "output_tokens": 283}

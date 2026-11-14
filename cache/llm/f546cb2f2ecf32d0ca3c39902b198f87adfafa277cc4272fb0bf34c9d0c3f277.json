@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is for a forklift propane cylinder exchange, which is not a part on any of the candidate drive-unit BOMs (grease, housing shells, lever, clutch ring), and the part-number field 179952 matches none of the candidates' families.}", "model": "claude-haiku-5-5", "input_tokens": 1356, "output_tokens": 108}

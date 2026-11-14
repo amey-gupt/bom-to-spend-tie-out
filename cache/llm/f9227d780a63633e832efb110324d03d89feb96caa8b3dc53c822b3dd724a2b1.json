@@ -1,0 +1,1 @@
+{"part_number": "CTN-23153", "confidence": 0.6, "reason": "The purchase text reads 'CARON 560X330X270MM MASETR' (master carton), which matches CTN-23153's master carton 560 x 330 x 270 mm, while CTN-23147 is a retail carton and the purchase number CTN-21353 differs from CTN-23153 by one digit.", "model": "claude-haiku-5-5", "input_tokens": 1332, "output_tokens": 497}

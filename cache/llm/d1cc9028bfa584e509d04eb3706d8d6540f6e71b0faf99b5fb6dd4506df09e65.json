@@ -1,0 +1,1 @@
+{"part_number": "BAL-68336", "confidence": 0.8, "reason": "Description 'Steel ball D6/G25' matches BAL-68336 (6 mm, G25) exactly; the other balls are 5 mm and the rest are bearings, and the MX- part number looks like a supplier code rather than an internal number, so it does not point to an unlisted part.", "model": "claude-opus-5-5", "input_tokens": 1383, "output_tokens": 122}

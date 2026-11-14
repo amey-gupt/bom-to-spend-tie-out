@@ -1,0 +1,1 @@
+{"part_number": "RES-69290", "confidence": 0.5, "reason": "The description 'RES CHIP 100OHM 0805' matches RES-69290 exactly (100 ohm chip resistor, 0805), and the purchase number RES-69209 looks like a digit transposition of it; the part number is not an exact match, so confidence is moderate.", "model": "claude-haiku-5-5", "input_tokens": 1404, "output_tokens": 468}

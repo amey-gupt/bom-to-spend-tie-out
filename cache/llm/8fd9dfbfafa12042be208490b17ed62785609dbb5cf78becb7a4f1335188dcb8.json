@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The purchase line says PLNT (planet gear), but the only steel 13-tooth, module 0.5 candidate SGR-63452 is a sun gear, and the purchase part number MX-1166727 matches no candidate family.", "model": "claude-haiku-5-5", "input_tokens": 1395, "output_tokens": 394}

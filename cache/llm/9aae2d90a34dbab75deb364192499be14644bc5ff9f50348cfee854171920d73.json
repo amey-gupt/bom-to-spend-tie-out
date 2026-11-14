@@ -1,0 +1,1 @@
+{"part_number": "SCR-66688", "confidence": 0.86, "reason": "The purchase line 'SCR ST M5X12 ZINC' matches SCR-66688 (self-tapping screw, M5 x 12, zinc), and the supplier is the same APEX SCREW & RIVET CORP. with a price within normal variance of its confirmed $0.0340, while SCR-66712 is a socket cap screw.", "model": "claude-haiku-5-5", "input_tokens": 1377, "output_tokens": 280}

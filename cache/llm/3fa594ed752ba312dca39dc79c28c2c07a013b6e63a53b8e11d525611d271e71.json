@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase specifies an M4x20 zinc screw, but every screw candidate is a different length (M4x8, M4x12, M4x16), and the one clear dimensional conflict rules them all out, so no candidate matches.", "model": "claude-haiku-5-5", "input_tokens": 1380, "output_tokens": 248}

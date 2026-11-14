@@ -1,0 +1,1 @@
+{"part_number": "CON-20082", "confidence": 0.8, "reason": "The purchase line specifies a 6-position 2.54 mm pitch wire-to-board connector, which matches CON-20082 exactly; the other candidates differ in position count or pitch, and the $0.136 price is within range of its confirmed $0.1575 purchase price.", "model": "claude-haiku-5-5", "input_tokens": 1434, "output_tokens": 118}

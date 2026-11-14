@@ -1,0 +1,1 @@
+{"part_number": "SPR-38645", "confidence": 0.8, "reason": "The purchase description (D6 L20 1.0 mm wire) matches SPR-38645 exactly on diameter, length and wire size, and the truncated part number SPR-3864 is a prefix of SPR-38645; no other candidate matches the 6 mm x 20 mm x 1.0 mm spec.", "model": "claude-haiku-5-5", "input_tokens": 1422, "output_tokens": 372}
