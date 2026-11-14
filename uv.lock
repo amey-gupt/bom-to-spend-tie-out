@@ -105,6 +105,7 @@ dependencies = [
     { name = "scikit-learn" },
     { name = "sentence-transformers" },
     { name = "streamlit" },
+    { name = "streamlit-echarts" },
     { name = "torch", version = "2.15.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform == 'darwin'" },
     { name = "torch", version = "2.15.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "sys_platform != 'darwin'" },
 ]
@@ -119,6 +120,7 @@ requires-dist = [
     { name = "scikit-learn", specifier = ">=1.9.1" },
     { name = "sentence-transformers" },
     { name = "streamlit", specifier = ">=1.67.0" },
+    { name = "streamlit-echarts", specifier = ">=0.7.0" },
     { name = "torch", index = "https://download.pytorch.org/whl/cpu" },
 ]
 
@@ -2146,6 +2148,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/38/47/ea7596bda2d303370b6129688e09a44e5faa64e5b9d86cba4d89ae60a16f/streamlit-1.67.0.tar.gz", hash = "sha256:58159dae1199212250bfa5fbba0740996129003266c2c37d465151ef76c48f3b", size = 10672027, upload-time = "2026-11-05T19:53:54.821Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/58/c4/59f60e52e8f679488bf0caecbe3a8469af1d3d72c352bb0f306915a3e667/streamlit-1.67.0-py3-none-any.whl", hash = "sha256:f29da87c443bfbdfc52738616e3d65745d438e718da8faf69e2be0da1e52ce64", size = 11235773, upload-time = "2026-11-05T19:53:51.688Z" },
+]
+
+[[package]]
+name = "streamlit-echarts"
+version = "0.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "streamlit" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7b/3f/379203fed5c1ea0128f3d09a42dd3e992621081b0f01fd96283dd215abef/streamlit_echarts-0.7.0.tar.gz", hash = "sha256:831fffa4daba03b31afaf560aa5e5947b021ccf714e41c456c82301f9af06089", size = 700422, upload-time = "2026-06-08T04:43:38.602Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/44/32/c4ff3617e29c0afcad19d19f76618dd51f7e9a88031336e4ff56d28520bd/streamlit_echarts-0.7.0-py3-none-any.whl", hash = "sha256:f9d20cb8b7075070cd72ee815ca4113ab5047264a142ba581eb8d9d60fa6b076", size = 702553, upload-time = "2026-06-08T04:43:36.99Z" },
 ]
 
 [[package]]

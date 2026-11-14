@@ -18,6 +18,12 @@ import pandas as pd
 import streamlit as st
 
 from src import allocate, crosswalk, mapping, pipeline
+
+try:  # animated charts; if the component cannot load (for example on a host that blocks it), static charts are used instead
+    from streamlit_echarts import JsCode, st_echarts
+    HAVE_ECHARTS = True
+except Exception:
+    HAVE_ECHARTS = False
 from src.normalize import norm_desc, norm_pn, numbers_in, prepare
 
 OUT = Path("out")
@@ -41,17 +47,29 @@ SYNTHETIC_NOTICE = ("The products, parts, suppliers and prices are invented, and
                     "Nothing here comes from a real company.")
 PAGE = 12  # rows per table page: tables are sized to their content so the mouse wheel scrolls the page
 
-st.set_page_config(page_title="BOM-to-Spend Tie-Out", layout="wide")
+st.set_page_config(page_title="BOM-to-Spend Tie-Out", layout="wide", initial_sidebar_state="collapsed")
+FONT = "Inter, sans-serif"
+LIGHT_BLUE, INK, MUTED, CARD_BORDER = "#b7d3f6", "#0b0b0b", "#52514e", "#e7e6e1"
 st.markdown("""<style>
-.block-container {padding-top: 1.4rem; padding-bottom: 2rem;}
+.block-container {padding-top: 1rem; padding-bottom: 3rem;}
 header[data-testid="stHeader"] {background: transparent; height: 2.2rem;}
+h3 {margin-top: 2.4rem !important; padding-bottom: .5rem !important;}
+[role="tabpanel"] h3:first-of-type {margin-top: .6rem !important;}
 .app-title {font-size: 1.15rem; font-weight: 650; line-height: 1.3; margin-bottom: .15rem;}
 .kpi-label {font-size: .78rem; color: #52514e; line-height: 1.2;}
-.kpi-value {font-size: 1.5rem; font-weight: 650; line-height: 1.25; color: #0b0b0b;}
+.kpi-value {font-size: 1.5rem; font-weight: 650; line-height: 1.25; color: #0b0b0b; font-variant-numeric: tabular-nums;}
 .kpi-note {font-size: .76rem; color: #52514e; line-height: 1.2;}
-.pair {border: 1px solid #e4e3df; border-radius: 8px; padding: .55rem .8rem; margin-bottom: .5rem; font-size: .95rem;}
+/* one card surface for everything that holds content */
+.card, .pair, [data-testid="stVegaLiteChart"], [data-testid="stExpander"] details, [data-testid="stTable"],
+[class*="st-key-card_"] {background: #ffffff; border: 1px solid #e7e6e1; border-radius: 12px;}
+.card {padding: .45rem .8rem; min-height: 4.6rem;}
+[data-testid="stVegaLiteChart"] {padding: .9rem .9rem .4rem .9rem;}
+[data-testid="stTable"] {padding: .2rem .4rem; overflow: hidden;}
+[class*="st-key-card_"] {padding: .9rem 1rem;}
+.pair {padding: .55rem .8rem; margin-bottom: .5rem; font-size: .95rem;}
 .pair .who {font-size: .74rem; color: #52514e;}
 .tag {display: inline-block; font-size: .74rem; padding: .05rem .45rem; border-radius: 999px; background: #eef3fb; color: #1c5cab; margin-right: .3rem;}
+kbd {font-size: .72rem; padding: .05rem .35rem; border: 1px solid #cfcec8; border-radius: 4px; background: #fff;}
 </style>""", unsafe_allow_html=True)
 
 
@@ -74,7 +92,7 @@ def pct(x: float) -> str:
 
 
 def kpi(label: str, value: str, hover: str, note: str = "") -> str:
-    return (f'<div title="{html.escape(hover)}"><div class="kpi-label">{html.escape(label)}</div>'
+    return (f'<div class="card" title="{html.escape(hover)}"><div class="kpi-label">{html.escape(label)}</div>'
             f'<div class="kpi-value">{html.escape(value)}</div><div class="kpi-note">{html.escape(note)}</div></div>')
 
 
@@ -189,8 +207,9 @@ with st.sidebar:
     is_sample = dataset == "Built-in sample"
     base, bom, builds = (sample_base, sample_bom, sample_builds) if is_sample else (uploaded["lines"], uploaded["bom"], uploaded["builds"])
 
-    materiality = st.slider("Needs sign-off above", 0, 200_000, int(allocate.MATERIALITY_USD), 5_000, format="$%d",
-                            help="A match that only Claude vouched for waits for a person when the line is worth more than this.")
+    materiality = st.select_slider("Needs sign-off above", options=list(range(0, 200_001, 5_000)), value=int(allocate.MATERIALITY_USD),
+                                   format_func=lambda v: f"${v:,}", key="signoff",
+                                   help="A match that only Claude vouched for waits for a person when the line is worth more than this.")
     quarters = sorted(base["quarter"].unique())
     q_from, q_to = (st.select_slider("Date range", options=quarters, value=(quarters[0], quarters[-1]), key=f"quarters_{dataset}")
                     if len(quarters) > 1 else (quarters[0], quarters[0]))
@@ -240,15 +259,37 @@ with tab_overview:
     for col, b in zip(st.columns(4), BUCKETS):
         col.markdown(kpi(b.capitalize(), pct(by_bucket[b] / total), usd(by_bucket[b]), short(by_bucket[b])), unsafe_allow_html=True)
     names_b = [b.capitalize() for b in BUCKETS]
-    bar = pd.DataFrame({"bucket": names_b, "spend": by_bucket.to_numpy(), "share": (by_bucket / total).to_numpy(), "order": range(4)})
-    st.altair_chart(
-        alt.Chart(bar).mark_bar(height=28, stroke=SURFACE, strokeWidth=2).encode(
-            x=alt.X("spend:Q", stack="normalize", axis=alt.Axis(format="%", title="Share of spend", grid=False)),
-            color=alt.Color("bucket:N", scale=alt.Scale(domain=names_b, range=BUCKET_COLORS), legend=alt.Legend(title=None, orient="top")),
-            order="order:Q",
-            tooltip=[alt.Tooltip("bucket:N", title="Bucket"), alt.Tooltip("spend:Q", title="Spend", format="$,.0f"),
-                     alt.Tooltip("share:Q", title="Share", format=".1%")],
-        ).properties(height=90), width="stretch")
+    st.subheader("How the spend got there")
+    decided = lines["source"].map(lambda v: "Saved decisions" if v in ("crosswalk", "rule_crosswalk") else "Rules" if v.startswith("rule_")
+                                  else "Claude" if v == "llm" else "Model")
+    decided = decided.mask(lines["decision"].isin(["no_match", "rejected"]), "No match").mask(lines["decision"] == "review", "Waiting for a decision")
+    flow = lines.assign(decided=decided, bucket_name=lines["bucket"].str.capitalize()).groupby(["decided", "bucket_name"])["spend_usd"].sum().reset_index()
+    left_order = [g for g in ("Rules", "Model", "Claude", "Saved decisions", "Waiting for a decision", "No match") if (flow["decided"] == g).any()]
+    if HAVE_ECHARTS:
+        left_total, right_total = flow.groupby("decided")["spend_usd"].sum(), flow.groupby("bucket_name")["spend_usd"].sum()
+        l_name = {g: f"{g}  {short(left_total[g])}" for g in left_order}
+        r_name = {b: f"{b}  {short(right_total.get(b, 0.0))}" for b in names_b}
+        with st.container(key="card_flow"):
+            st_echarts({
+                "textStyle": {"fontFamily": FONT},
+                "tooltip": {"trigger": "item", "valueFormatter": JsCode("function (v) { return '$' + Math.round(v).toLocaleString('en-US'); }")},
+                "series": [{
+                    "type": "sankey", "left": 8, "right": 150, "top": 12, "bottom": 12, "nodeWidth": 14, "nodeGap": 14, "draggable": False,
+                    "layoutIterations": 0, "emphasis": {"focus": "adjacency"},
+                    "label": {"fontFamily": FONT, "fontSize": 13, "color": INK},
+                    "lineStyle": {"color": "target", "opacity": 0.32, "curveness": 0.5},
+                    "data": [{"name": l_name[g], "itemStyle": {"color": "#6f6e68"}} for g in left_order]
+                            + [{"name": r_name[b], "itemStyle": {"color": c}} for b, c in zip(names_b, BUCKET_COLORS) if right_total.get(b, 0.0) > 0],
+                    "links": [{"source": l_name[r.decided], "target": r_name[r.bucket_name], "value": float(round(r.spend_usd, 2))} for r in flow.itertuples()],
+                }]}, height="330px", key="flow")
+        st.caption("Left: how each line was decided. Right: the bucket its spend landed in. Widths are dollars; the chart updates after every review decision.")
+    else:
+        st.altair_chart(
+            alt.Chart(flow).mark_bar(height=22, stroke=SURFACE, strokeWidth=2).encode(
+                y=alt.Y("decided:N", sort=left_order, title=None), x=alt.X("spend_usd:Q", axis=alt.Axis(format="$~s", title="Spend")),
+                color=alt.Color("bucket_name:N", scale=alt.Scale(domain=names_b, range=BUCKET_COLORS), legend=alt.Legend(title=None, orient="top")),
+                tooltip=[alt.Tooltip("decided:N", title="Decided by"), alt.Tooltip("bucket_name:N", title="Bucket"),
+                         alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(30)), width="stretch")
     inferred = lines[lines["bucket_inferred"]]
     st.caption(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
                f"match and the plant: {len(inferred):,} lines ({short(inferred['spend_usd'].sum())}).")
@@ -354,9 +395,9 @@ with tab_review:
             st.markdown(f"Approving settles **{g['lines']} {'line' if g['lines'] == 1 else 'lines'}** ({usd(g['spend'])}) and moves tie-out by "
                         f"**{g['gain'] / total * 100:+.2f} pts**.")
             c1, c2, c3 = st.columns([1.5, 1.1, 1.3])
-            for col, label, action, kind in ((c1, f"Approve: {sug}", "approve", "primary"), (c2, "Reject suggestion", "reject", "secondary"),
-                                             (c3, "Not a BOM part", "no_match", "secondary")):
-                if col.button(label, type=kind, key=f"{action}_{g['first']}", width="stretch"):
+            for col, label, action, kind, keyboard in ((c1, f"Approve: {sug}", "approve", "primary", "A"), (c2, "Reject suggestion", "reject", "secondary", "X"),
+                                                       (c3, "Not a BOM part", "no_match", "secondary", "N")):
+                if col.button(label, type=kind, key=f"{action}_{g['first']}", width="stretch", shortcut=keyboard):
                     crosswalk.add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
                     st.rerun()  # the list shifts up, so the same position now holds the next item
 
@@ -384,6 +425,7 @@ with tab_review:
                         f"**Plant** {r['plant'] or '(blank)'}  \n**Order date** {r['po_date']} &nbsp;·&nbsp; **Order type** {r['po_type'] or '(blank)'} "
                         f"&nbsp;·&nbsp; **Quantity** {r['qty']:,.2f} {r['uom']} &nbsp;·&nbsp; **Price per unit** ${r['unit_price_usd']:.4f}"
                         + (f"  \nLargest of {g['lines']} lines with this text." if g["lines"] > 1 else ""))
+            st.markdown("Keyboard: <kbd>A</kbd> approve &nbsp; <kbd>X</kbd> reject &nbsp; <kbd>N</kbd> not a BOM part", unsafe_allow_html=True)
             st.caption("Approve ties these lines to the suggested part. Reject removes the suggestion and leaves them untied for a manual lookup. "
                        "Not a BOM part closes them as correctly unmatched.")
 
@@ -427,6 +469,73 @@ with tab_cost:
         "Actual vs standard": products["actual_vs_std"].map(lambda v: "n/a" if pd.isna(v) else f"{v:+.1%}"),
         "Allocated production spend": products["allocated_production_spend_est"].map(usd)}), hide_index=True, width="stretch", height="content")
     st.download_button("Download product cost (CSV)", products.to_csv(index=False), "product_cost.csv", "text/csv")
+
+    st.subheader("Shared parts: who uses them and who sells them")
+    req = requirements(bom, builds, q_from, q_to)
+    matched = lines[(lines["decision"] == "accept") & lines["part"].isin(set(req["part_number"]))]
+    part_spend = matched.groupby("part")["spend_usd"].sum().sort_values(ascending=False)
+    n_parts = st.select_slider("Parts shown, largest spend first", options=[20, 40, 60, 80], value=40, key=f"net_n_{dataset}")
+    top_parts = list(part_spend.head(n_parts).index)
+    buys = matched[matched["part"].isin(top_parts) & matched["qty_bom"].notna()].groupby(["part", "supplier_key"]).agg(
+        spend=("spend_usd", "sum"), qty=("qty_bom", "sum"), name=("supplier", lambda x: x.value_counts().index[0])).reset_index()
+    sup_name = buys.groupby("supplier_key")["name"].first()
+    uses = req[req["part_number"].isin(top_parts)].groupby(["product_id", "part_number"], as_index=False)["need"].sum()
+    net_key = f"net_part_{dataset}"
+    if HAVE_ECHARTS and top_parts:
+        size = lambda v, top, lo, hi: float(round(lo + (hi - lo) * (v / top) ** 0.5, 1))
+        sup_spend = buys.groupby("supplier_key")["spend"].sum()
+        corners = [(430, 170), (930, 170), (430, 400), (930, 400), (680, 285), (180, 285), (1180, 285), (680, 60)]  # products are pinned apart
+        nodes = ([{"name": pid, "category": 0, "symbolSize": 44, "label": {"show": True, "fontWeight": 600}, "x": corners[i % 8][0], "y": corners[i % 8][1], "fixed": True}
+                  for i, pid in enumerate(sorted(uses["product_id"].unique()))]
+                 + [{"name": part, "category": 1, "symbolSize": size(part_spend[part], part_spend.iloc[0], 9, 38), "value": int(round(part_spend[part])),
+                     "label": {"show": i < 8}} for i, part in enumerate(top_parts)]
+                 + [{"name": sup_name[k], "category": 2, "symbolSize": size(v, sup_spend.max(), 9, 30), "value": int(round(v)), "label": {"show": bool(v > 0.03 * sup_spend.sum())}}
+                    for k, v in sup_spend.items()])
+        links = ([{"source": u.product_id, "target": u.part_number, "lineStyle": {"type": "solid"}} for u in uses.itertuples()]
+                 + [{"source": b_.part, "target": sup_name[b_.supplier_key], "lineStyle": {"type": "dashed"}} for b_ in buys.itertuples()])
+        with st.container(key="card_net"):
+            clicked = st_echarts({
+                "textStyle": {"fontFamily": FONT}, "color": [BLUE, AQUA, VIOLET],
+                "legend": {"top": 4, "data": ["Product", "Part", "Supplier"], "textStyle": {"fontFamily": FONT}},
+                "tooltip": {"valueFormatter": JsCode("function (v) { return v ? '$' + Math.round(v).toLocaleString('en-US') : ''; }")},
+                "series": [{
+                    "type": "graph", "layout": "force", "roam": True, "draggable": True, "top": 40,
+                    "categories": [{"name": "Product"}, {"name": "Part"}, {"name": "Supplier"}],
+                    "force": {"repulsion": 190, "edgeLength": [30, 110], "gravity": 0.09, "layoutAnimation": True},
+                    "label": {"position": "right", "fontFamily": FONT, "fontSize": 11, "color": INK},
+                    "lineStyle": {"color": "#9a9890", "opacity": 0.45, "width": 1},
+                    "emphasis": {"focus": "adjacency", "label": {"show": True}, "lineStyle": {"width": 2}},
+                    "data": nodes, "links": links,
+                }]}, height="560px", renderer="svg", key=f"net_{dataset}_{n_parts}",
+                events={"click": "function (params) { return params.dataType === 'node' ? params.name : null; }"})
+        clicked = clicked.get("chart_event") if isinstance(clicked, dict) else clicked
+        if clicked in top_parts and clicked != st.session_state.get("net_last_click"):
+            st.session_state["net_last_click"], st.session_state[net_key] = clicked, clicked
+        st.caption("Solid lines: a product uses the part. Dashed lines: the part is bought from the supplier. Node size is spend. "
+                   "Click a part, or pick one below. Drag to rearrange, scroll to zoom.")
+    elif top_parts:
+        st.altair_chart(
+            alt.Chart(part_spend.head(n_parts).rename_axis("part").reset_index(name="spend")).mark_bar(color=BLUE, cornerRadiusEnd=3).encode(
+                y=alt.Y("part:N", sort=None, title=None), x=alt.X("spend:Q", axis=alt.Axis(format="$~s", title="Matched spend")),
+                tooltip=[alt.Tooltip("part:N", title="Part"), alt.Tooltip("spend:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(16)),
+            width="stretch")
+    if top_parts:
+        if st.session_state.get(net_key) not in top_parts:
+            st.session_state[net_key] = top_parts[0]
+        chosen_part = st.selectbox("Part", top_parts, key=net_key)
+        st.caption(part_desc.get(chosen_part, ""))
+        n1, n2 = st.columns(2)
+        with n1:
+            st.markdown(f"**Products using `{chosen_part}`**")
+            used = req[req["part_number"] == chosen_part].groupby("product_id").agg(need=("need", "sum"), units=("units_built", "sum")).reset_index()
+            st.dataframe(pd.DataFrame({"Product": used["product_id"], "Gross qty per unit": (used["need"] / used["units"]).map("{:.3g}".format),
+                                       "Required over the period": used["need"].map("{:,.0f}".format)}), hide_index=True, width="stretch", height="content")
+        with n2:
+            st.markdown(f"**Suppliers of `{chosen_part}`** ({usd(part_spend[chosen_part])} matched)")
+            sold = buys[buys["part"] == chosen_part].sort_values("spend", ascending=False)
+            st.dataframe(pd.DataFrame({"Supplier": sold["name"], "Price per unit": (sold["spend"] / sold["qty"]).map("${:.4f}".format),
+                                       "Quantity": sold["qty"].map("{:,.0f}".format), "Spend": sold["spend"].map(usd)}),
+                         hide_index=True, width="stretch", height="content")
 
     product_key, asof_key = f"cost_product_{dataset}", f"bom_as_of_{dataset}"
     changes = engineering_changes(bom)
@@ -569,13 +678,15 @@ with tab_leads:
         by_type = shown.groupby("lead_type").agg(low=("low_usd", "sum"), high=("high_usd", "sum"), n=("part_number", "size")).reindex(chosen).dropna().reset_index()
         by_type["name"] = by_type["lead_type"].map(names)
         by_type["label"] = [f"{short(a)} to {short(b)}  ({int(n)} leads)" for a, b, n in zip(by_type["low"], by_type["high"], by_type["n"])]
-        ranges = alt.Chart(by_type).mark_bar(height=16, color=BLUE, cornerRadius=4).encode(
-            y=alt.Y("name:N", sort=None, title=None, axis=alt.Axis(labelLimit=300)),
-            x=alt.X("low:Q", axis=alt.Axis(format="$~s", title="Range: half the gap closed, up to all of it"), scale=alt.Scale(domainMin=0)), x2="high:Q",
-            tooltip=[alt.Tooltip("name:N", title="Lead type"), alt.Tooltip("low:Q", title="Low", format="$,.0f"),
-                     alt.Tooltip("high:Q", title="High", format="$,.0f"), alt.Tooltip("n:Q", title="Leads")])
-        range_labels = alt.Chart(by_type).mark_text(align="left", dx=6, color="#0b0b0b").encode(y=alt.Y("name:N", sort=None), x="high:Q", text="label:N")
-        st.altair_chart((ranges + range_labels).properties(height=34 * len(by_type) + 50), width="stretch")
+        y_axis = alt.Y("name:N", sort=None, title=None, axis=alt.Axis(labelLimit=300), scale=alt.Scale(paddingInner=0.4, paddingOuter=0.2))
+        tips = [alt.Tooltip("name:N", title="Lead type"), alt.Tooltip("low:Q", title="Low: half the gap closed", format="$,.0f"),
+                alt.Tooltip("high:Q", title="High: all of it", format="$,.0f"), alt.Tooltip("n:Q", title="Leads")]
+        solid = alt.Chart(by_type).mark_bar(color=BLUE).encode(
+            y=y_axis, x=alt.X("zero:Q", axis=alt.Axis(format="$~s", title="Dark: half the gap closed. Light: up to all of it."), scale=alt.Scale(domainMin=0)),
+            x2="low:Q", tooltip=tips)
+        lighter = alt.Chart(by_type).mark_bar(color=LIGHT_BLUE, cornerRadiusEnd=4).encode(y=y_axis, x="low:Q", x2="high:Q", tooltip=tips)
+        range_labels = alt.Chart(by_type).mark_text(align="left", dx=6, color=INK).encode(y=y_axis, x="high:Q", text="label:N")
+        st.altair_chart((solid + lighter + range_labels).transform_calculate(zero="0").properties(height=alt.Step(36)), width="stretch")
 
         pick = table(pd.DataFrame({
             "Type": shown["lead_type"].map(names), "Part": shown["part_number"], "Description": shown["description"],

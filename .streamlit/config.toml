@@ -1,12 +1,23 @@
 [theme]
 base = "light"
 primaryColor = "#2a78d6"
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f6f6f3"
+textColor = "#0b0b0b"
+font = "Inter, sans-serif"
+headingFont = "Inter, sans-serif"
+
+[[theme.fontFaces]]
+family = "Inter"
+url = "app/static/inter-latin-wght-normal.woff2"
+weight = "100 900"
 
 [client]
 toolbarMode = "minimal"
 
 [server]
 maxUploadSize = 5
+enableStaticServing = true
 
 [browser]
 gatherUsageStats = false
