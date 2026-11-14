@@ -15,16 +15,19 @@ uv sync
 uv run streamlit run app.py
 ```
 
-Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys. The header shows the tie-out rate, the lines waiting for a decision, total spend, and how far reviewing the largest lines would move tie-out. It has six tabs:
+Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys. It opens on the savings leads and has five tabs:
 
-- **Overview:** the four buckets, a spend-flow chart from how each line was decided to the bucket it landed in (it updates after every review decision), tie-out by quarter, and each stage from a plain part-number lookup to the full pipeline.
-- **Review:** the queue on the left, grouped so lines with identical text are one item, and the detail on the right: decision buttons, what approving would settle, the PO text and BOM description with shared words in bold, Claude's reason, and price and supplier evidence. Saved decisions (undo, clear, download) are at the bottom. Keyboard: A approves, X rejects, N marks not a BOM part.
-- **Product cost:** BOM standard versus estimated actual per unit, a network of shared parts with the products that use them and the suppliers that sell them (click a part for its products and price per supplier), the engineering changes, the parts driving the difference, the BOM in effect on any date, the cost trend by quarter and an estimated inventory view.
-- **Savings leads:** price and quantity gaps shown as ranges, by type, with the purchase lines behind each one. They are leads, not booked savings.
-- **Evidence:** three headline results, then the full evaluation in collapsed sections, and the limits.
+- **Opportunities:** the combined lead range, lead count and share of spend ("Leads, not booked savings"), with dollars you have marked validated shown separately. "Start here" is one bar per product; each lead is split across products by the allocation weights, and clicking a bar filters the lists. Below are the top five leads as cards (an action sentence, the range, the owner and the evidence) and the full lead table. Selecting a lead shows what to check before acting, a status you can set (new, validated, rejected), and its purchase lines with the file and row each came from.
+- **Products:** BOM standard versus estimated actual per unit, the shared-parts network, the engineering changes, the parts driving the difference, the BOM in effect on any date, the cost trend by quarter and an estimated inventory view.
+- **Review:** the queue on the left, grouped so lines with identical text are one item, and the detail on the right: decision buttons, what approving would settle, the PO text and BOM description with shared words in bold, Claude's reason, price and supplier evidence, and the source file and row. Saved decisions (undo, clear, download) are at the bottom. Keyboard: A approves, X rejects, N marks not a BOM part.
+- **Evidence:** three headline results, the stage chart from a plain part-number lookup to the full pipeline, where the spend ties (buckets, the spend-flow chart, tie-out by quarter), then the full evaluation in collapsed sections, and the limits.
 - **Your data:** run the matcher on your own CSV or Excel files in three steps (see below). Uploads are limited to 5 MB per file.
 
 The sidebar (collapsed by default) has the data switch, the "Needs sign-off above" threshold and a date range.
+
+Lead types: same part at different supplier prices, spares bought at a premium, duplicate internal part numbers, bought more than the builds required, and **similar parts to consolidate**. The last pairs BOM parts in the same family whose descriptions differ in one numeric spec by 15% or less, or in the package only. It is labelled "engineering must confirm", it is kept out of the headline range, and it is **unmeasured**: nothing was planted for it, so it has no precision or recall. It currently produces 19 pairs worth $316K to $633K; some pair parts that are plainly not interchangeable (two bearing sizes, for example). For each pair, a one-line note from Claude on what differs is committed in `out/similar_part_notes.json`.
+
+Lead status is kept for the browser session only.
 
 The flow chart and the network use ECharts through the `streamlit-echarts` component, which animates changes. If that component cannot be imported, the app falls back to static Altair charts. This has been checked locally in a headless browser, not on Streamlit Community Cloud. The font is Inter (SIL Open Font License), served from `static/` so the app needs no network for it.
 
@@ -106,7 +109,7 @@ Embedding backends on the same held-out lines (rules + classifier, before Claude
 
 The tool reports an 88.6% tie-out rate against a true 94.9%, with 100 lines ($1.91M) in review. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 93.9% and the bucket is right for 98.6% of spend.
 
-Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2 planted, plus 2 more on the parts with an engineering change (see below). Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
+Leads against the planted findings (the similar-parts lead is not in this list because nothing was planted for it): supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2 planted, plus 2 more on the parts with an engineering change (see below). Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
 
 Product cost is an estimate: matched production spend is split across products by gross BOM quantity x units built per quarter, and shown beside the BOM standard cost.
 

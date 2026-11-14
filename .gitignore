@@ -11,6 +11,7 @@ models/
 cache/*
 !cache/llm/
 !cache/llm_sample/
+!cache/llm_leads/
 !cache/sample_embeddings.npz
 data/external/
 crosswalk.csv

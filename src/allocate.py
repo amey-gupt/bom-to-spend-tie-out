@@ -9,6 +9,7 @@ not what a product consumed. Leads are leads, not booked savings.
 """
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -20,6 +21,40 @@ MATERIALITY_USD = 25_000     # a Claude-accepted line above this goes to a perso
 PRICE_GAP_MIN = 0.05         # ignore supplier price differences smaller than this
 SPARES_PREMIUM_MIN = 0.35    # spares price over production price before it becomes a lead
 OVER_PURCHASE_MIN = 0.15     # bought this far above the gross requirement before it becomes a lead
+SIMILAR_SPEC_MAX = 0.15      # two parts count as similar when one numeric spec differs by no more than this
+PACKAGE = re.compile(r"^(0201|0402|0603|0805|1206|1210|2010|2512|TO-?\d+|D2?PAK|PDFN.*|SOT-?\d+|SOIC-?\d+|SOP-?\d+|LQFP-?\d+|TQFP-?\d+|QFN-?\d+|TSSOP-?\d+|DIP-?\d+)$", re.I)
+
+# Who would act on each kind of lead, and what has to be checked before anyone does.
+OWNER = {"supplier_price_gap": "Buyer", "duplicate_part": "Engineer", "spares_premium": "Service", "over_purchase": "Buyer", "similar_parts": "Engineer"}
+CHECK = {
+    "supplier_price_gap": "Volume commitments, minimum order quantity, freight and payment terms, and whether both prices are from the same period.",
+    "duplicate_part": "That both numbers really are one part (drawing and revision), and the open orders and stock under each number.",
+    "spares_premium": "Order quantity, packaging and freight on small service orders, and whether the spare is the same revision as production.",
+    "over_purchase": "Stock on hand, scrap above standard, service use, timing of receipts against builds, and whether the BOM quantity is right.",
+    "similar_parts": "Engineering must confirm fit, form and function first. Then volume commitments, order quantity, freight and timing.",
+}
+
+
+def _spec_difference(a: str, b: str) -> tuple[str, str] | None:
+    """If two descriptions are the same except for one numeric spec within SIMILAR_SPEC_MAX, or for the package only,
+    return the two differing pieces; otherwise None. Descriptions are compared piece by piece, split at commas."""
+    pa, pb = [x.strip() for x in a.split(",")], [x.strip() for x in b.split(",")]
+    if len(pa) != len(pb) or pa[0].lower() != pb[0].lower():
+        return None
+    diff = [(x, y) for x, y in zip(pa, pb) if x.lower() != y.lower()]
+    if len(diff) != 1:
+        return None
+    x, y = diff[0]
+    if PACKAGE.match(x) and PACKAGE.match(y):
+        return x, y
+    number = r"\d+(?:\.\d+)?"
+    if re.sub(number, "#", x).lower() != re.sub(number, "#", y).lower():
+        return None
+    nx, ny = [float(v) for v in re.findall(number, x)], [float(v) for v in re.findall(number, y)]
+    changed = [(u, v) for u, v in zip(nx, ny) if u != v]
+    if len(changed) == 1 and abs(changed[0][0] - changed[0][1]) / max(changed[0]) <= SIMILAR_SPEC_MAX:
+        return x, y
+    return None
 LEAD_LOW = 0.5               # low end of every lead's range: half the gap closed
 
 
@@ -29,7 +64,7 @@ def load_lines(inp: Inputs, decisions_path: str | Path = "out/decisions.csv") ->
 
 def build_lines(inp: Inputs, dec: pd.DataFrame) -> pd.DataFrame:
     cols = ["po_id", "po_date", "plant", "supplier", "supplier_key", "supplier_part_number", "item_description", "uom", "po_type",
-            "qty", "base_qty", "unit_price_usd", "spend_usd"]
+            "qty", "base_qty", "unit_price_usd", "spend_usd", "source_file", "source_row"]
     lines = inp.purchases[cols].merge(dec[["po_id", "decision", "source", "part", "prob", "llm_part", "llm_conf", "llm_reason"]], on="po_id", validate="1:1")
     # the matcher's verdict before the materiality rule or any reviewer action; the app starts from these
     lines["decision_pre"], lines["source_pre"] = lines["decision"], lines["source"]
@@ -309,10 +344,36 @@ def find_leads(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame | N
                                          f"{end:%b %Y} (+{r['qty'] / required - 1:.0%}); cause not determined",
                                   gap_usd=(r["qty"] - required) * r["price"]))
 
+    # 5. similar parts that might be consolidated: same family, same description except one close numeric spec or the package.
+    #    Nothing here is known to be interchangeable. Engineering must confirm; the range is what moving to the cheaper part would be worth.
+    desc = bom_parts.set_index("part_number")["description"]
+    flat_all = flatten_bom(boms)
+    used_in = flat_all.groupby("part_number")["product_id"].agg(lambda x: ", ".join(dict.fromkeys(x))).to_dict()
+    for _, g in parts.groupby("family"):
+        numbers = sorted(g["part_number"])
+        for i, a in enumerate(numbers):
+            for b in numbers[i + 1:]:
+                if same_part.get(b) == a or same_part.get(a) == b:
+                    continue
+                differs = _spec_difference(desc[a], desc[b])
+                if differs is None:
+                    continue
+                if a in price.index and b in price.index:
+                    cheap, dear = sorted([a, b], key=lambda x: price.at[x, "price"])
+                    gap = (price.at[dear, "price"] - price.at[cheap, "price"]) * price.at[dear, "qty"]
+                    prices = f"{cheap} at ${price.at[cheap, 'price']:.4f}, {dear} at ${price.at[dear, 'price']:.4f} (+{price.at[dear, 'price'] / price.at[cheap, 'price'] - 1:.0%})"
+                else:
+                    cheap, dear, gap, prices = a, b, 0.0, "no matched purchases on one of them yet"
+                spec = dict(zip([a, b], differs))
+                leads.append(dict(lead_type="similar_parts", part_number=cheap, related=dear,
+                                  detail=f"{spec[cheap]} ({cheap}, used in {used_in.get(cheap, 'no product')}) vs {spec[dear]} ({dear}, used in "
+                                         f"{used_in.get(dear, 'no product')}); {prices}; engineering must confirm",
+                                  gap_usd=gap))
+
     out = pd.DataFrame(leads, columns=["lead_type", "part_number", "related", "detail", "gap_usd"])
     out["low_usd"], out["high_usd"] = (out["gap_usd"] * LEAD_LOW).round(0), out["gap_usd"].round(0)
-    desc = bom_parts.set_index("part_number")["description"]
     out.insert(2, "description", out["part_number"].map(desc))
+    out["owner"], out["check"] = out["lead_type"].map(OWNER), out["lead_type"].map(CHECK)
     return out.drop(columns="gap_usd").sort_values("high_usd", ascending=False).reset_index(drop=True)
 
 

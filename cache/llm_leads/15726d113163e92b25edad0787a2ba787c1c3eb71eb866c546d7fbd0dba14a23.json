@@ -1,0 +1,1 @@
+{"difference": "Part A is a larger 0805 package while Part B is a smaller 0603; check PCB footprint, power rating, tolerance, temperature coefficient, and voltage rating before substituting.", "model": "claude-opus-5-5", "input_tokens": 376, "output_tokens": 70}

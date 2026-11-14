@@ -113,5 +113,11 @@
         "SCR-66681"
       ]
     }
+  },
+  "similar_parts": {
+    "found": 19,
+    "low_usd": 316383.0,
+    "high_usd": 632767.0,
+    "measured": false
   }
 }

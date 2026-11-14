@@ -1,0 +1,1 @@
+{"difference": "Part A uses a 32-pin LQFP package and Part B a 28-pin QFN, so check PCB footprint, pinout mapping, missing I/O pins, thermal pad grounding, and assembly process.", "model": "claude-opus-5-5", "input_tokens": 379, "output_tokens": 78}

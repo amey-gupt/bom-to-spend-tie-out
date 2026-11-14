@@ -102,10 +102,15 @@ class Inputs:
 FX_DEFAULT = {"USD": 1.0, "EUR": 1.08}
 
 
-def prepare(purchases: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame, xref: pd.DataFrame | None = None, fx: dict | None = None) -> Inputs:
+def prepare(purchases: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame, xref: pd.DataFrame | None = None, fx: dict | None = None,
+            source_file: str = "purchases.csv") -> Inputs:
     """Add the normalized columns to tables that already use the canonical column names."""
     fx = fx or FX_DEFAULT
     p = purchases.copy()
+    if "source_row" not in p:  # where each line came from, so any number can be traced back: row 1 is the header
+        p["source_row"] = range(2, len(p) + 2)
+    if "source_file" not in p:
+        p["source_file"] = source_file
     p["qty"] = p["qty"].astype(float)
     p["unit_price"] = p["unit_price"].astype(float)
     p["pn_key"] = p["supplier_part_number"].map(norm_pn)

@@ -127,6 +127,7 @@ def apply_mapping(kind: str, df: pd.DataFrame, mapping: dict) -> tuple[pd.DataFr
             notes.append("No standard cost column: product cost will show the estimated actual only.")
     elif kind == "purchases":
         out["qty"], out["unit_price"] = _num(out["qty"]), _num(out["unit_price"])
+        out["source_row"] = df.index + 2  # row in the uploaded file; row 1 is the header. Set before any row is dropped.
         out["po_date"] = pd.to_datetime(out["po_date"], errors="coerce").dt.strftime("%Y-%m-%d")
         out["po_type"] = out["po_type"].map(_po_type)
         out["currency"] = out["currency"].str.upper().where(out["currency"] != "", "USD")

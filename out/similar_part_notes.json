@@ -1,0 +1,97 @@
+{
+  "FET-20824|FET-20827": {
+    "a": "FET-20827",
+    "b": "FET-20824",
+    "note": "Part A is a through-hole TO-220 package while Part B is a surface-mount PDFN 5x6, so check PCB footprint, mounting, heatsinking, thermal resistance, and on-resistance."
+  },
+  "BRG-65675|BRG-65683": {
+    "a": "BRG-65683",
+    "b": "BRG-65675",
+    "note": "The 625 is 5\u00d716\u00d75 mm and the 698 is 8\u00d719\u00d76 mm, both metal-shielded; check shaft diameter, housing bore, axial space, and load and speed ratings."
+  },
+  "BMS-19554|BMS-19562": {
+    "a": "BMS-19562",
+    "b": "BMS-19554",
+    "note": "Part A is rated 20 V and Part B 18 V, both 40 A; check pack voltage, cell count, protection thresholds, firmware and connector pinout before substituting."
+  },
+  "WHR-16766|WHR-16777": {
+    "a": "WHR-16777",
+    "b": "WHR-16766",
+    "note": "Part A uses thicker 14 AWG wire versus Part B's 16 AWG; check circuit current rating, voltage drop, connector and terminal crimp compatibility, and routing clearance."
+  },
+  "MCU-14989|MCU-14994": {
+    "a": "MCU-14989",
+    "b": "MCU-14994",
+    "note": "Part A uses a 32-pin LQFP package and Part B a 28-pin QFN, so check PCB footprint, pinout mapping, missing I/O pins, thermal pad grounding, and assembly process."
+  },
+  "CEL-63994|CEL-64007": {
+    "a": "CEL-64007",
+    "b": "CEL-63994",
+    "note": "Part A is an 18650 cell (18 mm \u00d7 65 mm) and Part B a larger 21700 (21 mm \u00d7 70 mm); check holder/pack fit, terminals, discharge rating, and chemistry match."
+  },
+  "BRG-65689|BRG-65728": {
+    "a": "BRG-65728",
+    "b": "BRG-65689",
+    "note": "The 626 is 6x19x6 mm while the 608 is 8x22x7 mm, so check shaft diameter, housing bore, width, and load and speed ratings."
+  },
+  "HCM-34670|HCM-34673": {
+    "a": "HCM-34670",
+    "b": "HCM-34673",
+    "note": "Part A has 12 teeth and Part B has 14; check impact frequency and energy per blow, mating striker or ratchet engagement, timing, and drive speed requirements."
+  },
+  "BRG-65703|BRG-65717": {
+    "a": "BRG-65703",
+    "b": "BRG-65717",
+    "note": "607 is 7x19x6 mm while 626 is 6x19x6 mm, so bore differs by 1 mm; check shaft diameter, fit tolerance, and load/speed ratings."
+  },
+  "SGR-63434|SGR-63457": {
+    "a": "SGR-63434",
+    "b": "SGR-63457",
+    "note": "Part B has 14 teeth versus 13 on Part A, so check gear ratio, mesh with existing planets and ring gear, center distance, and tooth profile compatibility."
+  },
+  "BHL-55997|BHL-56005": {
+    "a": "BHL-55997",
+    "b": "BHL-56005",
+    "note": "Part A is rated for an 18 V battery and Part B for 20 V; check cell pack dimensions, terminal positions, latch geometry, and mating upper housing compatibility."
+  },
+  "BRG-65673|BRG-65712": {
+    "a": "BRG-65673",
+    "b": "BRG-65712",
+    "note": "Both have a 10 mm bore, but the 6200 is a heavier series (30 mm OD, 9 mm wide) than the 6000 (26 mm OD, 8 mm wide); check housing bore, shoulder space, and load rating."
+  },
+  "BRG-65697|BRG-65722": {
+    "a": "BRG-65722",
+    "b": "BRG-65697",
+    "note": "The 6201 is a light-series bearing (12x32x10 mm) and the 6001 is extra-light (12x28x8 mm), so check housing bore, width, and load rating."
+  },
+  "SGR-63457|SGR-63461": {
+    "a": "SGR-63461",
+    "b": "SGR-63457",
+    "note": "Part A has 12 teeth and Part B has 14 teeth at the same module, so check gear ratio, center distance, planet and ring mesh, and bore fit."
+  },
+  "RES-69275|RES-69281": {
+    "a": "RES-69275",
+    "b": "RES-69281",
+    "note": "Part A is a larger 0805 package while Part B is a smaller 0603; check PCB footprint, power rating, tolerance, temperature coefficient, and voltage rating before substituting."
+  },
+  "CSC-39035|CSC-39037": {
+    "a": "CSC-39037",
+    "b": "CSC-39035",
+    "note": "Part B is 3 mm longer (25 mm versus 22 mm); check thread engagement depth, bottoming clearance in the spindle bore, and chuck seating before substituting."
+  },
+  "RRG-28916|RRG-28918": {
+    "a": "RRG-28916",
+    "b": "RRG-28918",
+    "note": "Part A is sized 22 mm and Part B 20 mm; check the actual bore diameter, groove diameter and width, and that both are truly internal rings despite the shaft labeling."
+  },
+  "SGR-63434|SGR-63461": {
+    "a": "SGR-63434",
+    "b": "SGR-63461",
+    "note": "Part A has 13 teeth and Part B has 12 at the same module, so check gear ratio, mating planet and ring tooth counts, center distance, and assembly constraints."
+  },
+  "SGR-63446|SGR-63461": {
+    "a": "SGR-63461",
+    "b": "SGR-63446",
+    "note": "Part A has 12 teeth and Part B has 11 at the same 0.8 module, so check gear ratio, mesh with planets and ring, center distance, and bore."
+  }
+}

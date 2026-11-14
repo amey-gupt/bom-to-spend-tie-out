@@ -149,6 +149,8 @@ def load():
     bom = pd.read_csv(OUT / "bom.csv")
     builds = pd.read_csv(OUT / "builds.csv", dtype={"period": str})
     evals = {p.stem: json.loads(p.read_text()) for p in sorted(OUT.glob("eval_*.json"))}
+    notes_path = OUT / "similar_part_notes.json"
+    evals["similar_part_notes"] = json.loads(notes_path.read_text()) if notes_path.exists() else {}
     return lines, bom, builds, evals
 
 
@@ -233,6 +235,7 @@ def saved_clear():
 
 
 sample_base, sample_bom, sample_builds, evals = load()
+similar_notes = evals.get("similar_part_notes", {})
 if st.session_state.pop("_switch_to_uploaded", False):
     st.session_state["dataset"] = "Your files"
 uploaded = st.session_state.get("uploaded")
@@ -273,224 +276,156 @@ top_n = int((gain.cumsum() < 0.8 * gain.sum()).sum()) + 1 if gain.sum() > 0 else
 reach = tied + gain.head(top_n).sum() / total
 
 # ------------------------------------------------------------------- header
-h_title, h1, h2, h3 = st.columns([2.2, 1, 1, 1])
+h_title, h_note = st.columns([2.2, 3])
 with h_title:
     st.markdown('<div class="app-title">BOM-to-Spend Tie-Out</div>', unsafe_allow_html=True)
     if is_sample or uploaded.get("demo_sample"):
         st.badge("Synthetic data", icon=":material/science:", color="orange", help=SYNTHETIC_NOTICE)
     else:
         st.badge("Your files", icon=":material/upload_file:", color="blue", help=", ".join(uploaded["files"]))
-moved = (tied - tied_start) * 100
-h1.markdown(kpi("Tie-out rate", pct(tied), f"{usd(total - by_bucket['unassigned'])} of {usd(total)} is tied to production, spares or warranty",
-                f"{moved:+.1f} pts from your decisions and settings" if abs(moved) > 1e-9 else ""), unsafe_allow_html=True)
-h2.markdown(kpi("Waiting for a decision", f"{len(queue)} lines", f"{usd(queue['spend_usd'].sum())} across {len(queue)} purchase lines",
-                short(queue["spend_usd"].sum())), unsafe_allow_html=True)
-h3.markdown(kpi("Total spend", short(total), f"{usd(total)} across {len(lines):,} purchase lines", f"{len(lines):,} purchase lines"), unsafe_allow_html=True)
-st.markdown(f"**{pct(tied)}** of spend is tied to a product, and **{len(queue)}** lines are waiting for a decision. "
-            + (f"Review the **{top_n}** largest lines to reach **{pct(reach)}**." if top_n else "Nothing is waiting for review."),
-            help="Assumes each of those lines is approved. Lines already tied through their order type add nothing.")
 
-tab_overview, tab_review, tab_cost, tab_leads, tab_evidence, tab_data = st.tabs(
-    ["Overview", f"Review ({len(queue)})", "Product cost", "Savings leads", "Evidence", "Your data"])
+LEAD_NAMES = {"supplier_price_gap": "Same part, different supplier prices", "spares_premium": "Spares bought at a premium",
+              "duplicate_part": "Duplicate internal part numbers", "over_purchase": "Bought more than the builds required",
+              "similar_parts": "Similar parts to consolidate"}
+names = LEAD_NAMES
 
-# ----------------------------------------------------------------- overview
-with tab_overview:
-    st.subheader("Where the spend ties")
-    for col, b in zip(st.columns(4), BUCKETS):
-        col.markdown(kpi(b.capitalize(), pct(by_bucket[b] / total), usd(by_bucket[b]), short(by_bucket[b])), unsafe_allow_html=True)
-    names_b = [b.capitalize() for b in BUCKETS]
-    st.subheader("How the spend got there")
-    decided = lines["source"].map(lambda v: "Saved decisions" if v in ("crosswalk", "rule_crosswalk") else "Rules" if v.startswith("rule_")
-                                  else "Claude" if v == "llm" else "Model")
-    decided = decided.mask(lines["decision"].isin(["no_match", "rejected"]), "No match").mask(lines["decision"] == "review", "Waiting for a decision")
-    flow = lines.assign(decided=decided, bucket_name=lines["bucket"].str.capitalize()).groupby(["decided", "bucket_name"])["spend_usd"].sum().reset_index()
-    left_order = [g for g in ("Rules", "Model", "Claude", "Saved decisions", "Waiting for a decision", "No match") if (flow["decided"] == g).any()]
-    if HAVE_ECHARTS:
-        left_total, right_total = flow.groupby("decided")["spend_usd"].sum(), flow.groupby("bucket_name")["spend_usd"].sum()
-        l_name = {g: f"{g}  {short(left_total[g])}" for g in left_order}
-        r_name = {b: f"{b}  {short(right_total.get(b, 0.0))}" for b in names_b}
-        with st.container(key="card_flow"):
-            st_echarts({
-                "textStyle": {"fontFamily": FONT},
-                "tooltip": {"trigger": "item", "valueFormatter": JsCode("function (v) { return '$' + Math.round(v).toLocaleString('en-US'); }")},
-                "series": [{
-                    "type": "sankey", "left": 8, "right": 150, "top": 12, "bottom": 12, "nodeWidth": 14, "nodeGap": 14, "draggable": False,
-                    "layoutIterations": 0, "emphasis": {"focus": "adjacency"},
-                    "label": {"fontFamily": FONT, "fontSize": 13, "color": INK},
-                    "lineStyle": {"color": "target", "opacity": 0.32, "curveness": 0.5},
-                    "data": [{"name": l_name[g], "itemStyle": {"color": "#6f6e68"}} for g in left_order]
-                            + [{"name": r_name[b], "itemStyle": {"color": c}} for b, c in zip(names_b, BUCKET_COLORS) if right_total.get(b, 0.0) > 0],
-                    "links": [{"source": l_name[r.decided], "target": r_name[r.bucket_name], "value": float(round(r.spend_usd, 2))} for r in flow.itertuples()],
-                }]}, height="330px", key="flow")
-        st.caption("Left: how each line was decided. Right: the bucket its spend landed in. Widths are dollars; the chart updates after every review decision.")
-    else:
-        st.altair_chart(
-            alt.Chart(flow).mark_bar(height=22, stroke=SURFACE, strokeWidth=2).encode(
-                y=alt.Y("decided:N", sort=left_order, title=None), x=alt.X("spend_usd:Q", axis=alt.Axis(format="$~s", title="Spend")),
-                color=alt.Color("bucket_name:N", scale=alt.Scale(domain=names_b, range=BUCKET_COLORS), legend=alt.Legend(title=None, orient="top")),
-                tooltip=[alt.Tooltip("decided:N", title="Decided by"), alt.Tooltip("bucket_name:N", title="Bucket"),
-                         alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(30)), width="stretch")
-    inferred = lines[lines["bucket_inferred"]]
-    st.caption(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
-               f"match and the plant: {len(inferred):,} lines ({short(inferred['spend_usd'].sum())}).")
 
-    st.subheader("Tie-out by quarter")
-    tq = lines.assign(un=lines["spend_usd"].where(lines["bucket"] == "unassigned", 0.0)).groupby("quarter")[["un", "spend_usd"]].sum().reset_index()
-    tq["tie_out"] = 1 - tq["un"] / tq["spend_usd"]
-    st.altair_chart(
-        alt.Chart(tq).mark_line(color=SERIES[0], strokeWidth=2, point=alt.OverlayMarkDef(size=70, color=SERIES[0])).encode(
-            x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)),
-            y=alt.Y("tie_out:Q", axis=alt.Axis(format="%", title="Spend tied out"), scale=alt.Scale(zero=False)),
-            tooltip=[alt.Tooltip("quarter:N", title="Quarter"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
-                     alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=220), width="stretch")
+def lead_action(r) -> str:
+    """What someone would actually do about the lead, in one sentence."""
+    what = f"{r['description']} ({r['part_number']})"
+    return {
+        "supplier_price_gap": f"Ask {r['related']} to match the lower price on {what}.",
+        "spares_premium": f"Buy spares of {what} at the production price.",
+        "duplicate_part": f"Merge {r['related']} into {r['part_number']}: one part under two numbers ({r['description']}).",
+        "over_purchase": f"Find out why {what} was bought above what the builds required.",
+        "similar_parts": f"Ask engineering whether {r['part_number']} can replace {r['related']} ({r['description']}).",
+    }[r["lead_type"]]
 
-    if is_sample:
-        st.subheader("From a spreadsheet lookup to the full pipeline")
-        s2 = evals["eval_step2_local"]["splits"]["heldout"]
-        s3 = evals["eval_step3"]
-        clf, full = s3["backends"][s3["chosen_backend"]]["heldout"], s3["llm"][MAIN_MODEL]["heldout"]
-        true_rate = full["true_tie_out"]
-        stages = pd.DataFrame([
-            ("1. Exact part-number lookup", s2["(a) naive exact part number"]["tie_out"], s2["(a) naive exact part number"]["precision"],
-             s2["(a) naive exact part number"]["recall"], None, s2["(a) naive exact part number"]["wrong_match_spend"]),
-            ("2. Rules: cleaned part numbers, cross-reference", s2["(b) rules only"]["tie_out"], s2["(b) rules only"]["precision"],
-             s2["(b) rules only"]["recall"], None, s2["(b) rules only"]["wrong_match_spend"]),
-            ("3. Rules + nearest description, fixed cutoff", s2["(c) rules + embeddings"]["tie_out"], s2["(c) rules + embeddings"]["precision"],
-             s2["(c) rules + embeddings"]["recall"], None, s2["(c) rules + embeddings"]["wrong_match_spend"]),
-            ("4. Rules + trained model", clf["tie_out"], clf["accept_precision"], clf["recall"], clf["review_spend"], clf["wrong_match_spend"]),
-            ("5. Rules + trained model + Claude", full["tie_out"], full["accept_precision"], full["recall"], full["review_spend"], full["wrong_match_spend"]),
-        ], columns=["stage", "tie_out", "precision", "recall", "review_spend", "wrong"])
-        kinds = ["No wrong matches", "Wrong matches"]
-        stages["kind"] = stages["wrong"].map(lambda w: kinds[1] if w > 0 else kinds[0])
-        stages["label"] = [f"{t:.1%}" + (f"   {short(w)} wrong" if w > 0 else "") for t, w in zip(stages["tie_out"], stages["wrong"])]
-        bars = alt.Chart(stages).mark_bar(cornerRadiusEnd=4).encode(
-            y=alt.Y("stage:N", sort=None, title=None, axis=alt.Axis(labelLimit=360), scale=alt.Scale(paddingInner=0.3, paddingOuter=0.15)),
-            x=alt.X("tie_out:Q", scale=alt.Scale(domain=[0, 1.12]), axis=alt.Axis(format="%", title="Spend tied out (held-out lines)", values=[0, .2, .4, .6, .8, 1])),
-            color=alt.Color("kind:N", scale=alt.Scale(domain=kinds, range=[BLUE, ORANGE]), legend=alt.Legend(title=None, orient="top")),
-            tooltip=[alt.Tooltip("stage:N", title="Stage"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
-                     alt.Tooltip("precision:Q", title="Precision", format=".1%"), alt.Tooltip("recall:Q", title="Recall", format=".1%"),
-                     alt.Tooltip("wrong:Q", title="Wrong-match dollars", format="$,.0f")])
-        labels = alt.Chart(stages).mark_text(align="left", dx=6, color="#0b0b0b").encode(y=alt.Y("stage:N", sort=None), x="tie_out:Q", text="label:N")
-        truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
-        rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
-        st.altair_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
-        st.caption(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}. Measured on {full['lines']:,} held-out purchase lines "
-                   f"({short(full['spend'])}) written in styles never used to tune the matcher. Stage 4 ties less than stage 3 because it refuses "
-                   "to guess: uncertain lines wait for review instead.")
-        st.table(pd.DataFrame({
-            "Stage": stages["stage"], "Tied out": stages["tie_out"].map(pct), "Precision": stages["precision"].map(pct),
-            "Recall": stages["recall"].map(pct), "Left for review": stages["review_spend"].map(lambda v: "n/a" if pd.isna(v) else short(v)),
-            "Wrong-match dollars": stages["wrong"].map(usd)}).set_index("Stage"))
-    else:
-        st.subheader("How this run was matched")
-        stats = uploaded["stats"]
-        st.markdown(f"{stats['lines']:,} purchase lines against {stats['bom_parts']:,} BOM parts. Rules settled {stats['settled_by_rules']:,} lines; "
-                    f"{stats['sent_to_claude']:,} went to Claude with their five nearest BOM parts ({stats['claude']['calls']} distinct calls, "
-                    f"${stats['claude']['cost_usd']:.2f} at list price).")
-        how = lines.assign(how=lines["source"].map(HOW).fillna(lines["source"])).groupby(["decision", "how"]).agg(
-            lines=("po_id", "size"), spend=("spend_usd", "sum")).reset_index()
-        st.dataframe(pd.DataFrame({"Outcome": how["decision"], "Decided by": how["how"], "Lines": how["lines"], "Spend": how["spend"].map(usd)}),
-                     hide_index=True, width="stretch", height="content")
-        if stats.get("not_sent"):
-            st.warning(f"Limit reached: {stats['call_limit']} Claude calls per run. {stats['not_sent']:,} smaller lines were not sent and are waiting in Review.")
-        for note in uploaded["notes"]:
-            st.caption(note)
-        st.caption("Your own files have no answer key, so accuracy cannot be reported here. The Evidence tab shows how the same steps score "
-                   "on the built-in sample and on outside data.")
 
-# ------------------------------------------------------------------- review
-with tab_review:
-    if queue.empty:
-        st.success("Nothing is waiting for review.")
-    else:
-        def tags(r) -> list[str]:
-            if r["source"] == "uom_mismatch":
-                return ["Unit mismatch"]
-            if r["source"] == "llm_material":
-                return [f"Over {short(materiality)}"]
-            if pd.notna(r["llm_conf"]):
-                return ["Low confidence"]
-            return ["Low confidence"] if r["source"] == "classifier" else ["Not judged"]
+# Leads with the status the user has set. "Similar parts" are ideas for engineering, kept out of the headline numbers.
+L = leads.copy()
+L["key"] = L["lead_type"] + "|" + L["part_number"].astype(str) + "|" + L["related"].fillna("").astype(str)
+L["status"] = [st.session_state.get(f"status_{k}") or "new" for k in L["key"]]
+L["action"] = L.apply(lead_action, axis=1) if len(L) else ""
+# Split each lead across products by where the part's allocated spend went (allocation weights); two-part leads use both parts.
+part_weights = alloc.groupby(["part_number", "product_id"])["allocated_usd"].sum()
+lead_parts = [[r.part_number] + ([r.related] if r.lead_type in ("duplicate_part", "similar_parts") else []) for r in L.itertuples()]
+shares = []
+for parts_ in lead_parts:
+    w = part_weights[part_weights.index.get_level_values(0).isin(parts_)].groupby("product_id").sum()
+    shares.append((w / w.sum()).to_dict() if w.sum() > 0 else {"Not tied to a product": 1.0})
+L["shares"] = shares
+firm = L[(L["lead_type"] != "similar_parts") & (L["status"] != "rejected")]
+ideas = L[(L["lead_type"] == "similar_parts") & (L["status"] != "rejected")]
+validated = L[L["status"] == "validated"]
 
-        q = queue.assign(tag=queue.apply(lambda r: ", ".join(tags(r)), axis=1), gain=gain)
-        groups = q.groupby(["supplier_part_number", "item_description"], sort=False).agg(
-            lines=("po_id", "size"), spend=("spend_usd", "sum"), gain=("gain", "sum"), suggested=("suggested_part", "first"),
-            tag=("tag", lambda s: ", ".join(dict.fromkeys(s))), first=("po_id", "first")).reset_index().sort_values("spend", ascending=False).reset_index(drop=True)
-        pos = min(st.session_state.get("review_pos", 0), len(groups) - 1)
+tab_labels = ["Opportunities", "Products", f"Review ({len(queue)})", "Evidence", "Your data"]
+if st.session_state.pop("goto_tab", None) == "review":
+    st.session_state["main_tabs"] = tab_labels[2]  # the tabs keep their selection under this key, so setting it switches tab
+tab_opps, tab_cost, tab_review, tab_evidence, tab_data = st.tabs(tab_labels, key="main_tabs", on_change="rerun")
 
-        left, right = st.columns([5, 6], gap="large")
-        with left:
-            st.markdown(f"**{len(groups)} items** covering {len(queue)} lines, largest dollars first")
-            picked = table(pd.DataFrame({
-                "Open": ["▶" if i == pos else "" for i in range(len(groups))], "Total": groups["spend"].map(short), "Lines": groups["lines"],
-                "Why": groups["tag"], "Suggested part": groups["suggested"], "Text on the PO": groups["item_description"]}),
-                key=f"queue_{len(xw)}", select=True)
-            if picked is not None and picked != pos:
-                st.session_state["review_pos"] = picked
-                st.rerun()
-            st.caption("Lines with identical text are one item: one decision settles all of them.")
-
-        g = groups.iloc[pos]
-        r = q[q["po_id"] == g["first"]].iloc[0]
-        sug = g["suggested"]
-        with right:
-            st.markdown(f"Approving settles **{g['lines']} {'line' if g['lines'] == 1 else 'lines'}** ({usd(g['spend'])}) and moves tie-out by "
-                        f"**{g['gain'] / total * 100:+.2f} pts**.")
-            c1, c2, c3 = st.columns([1.5, 1.1, 1.3])
-            for col, label, action, kind, keyboard in ((c1, f"Approve: {sug}", "approve", "primary", "A"), (c2, "Reject suggestion", "reject", "secondary", "X"),
-                                                       (c3, "Not a BOM part", "no_match", "secondary", "N")):
-                if col.button(label, type=kind, key=f"{action}_{g['first']}", width="stretch", shortcut=keyboard):
-                    saved_add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
-                    st.rerun()  # the list shifts up, so the same position now holds the next item
-
-            bom_text = part_desc.get(sug, "")
-            st.markdown(
-                f'<div class="pair"><div class="who">Text on the PO</div>{mark_shared(r["item_description"], bom_text)}</div>'
-                f'<div class="pair"><div class="who">BOM description of {html.escape(str(sug))}</div>{mark_shared(bom_text, r["item_description"])}</div>',
-                unsafe_allow_html=True)
-            st.markdown("".join(f'<span class="tag">{html.escape(t)}</span>' for t in g["tag"].split(", ")), unsafe_allow_html=True)
-            if r["source"] == "uom_mismatch":
-                st.warning(r["uom_issue"])
-            if r["llm_reason"]:
-                answer = f"`{r['llm_part']}`" if r["llm_part"] else "no BOM part"
-                st.info(f"**Claude's answer: {answer}, confidence {r['llm_conf']:.0%}.** {r['llm_reason']}")
-            st.markdown(f"**{'Model confidence' if is_sample else 'Closeness of the nearest BOM description'}:** {r['prob']:.0%}")
-            if sug in ref.index:
-                ref_price, ref_sup = ref.at[sug, "ref_price"], ref.at[sug, "ref_suppliers"]
-                st.markdown(f"**Price:** this line is ${r['unit_price_usd']:.4f} per unit; confirmed purchases of `{sug}` have a median of "
-                            f"${ref_price:.4f} ({r['unit_price_usd'] / ref_price - 1:+.0%}).")
-                st.markdown(f"**Supplier:** this supplier {'has' if r['supplier_key'] in ref_sup else 'has no'} confirmed purchases of `{sug}`. "
-                            f"Confirmed suppliers: {', '.join(s.title() for s in ref_sup)}.")
-            else:
-                st.markdown(f"**Price and supplier:** no confirmed purchases of `{sug}` yet, so there is nothing to compare against.")
-            st.markdown(f"**Part-number field** {r['supplier_part_number'] or '(blank)'} &nbsp;·&nbsp; **Supplier** {r['supplier']} &nbsp;·&nbsp; "
-                        f"**Plant** {r['plant'] or '(blank)'}  \n**Order date** {r['po_date']} &nbsp;·&nbsp; **Order type** {r['po_type'] or '(blank)'} "
-                        f"&nbsp;·&nbsp; **Quantity** {r['qty']:,.2f} {r['uom']} &nbsp;·&nbsp; **Price per unit** ${r['unit_price_usd']:.4f}"
-                        + (f"  \nLargest of {g['lines']} lines with this text." if g["lines"] > 1 else ""))
-            st.markdown("Keyboard: <kbd>A</kbd> approve &nbsp; <kbd>X</kbd> reject &nbsp; <kbd>N</kbd> not a BOM part", unsafe_allow_html=True)
-            st.caption("Approve ties these lines to the suggested part. Reject removes the suggestion and leaves them untied for a manual lookup. "
-                       "Not a BOM part closes them as correctly unmatched.")
-
-    st.divider()
-    s1, s2_, s3_, s4_ = st.columns([3, 1, 1, 1.4])
-    s1.markdown(f"**Saved decisions: {len(xw)}.** Each one applies to every line with the same text, now and on the next run."
-                + (" Here they last for this browser session only." if HOSTED else ""))
-    if s2_.button("Undo last", disabled=xw.empty, width="stretch"):
-        saved_undo()
+# ------------------------------------------------------------ opportunities
+with tab_opps:
+    low, high = firm["low_usd"].sum(), firm["high_usd"].sum()
+    k1, k2, k3, k4 = st.columns(4)
+    k1.markdown(kpi("Savings leads, combined range", f"{short(low)} to {short(high)}", f"{usd(low)} to {usd(high)}: half of each gap closed, up to all of it",
+                    "Leads, not booked savings."), unsafe_allow_html=True)
+    k2.markdown(kpi("Leads", f"{len(firm)}", f"{len(firm)} leads across {firm['lead_type'].nunique()} types, rejected ones left out",
+                    f"{firm['lead_type'].nunique()} types"), unsafe_allow_html=True)
+    k3.markdown(kpi("Share of spend", f"{low / total:.1%} to {high / total:.1%}", f"{usd(low)} to {usd(high)} of {usd(total)}", f"of {short(total)}"), unsafe_allow_html=True)
+    k4.markdown(kpi("Validated by you", f"{short(validated['low_usd'].sum())} to {short(validated['high_usd'].sum())}",
+                    f"{usd(validated['low_usd'].sum())} to {usd(validated['high_usd'].sum())}", f"{len(validated)} leads marked validated"), unsafe_allow_html=True)
+    n1, n2 = st.columns([5, 1])
+    n1.markdown(f"<span style='font-size:.85rem;color:{MUTED}'>{pct(tied)} of spend is tied to a product and {len(queue)} lines are waiting for a "
+                f"decision. Reviewing the {top_n} largest would reach {pct(reach)}."
+                + (f" Not in the headline: {len(ideas)} similar-part ideas worth {short(ideas['low_usd'].sum())} to {short(ideas['high_usd'].sum())} "
+                   "that engineering must confirm." if len(ideas) else "") + "</span>", unsafe_allow_html=True)
+    if n2.button("Open Review", width="stretch"):
+        st.session_state["goto_tab"] = "review"
         st.rerun()
-    if s3_.button("Clear all", disabled=xw.empty, width="stretch"):
-        saved_clear()
-        st.rerun()
-    s4_.download_button("Download (CSV)", xw.to_csv(index=False), "saved_decisions.csv", "text/csv", disabled=xw.empty, width="stretch")
-    if not xw.empty:
-        keys = lines["supplier_part_number"].map(norm_pn) + "|" + lines["item_description"].map(norm_desc)
-        settled = keys.value_counts()
-        shown_xw = xw.assign(lines_settled=[int(settled.get(f"{norm_pn(a)}|{norm_desc(d)}", 0)) for a, d in zip(xw["supplier_part_number"], xw["item_description"])])
-        table(shown_xw.rename(columns={"supplier_part_number": "Part-number field", "item_description": "Text on the PO", "part_number": "BOM part",
-                                       "decision": "Decision", "decided_at": "Decided at", "dataset": "Data", "lines_settled": "Lines it settles here"}),
-              key="saved")
 
-# ------------------------------------------------------------- product cost
+    st.subheader("Start here: where the leads are, by product")
+    by_product = {}
+    for r in firm.itertuples():
+        for product_id, share in r.shares.items():
+            entry = by_product.setdefault(product_id, [0.0, 0.0, 0])
+            entry[0] += r.low_usd * share
+            entry[1] += r.high_usd * share
+            entry[2] += 1
+    bp = pd.DataFrame([dict(product=k, low=v[0], high=v[1], n=v[2], zero=0.0) for k, v in by_product.items()]).sort_values("high", ascending=False) \
+        if by_product else pd.DataFrame(columns=["product", "low", "high", "n", "zero"])
+    picked_product = None
+    if len(bp):
+        bp["label"] = [f"{short(a)} to {short(b)}  ({int(n)} leads)" for a, b, n in zip(bp["low"], bp["high"], bp["n"])]
+        pick = alt.selection_point(name="pick", fields=["product"], on="click", clear="dblclick")
+        y_axis = alt.Y("product:N", sort=None, title=None, scale=alt.Scale(paddingInner=0.4, paddingOuter=0.2))
+        tips = [alt.Tooltip("product:N", title="Product"), alt.Tooltip("low:Q", title="Low: half the gap closed", format="$,.0f"),
+                alt.Tooltip("high:Q", title="High: all of it", format="$,.0f"), alt.Tooltip("n:Q", title="Leads touching it")]
+        solid = alt.Chart(bp).mark_bar(color=BLUE).encode(
+            y=y_axis, x=alt.X("zero:Q", axis=alt.Axis(format="$~s", title="Lead range. Dark: half the gap closed. Light: up to all of it."), scale=alt.Scale(domainMin=0)),
+            x2="low:Q", tooltip=tips, opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35))).add_params(pick)
+        lighter = alt.Chart(bp).mark_bar(color=LIGHT_BLUE, cornerRadiusEnd=4).encode(y=y_axis, x="low:Q", x2="high:Q", tooltip=tips)
+        bar_labels = alt.Chart(bp).mark_text(align="left", dx=6, color=INK).encode(y=y_axis, x="high:Q", text="label:N")
+        event = st.altair_chart((lighter + solid + bar_labels).properties(height=alt.Step(34)), width="stretch", on_select="rerun", selection_mode="pick",
+                                key=f"lead_products_{dataset}")
+        chosen_rows = (event.selection.get("pick") or []) if event and "selection" in event else []
+        picked_product = chosen_rows[0].get("product") if chosen_rows else None
+    st.caption("Each lead is split across the products that use the part, in proportion to the spend allocated to them. "
+               + (f"Showing leads that touch **{picked_product}**; double-click the chart to clear." if picked_product else "Click a bar to filter the lists below to that product."))
+
+    def touches(frame: pd.DataFrame) -> pd.DataFrame:
+        return frame[frame["shares"].map(lambda s: picked_product in s)] if picked_product else frame
+
+    st.subheader("Top five leads" + (f" touching {picked_product}" if picked_product else ""))
+    for r in touches(firm).head(5).itertuples():
+        with st.container(key=f"card_lead_{r.key}"):
+            c1, c2, c3 = st.columns([6, 2, 1.2])
+            c1.markdown(f"**{r.action}**")
+            c1.caption(f"{LEAD_NAMES[r.lead_type]}. {r.detail}")
+            c2.markdown(kpi("Range", f"{short(r.low_usd)} to {short(r.high_usd)}", f"{usd(r.low_usd)} to {usd(r.high_usd)}",
+                            "validated" if r.status == "validated" else ""), unsafe_allow_html=True)
+            c3.markdown(kpi("Owner", r.owner, "Who would act on it"), unsafe_allow_html=True)
+
+    st.subheader("All leads")
+    present = [k for k in LEAD_NAMES if (L["lead_type"] == k).any()]
+    chosen = st.pills("Lead type", present, selection_mode="multi", default=present, format_func=LEAD_NAMES.get, key=f"lead_types_{dataset}") or []
+    shown = touches(L[L["lead_type"].isin(chosen)]).reset_index(drop=True)
+    if shown.empty:
+        st.info("No leads for this selection.")
+    else:
+        picked_lead = table(pd.DataFrame({
+            "Status": shown["status"], "Type": shown["lead_type"].map(LEAD_NAMES), "Owner": shown["owner"], "Part": shown["part_number"],
+            "Description": shown["description"], "Range": shown["low_usd"].map(usd) + " to " + shown["high_usd"].map(usd),
+            "What the data shows": shown["detail"]}), key=f"leads_{'_'.join(chosen)}_{picked_product}", select=True, page_size=8)
+        st.download_button("Download leads (CSV)", shown.drop(columns=["shares", "key"]).to_csv(index=False), "leads.csv", "text/csv")
+        lead = shown.iloc[picked_lead if picked_lead is not None else 0]
+        with st.container(key="card_lead_detail"):
+            d1, d2 = st.columns([3, 2])
+            with d1:
+                st.markdown(f"**{lead['action']}**")
+                st.markdown(f"{LEAD_NAMES[lead['lead_type']]} · owner: {lead['owner']} · range {usd(lead['low_usd'])} to {usd(lead['high_usd'])}"
+                            + (" · **engineering must confirm**" if lead["lead_type"] == "similar_parts" else ""))
+                st.markdown(f"**What the data shows:** {lead['detail']}")
+                note = similar_notes.get("|".join(sorted([str(lead["part_number"]), str(lead["related"])]))) if lead["lead_type"] == "similar_parts" else None
+                if note:
+                    st.info(f"**What differs (Claude; A is {note['a']}, B is {note['b']}):** {note['note']}")
+                st.markdown(f"**Check before acting:** {lead['check']}")
+            with d2:
+                st.segmented_control("Status", ["new", "validated", "rejected"], default=lead["status"], key=f"status_{lead['key']}",
+                                     help="Validated leads are totalled separately in the headline. Rejected leads leave it. Kept for this session.")
+                st.caption("Split across products: " + ", ".join(f"{k} {v:.0%}" for k, v in sorted(lead["shares"].items(), key=lambda kv: -kv[1])))
+        parts_in = [lead["part_number"]] + ([lead["related"]] if lead["lead_type"] in ("duplicate_part", "similar_parts") else [])
+        buckets_in = ["production", "spares"] if lead["lead_type"] == "spares_premium" else ["production"]
+        under = lines[(lines["decision"] == "accept") & lines["part"].isin(parts_in) & lines["bucket"].isin(buckets_in)].sort_values("po_date")
+        st.markdown(f"**Purchase lines behind it** ({len(under)} lines, {usd(under['spend_usd'].sum())}). Select a row in the table above to change the lead.")
+        table(pd.DataFrame({
+            "Source": under["source_file"].astype(str) + ", row " + under["source_row"].astype(str), "Date": under["po_date"], "Plant": under["plant"],
+            "Supplier": under["supplier"], "Part": under["part"], "Bucket": under["bucket"], "Quantity (BOM unit)": under["qty_bom"].map("{:,.0f}".format),
+            "Price per unit": under["unit_price_usd"].map("${:.4f}".format), "Spend": under["spend_usd"].map(usd),
+            "Text on the PO": under["item_description"], "Matched by": under["source"].map(HOW)}),
+            key=f"under_{lead['key']}", page_size=8)
+
+# ----------------------------------------------------------------- products
 with tab_cost:
     st.subheader("Parts cost per unit: standard versus estimated actual")
     cost = products.melt("product_id", ["std_cost_per_unit", "actual_cost_per_unit_est"], var_name="series", value_name="cost").dropna(subset=["cost"])
@@ -701,52 +636,98 @@ with tab_cost:
                 tooltip=[alt.Tooltip("series:N", title="Series"), alt.Tooltip("quarter:N", title="Quarter"), alt.Tooltip("units:Q", title="Cumulative units", format=",.0f")],
             ).properties(height=240), width="stretch")
 
-# ------------------------------------------------------------ savings leads
-with tab_leads:
-    names = {"supplier_price_gap": "Same part, different supplier prices", "duplicate_part": "Duplicate internal part numbers",
-             "over_purchase": "Bought more than the builds required", "spares_premium": "Spares bought at a premium"}
-    present = [k for k in names if (leads["lead_type"] == k).any()]
-    chosen = st.pills("Lead type", present, selection_mode="multi", default=present, format_func=names.get, key=f"lead_types_{dataset}") or []
-    shown = leads[leads["lead_type"].isin(chosen)].reset_index(drop=True)
-    low, high = shown["low_usd"].sum(), shown["high_usd"].sum()
-    m1, m2, m3 = st.columns(3)
-    m1.markdown(kpi("Combined range", f"{short(low)} to {short(high)}", f"{usd(low)} to {usd(high)}: half of each gap closed, up to all of it"), unsafe_allow_html=True)
-    m2.markdown(kpi("Leads", f"{len(shown)}", f"{len(shown)} leads across {len(chosen)} types"), unsafe_allow_html=True)
-    m3.markdown(kpi("Share of spend", f"{low / total:.1%} to {high / total:.1%}", f"{usd(low)} to {usd(high)} of {usd(total)}"), unsafe_allow_html=True)
-    st.markdown("**Leads, not booked savings.** Each is a price or quantity gap worth a conversation. Volume commitments, timing, quality and "
-                "logistics can explain a gap.")
-    if shown.empty:
-        st.info("No leads for this selection.")
+# ------------------------------------------------------------------- review
+with tab_review:
+    if queue.empty:
+        st.success("Nothing is waiting for review.")
     else:
-        by_type = shown.groupby("lead_type").agg(low=("low_usd", "sum"), high=("high_usd", "sum"), n=("part_number", "size")).reindex(chosen).dropna().reset_index()
-        by_type["name"] = by_type["lead_type"].map(names)
-        by_type["label"] = [f"{short(a)} to {short(b)}  ({int(n)} leads)" for a, b, n in zip(by_type["low"], by_type["high"], by_type["n"])]
-        y_axis = alt.Y("name:N", sort=None, title=None, axis=alt.Axis(labelLimit=300), scale=alt.Scale(paddingInner=0.4, paddingOuter=0.2))
-        tips = [alt.Tooltip("name:N", title="Lead type"), alt.Tooltip("low:Q", title="Low: half the gap closed", format="$,.0f"),
-                alt.Tooltip("high:Q", title="High: all of it", format="$,.0f"), alt.Tooltip("n:Q", title="Leads")]
-        solid = alt.Chart(by_type).mark_bar(color=BLUE).encode(
-            y=y_axis, x=alt.X("zero:Q", axis=alt.Axis(format="$~s", title="Dark: half the gap closed. Light: up to all of it."), scale=alt.Scale(domainMin=0)),
-            x2="low:Q", tooltip=tips)
-        lighter = alt.Chart(by_type).mark_bar(color=LIGHT_BLUE, cornerRadiusEnd=4).encode(y=y_axis, x="low:Q", x2="high:Q", tooltip=tips)
-        range_labels = alt.Chart(by_type).mark_text(align="left", dx=6, color=INK).encode(y=y_axis, x="high:Q", text="label:N")
-        st.altair_chart((solid + lighter + range_labels).transform_calculate(zero="0").properties(height=alt.Step(36)), width="stretch")
+        def tags(r) -> list[str]:
+            if r["source"] == "uom_mismatch":
+                return ["Unit mismatch"]
+            if r["source"] == "llm_material":
+                return [f"Over {short(materiality)}"]
+            if pd.notna(r["llm_conf"]):
+                return ["Low confidence"]
+            return ["Low confidence"] if r["source"] == "classifier" else ["Not judged"]
 
-        pick = table(pd.DataFrame({
-            "Type": shown["lead_type"].map(names), "Part": shown["part_number"], "Description": shown["description"],
-            "Range": shown["low_usd"].map(usd) + " to " + shown["high_usd"].map(usd), "What the data shows": shown["detail"]}),
-            key=f"leads_{'_'.join(chosen)}", select=True)
-        st.download_button("Download leads (CSV)", shown.to_csv(index=False), "leads.csv", "text/csv")
-        lead = shown.iloc[pick if pick is not None else 0]
-        parts_in = [lead["part_number"]] + ([lead["related"]] if lead["lead_type"] == "duplicate_part" else [])
-        buckets_in = ["production", "spares"] if lead["lead_type"] == "spares_premium" else ["production"]
-        under = lines[(lines["decision"] == "accept") & lines["part"].isin(parts_in) & lines["bucket"].isin(buckets_in)].sort_values("po_date")
-        st.markdown(f"**Purchase lines behind the lead on `{'` and `'.join(parts_in)}`** ({len(under)} lines, {usd(under['spend_usd'].sum())}). "
-                    "Select a row above to change the lead.")
-        table(pd.DataFrame({
-            "PO line": under["po_id"], "Date": under["po_date"], "Plant": under["plant"], "Supplier": under["supplier"], "Part": under["part"],
-            "Bucket": under["bucket"], "Quantity (BOM unit)": under["qty_bom"].map("{:,.0f}".format), "Price per unit": under["unit_price_usd"].map("${:.4f}".format),
-            "Spend": under["spend_usd"].map(usd), "Text on the PO": under["item_description"],
-            "Matched by": under["source"].map(HOW)}), key=f"under_{lead['lead_type']}_{lead['part_number']}")
+        q = queue.assign(tag=queue.apply(lambda r: ", ".join(tags(r)), axis=1), gain=gain)
+        groups = q.groupby(["supplier_part_number", "item_description"], sort=False).agg(
+            lines=("po_id", "size"), spend=("spend_usd", "sum"), gain=("gain", "sum"), suggested=("suggested_part", "first"),
+            tag=("tag", lambda s: ", ".join(dict.fromkeys(s))), first=("po_id", "first")).reset_index().sort_values("spend", ascending=False).reset_index(drop=True)
+        pos = min(st.session_state.get("review_pos", 0), len(groups) - 1)
+
+        left, right = st.columns([5, 6], gap="large")
+        with left:
+            st.markdown(f"**{len(groups)} items** covering {len(queue)} lines, largest dollars first")
+            picked = table(pd.DataFrame({
+                "Open": ["▶" if i == pos else "" for i in range(len(groups))], "Total": groups["spend"].map(short), "Lines": groups["lines"],
+                "Why": groups["tag"], "Suggested part": groups["suggested"], "Text on the PO": groups["item_description"]}),
+                key=f"queue_{len(xw)}", select=True)
+            if picked is not None and picked != pos:
+                st.session_state["review_pos"] = picked
+                st.rerun()
+            st.caption("Lines with identical text are one item: one decision settles all of them.")
+
+        g = groups.iloc[pos]
+        r = q[q["po_id"] == g["first"]].iloc[0]
+        sug = g["suggested"]
+        with right:
+            st.markdown(f"Approving settles **{g['lines']} {'line' if g['lines'] == 1 else 'lines'}** ({usd(g['spend'])}) and moves tie-out by "
+                        f"**{g['gain'] / total * 100:+.2f} pts**.")
+            c1, c2, c3 = st.columns([1.5, 1.1, 1.3])
+            for col, label, action, kind, keyboard in ((c1, f"Approve: {sug}", "approve", "primary", "A"), (c2, "Reject suggestion", "reject", "secondary", "X"),
+                                                       (c3, "Not a BOM part", "no_match", "secondary", "N")):
+                if col.button(label, type=kind, key=f"{action}_{g['first']}", width="stretch", shortcut=keyboard):
+                    saved_add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
+                    st.rerun()  # the list shifts up, so the same position now holds the next item
+
+            bom_text = part_desc.get(sug, "")
+            st.markdown(
+                f'<div class="pair"><div class="who">Text on the PO</div>{mark_shared(r["item_description"], bom_text)}</div>'
+                f'<div class="pair"><div class="who">BOM description of {html.escape(str(sug))}</div>{mark_shared(bom_text, r["item_description"])}</div>',
+                unsafe_allow_html=True)
+            st.markdown("".join(f'<span class="tag">{html.escape(t)}</span>' for t in g["tag"].split(", ")), unsafe_allow_html=True)
+            if r["source"] == "uom_mismatch":
+                st.warning(r["uom_issue"])
+            if r["llm_reason"]:
+                answer = f"`{r['llm_part']}`" if r["llm_part"] else "no BOM part"
+                st.info(f"**Claude's answer: {answer}, confidence {r['llm_conf']:.0%}.** {r['llm_reason']}")
+            st.markdown(f"**{'Model confidence' if is_sample else 'Closeness of the nearest BOM description'}:** {r['prob']:.0%}")
+            if sug in ref.index:
+                ref_price, ref_sup = ref.at[sug, "ref_price"], ref.at[sug, "ref_suppliers"]
+                st.markdown(f"**Price:** this line is ${r['unit_price_usd']:.4f} per unit; confirmed purchases of `{sug}` have a median of "
+                            f"${ref_price:.4f} ({r['unit_price_usd'] / ref_price - 1:+.0%}).")
+                st.markdown(f"**Supplier:** this supplier {'has' if r['supplier_key'] in ref_sup else 'has no'} confirmed purchases of `{sug}`. "
+                            f"Confirmed suppliers: {', '.join(s.title() for s in ref_sup)}.")
+            else:
+                st.markdown(f"**Price and supplier:** no confirmed purchases of `{sug}` yet, so there is nothing to compare against.")
+            st.markdown(f"**Source** {r['source_file']}, row {r['source_row']} &nbsp;·&nbsp; "
+                        f"**Part-number field** {r['supplier_part_number'] or '(blank)'} &nbsp;·&nbsp; **Supplier** {r['supplier']} &nbsp;·&nbsp; "
+                        f"**Plant** {r['plant'] or '(blank)'}  \n**Order date** {r['po_date']} &nbsp;·&nbsp; **Order type** {r['po_type'] or '(blank)'} "
+                        f"&nbsp;·&nbsp; **Quantity** {r['qty']:,.2f} {r['uom']} &nbsp;·&nbsp; **Price per unit** ${r['unit_price_usd']:.4f}"
+                        + (f"  \nLargest of {g['lines']} lines with this text." if g["lines"] > 1 else ""))
+            st.markdown("Keyboard: <kbd>A</kbd> approve &nbsp; <kbd>X</kbd> reject &nbsp; <kbd>N</kbd> not a BOM part", unsafe_allow_html=True)
+            st.caption("Approve ties these lines to the suggested part. Reject removes the suggestion and leaves them untied for a manual lookup. "
+                       "Not a BOM part closes them as correctly unmatched.")
+
+    st.divider()
+    s1, s2_, s3_, s4_ = st.columns([3, 1, 1, 1.4])
+    s1.markdown(f"**Saved decisions: {len(xw)}.** Each one applies to every line with the same text, now and on the next run."
+                + (" Here they last for this browser session only." if HOSTED else ""))
+    if s2_.button("Undo last", disabled=xw.empty, width="stretch"):
+        saved_undo()
+        st.rerun()
+    if s3_.button("Clear all", disabled=xw.empty, width="stretch"):
+        saved_clear()
+        st.rerun()
+    s4_.download_button("Download (CSV)", xw.to_csv(index=False), "saved_decisions.csv", "text/csv", disabled=xw.empty, width="stretch")
+    if not xw.empty:
+        keys = lines["supplier_part_number"].map(norm_pn) + "|" + lines["item_description"].map(norm_desc)
+        settled = keys.value_counts()
+        shown_xw = xw.assign(lines_settled=[int(settled.get(f"{norm_pn(a)}|{norm_desc(d)}", 0)) for a, d in zip(xw["supplier_part_number"], xw["item_description"])])
+        table(shown_xw.rename(columns={"supplier_part_number": "Part-number field", "item_description": "Text on the PO", "part_number": "BOM part",
+                                       "decision": "Decision", "decided_at": "Decided at", "dataset": "Data", "lines_settled": "Lines it settles here"}),
+              key="saved")
 
 # ----------------------------------------------------------------- evidence
 with tab_evidence:
@@ -782,6 +763,110 @@ with tab_evidence:
                             "with saved decisions vs without"), unsafe_allow_html=True)
         st.caption("A simulated reviewer clears each quarter's queue. Item text repeats by construction in this data.")
     st.caption("Details are in the sections below.")
+
+    if is_sample:
+        st.subheader("From a spreadsheet lookup to the full pipeline")
+        s2 = evals["eval_step2_local"]["splits"]["heldout"]
+        s3 = evals["eval_step3"]
+        clf, full = s3["backends"][s3["chosen_backend"]]["heldout"], s3["llm"][MAIN_MODEL]["heldout"]
+        true_rate = full["true_tie_out"]
+        stages = pd.DataFrame([
+            ("1. Exact part-number lookup", s2["(a) naive exact part number"]["tie_out"], s2["(a) naive exact part number"]["precision"],
+             s2["(a) naive exact part number"]["recall"], None, s2["(a) naive exact part number"]["wrong_match_spend"]),
+            ("2. Rules: cleaned part numbers, cross-reference", s2["(b) rules only"]["tie_out"], s2["(b) rules only"]["precision"],
+             s2["(b) rules only"]["recall"], None, s2["(b) rules only"]["wrong_match_spend"]),
+            ("3. Rules + nearest description, fixed cutoff", s2["(c) rules + embeddings"]["tie_out"], s2["(c) rules + embeddings"]["precision"],
+             s2["(c) rules + embeddings"]["recall"], None, s2["(c) rules + embeddings"]["wrong_match_spend"]),
+            ("4. Rules + trained model", clf["tie_out"], clf["accept_precision"], clf["recall"], clf["review_spend"], clf["wrong_match_spend"]),
+            ("5. Rules + trained model + Claude", full["tie_out"], full["accept_precision"], full["recall"], full["review_spend"], full["wrong_match_spend"]),
+        ], columns=["stage", "tie_out", "precision", "recall", "review_spend", "wrong"])
+        kinds = ["No wrong matches", "Wrong matches"]
+        stages["kind"] = stages["wrong"].map(lambda w: kinds[1] if w > 0 else kinds[0])
+        stages["label"] = [f"{t:.1%}" + (f"   {short(w)} wrong" if w > 0 else "") for t, w in zip(stages["tie_out"], stages["wrong"])]
+        bars = alt.Chart(stages).mark_bar(cornerRadiusEnd=4).encode(
+            y=alt.Y("stage:N", sort=None, title=None, axis=alt.Axis(labelLimit=360), scale=alt.Scale(paddingInner=0.3, paddingOuter=0.15)),
+            x=alt.X("tie_out:Q", scale=alt.Scale(domain=[0, 1.12]), axis=alt.Axis(format="%", title="Spend tied out (held-out lines)", values=[0, .2, .4, .6, .8, 1])),
+            color=alt.Color("kind:N", scale=alt.Scale(domain=kinds, range=[BLUE, ORANGE]), legend=alt.Legend(title=None, orient="top")),
+            tooltip=[alt.Tooltip("stage:N", title="Stage"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
+                     alt.Tooltip("precision:Q", title="Precision", format=".1%"), alt.Tooltip("recall:Q", title="Recall", format=".1%"),
+                     alt.Tooltip("wrong:Q", title="Wrong-match dollars", format="$,.0f")])
+        labels = alt.Chart(stages).mark_text(align="left", dx=6, color="#0b0b0b").encode(y=alt.Y("stage:N", sort=None), x="tie_out:Q", text="label:N")
+        truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
+        rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
+        st.altair_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
+        st.caption(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}. Measured on {full['lines']:,} held-out purchase lines "
+                   f"({short(full['spend'])}) written in styles never used to tune the matcher. Stage 4 ties less than stage 3 because it refuses "
+                   "to guess: uncertain lines wait for review instead.")
+        st.table(pd.DataFrame({
+            "Stage": stages["stage"], "Tied out": stages["tie_out"].map(pct), "Precision": stages["precision"].map(pct),
+            "Recall": stages["recall"].map(pct), "Left for review": stages["review_spend"].map(lambda v: "n/a" if pd.isna(v) else short(v)),
+            "Wrong-match dollars": stages["wrong"].map(usd)}).set_index("Stage"))
+    else:
+        st.subheader("How this run was matched")
+        stats = uploaded["stats"]
+        st.markdown(f"{stats['lines']:,} purchase lines against {stats['bom_parts']:,} BOM parts. Rules settled {stats['settled_by_rules']:,} lines; "
+                    f"{stats['sent_to_claude']:,} went to Claude with their five nearest BOM parts ({stats['claude']['calls']} distinct calls, "
+                    f"${stats['claude']['cost_usd']:.2f} at list price).")
+        how = lines.assign(how=lines["source"].map(HOW).fillna(lines["source"])).groupby(["decision", "how"]).agg(
+            lines=("po_id", "size"), spend=("spend_usd", "sum")).reset_index()
+        st.dataframe(pd.DataFrame({"Outcome": how["decision"], "Decided by": how["how"], "Lines": how["lines"], "Spend": how["spend"].map(usd)}),
+                     hide_index=True, width="stretch", height="content")
+        if stats.get("not_sent"):
+            st.warning(f"Limit reached: {stats['call_limit']} Claude calls per run. {stats['not_sent']:,} smaller lines were not sent and are waiting in Review.")
+        for note in uploaded["notes"]:
+            st.caption(note)
+        st.caption("Your own files have no answer key, so accuracy cannot be reported here. The Evidence tab shows how the same steps score "
+                   "on the built-in sample and on outside data.")
+
+    st.subheader("Where the spend ties")
+    for col, b in zip(st.columns(4), BUCKETS):
+        col.markdown(kpi(b.capitalize(), pct(by_bucket[b] / total), usd(by_bucket[b]), short(by_bucket[b])), unsafe_allow_html=True)
+    names_b = [b.capitalize() for b in BUCKETS]
+    st.subheader("How the spend got there")
+    decided = lines["source"].map(lambda v: "Saved decisions" if v in ("crosswalk", "rule_crosswalk") else "Rules" if v.startswith("rule_")
+                                  else "Claude" if v == "llm" else "Model")
+    decided = decided.mask(lines["decision"].isin(["no_match", "rejected"]), "No match").mask(lines["decision"] == "review", "Waiting for a decision")
+    flow = lines.assign(decided=decided, bucket_name=lines["bucket"].str.capitalize()).groupby(["decided", "bucket_name"])["spend_usd"].sum().reset_index()
+    left_order = [g for g in ("Rules", "Model", "Claude", "Saved decisions", "Waiting for a decision", "No match") if (flow["decided"] == g).any()]
+    if HAVE_ECHARTS:
+        left_total, right_total = flow.groupby("decided")["spend_usd"].sum(), flow.groupby("bucket_name")["spend_usd"].sum()
+        l_name = {g: f"{g}  {short(left_total[g])}" for g in left_order}
+        r_name = {b: f"{b}  {short(right_total.get(b, 0.0))}" for b in names_b}
+        with st.container(key="card_flow"):
+            st_echarts({
+                "textStyle": {"fontFamily": FONT},
+                "tooltip": {"trigger": "item", "valueFormatter": JsCode("function (v) { return '$' + Math.round(v).toLocaleString('en-US'); }")},
+                "series": [{
+                    "type": "sankey", "left": 8, "right": 150, "top": 12, "bottom": 12, "nodeWidth": 14, "nodeGap": 14, "draggable": False,
+                    "layoutIterations": 0, "emphasis": {"focus": "adjacency"},
+                    "label": {"fontFamily": FONT, "fontSize": 13, "color": INK},
+                    "lineStyle": {"color": "target", "opacity": 0.32, "curveness": 0.5},
+                    "data": [{"name": l_name[g], "itemStyle": {"color": "#6f6e68"}} for g in left_order]
+                            + [{"name": r_name[b], "itemStyle": {"color": c}} for b, c in zip(names_b, BUCKET_COLORS) if right_total.get(b, 0.0) > 0],
+                    "links": [{"source": l_name[r.decided], "target": r_name[r.bucket_name], "value": float(round(r.spend_usd, 2))} for r in flow.itertuples()],
+                }]}, height="330px", key="flow")
+        st.caption("Left: how each line was decided. Right: the bucket its spend landed in. Widths are dollars; the chart updates after every review decision.")
+    else:
+        st.altair_chart(
+            alt.Chart(flow).mark_bar(height=22, stroke=SURFACE, strokeWidth=2).encode(
+                y=alt.Y("decided:N", sort=left_order, title=None), x=alt.X("spend_usd:Q", axis=alt.Axis(format="$~s", title="Spend")),
+                color=alt.Color("bucket_name:N", scale=alt.Scale(domain=names_b, range=BUCKET_COLORS), legend=alt.Legend(title=None, orient="top")),
+                tooltip=[alt.Tooltip("decided:N", title="Decided by"), alt.Tooltip("bucket_name:N", title="Bucket"),
+                         alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(30)), width="stretch")
+    inferred = lines[lines["bucket_inferred"]]
+    st.caption(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
+               f"match and the plant: {len(inferred):,} lines ({short(inferred['spend_usd'].sum())}).")
+
+    st.subheader("Tie-out by quarter")
+    tq = lines.assign(un=lines["spend_usd"].where(lines["bucket"] == "unassigned", 0.0)).groupby("quarter")[["un", "spend_usd"]].sum().reset_index()
+    tq["tie_out"] = 1 - tq["un"] / tq["spend_usd"]
+    st.altair_chart(
+        alt.Chart(tq).mark_line(color=SERIES[0], strokeWidth=2, point=alt.OverlayMarkDef(size=70, color=SERIES[0])).encode(
+            x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)),
+            y=alt.Y("tie_out:Q", axis=alt.Axis(format="%", title="Spend tied out"), scale=alt.Scale(zero=False)),
+            tooltip=[alt.Tooltip("quarter:N", title="Quarter"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
+                     alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=220), width="stretch")
+
 
     with st.expander("Held-out versus tuning split", expanded=False):
         st.caption("The matcher was tuned on the tuning split only. The held-out split is written in noise styles it never saw: plant-specific "
@@ -827,6 +912,11 @@ with tab_evidence:
                                     "Recall": f"{v['recall']:.0%}", "Range": f"{usd(v['low_usd'])} to {usd(v['high_usd'])}"}
                                    for k, v in s4["leads"].items()]), hide_index=True, width="stretch", height="content")
         st.caption(f"Measured at the default {usd(s4['materiality_usd'])} materiality threshold, before any reviewer action.")
+        sim = s4.get("similar_parts")
+        if sim:
+            st.warning(f"**Similar parts to consolidate is unmeasured.** Nothing was planted for it, so there is no precision or recall. "
+                       f"It produces {sim['found']} pairs worth {usd(sim['low_usd'])} to {usd(sim['high_usd'])}, every one of which engineering must confirm; "
+                       "they are kept out of the headline range.")
 
     with st.expander("External tests: real data, nothing retrained", expanded=False):
         st.caption("Zero-shot: the classifier and every cutoff come from the synthetic tuning split. The downloaded data is not in the repository; "
@@ -946,7 +1036,9 @@ with tab_evidence:
     - **Allocation is an estimate.** Spend is split by BOM quantity and build volume. It ignores inventory, scrap and timing between buying and building.
     - **Buckets lean on the PO type.** Where it is blank, the bucket is inferred from the match and the plant. A blank, unmatched spare is counted as unassigned.
     - **Duplicate detection is narrow.** It finds part numbers whose descriptions use the same words and numbers. Duplicates described differently are missed.
-    - **Leads are not savings.** A price gap can have a good reason. Each one needs a buyer's judgment before it means anything.
+    - **"Similar parts to consolidate" is unmeasured.** Nothing was planted for it, so it has no precision or recall. It pairs parts whose descriptions differ in one close number or the package, which can pair parts that are not interchangeable at all. Engineering must confirm every one.
+- **Lead status is kept for the session only.** Marking a lead validated or rejected is not saved to disk.
+- **Leads are not savings.** A price gap can have a good reason. Each one needs a buyer's judgment before it means anything.
     - **Your own files skip the trained model.** They are matched with rules, embeddings and Claude, and there is no ground truth to score the result against.
     - **Saved decisions live in a local file.** They are reused as the first rule on the next run; a real deployment would also retrain the model on them.
     - **Trends and inventory are rough.** They have no opening stock, scrap, or lead time between buying and building.
@@ -1058,7 +1150,7 @@ with tab_data:
                             for kind in KIND_LABEL:
                                 canon[kind], kind_notes = mapping.apply_mapping(kind, raw[kind], chosen_map[kind])
                                 notes += kind_notes
-                            inp = prepare(canon["purchases"], canon["boms"], canon["builds"])
+                            inp = prepare(canon["purchases"], canon["boms"], canon["builds"], source_file=up["purchases"][0])
                             # The sample runs without saved decisions so every answer comes from the committed cache; they still apply afterwards.
                             dec, stats = pipeline.run(inp, {} if is_demo else crosswalk.as_rules(saved_load()), cache=llm_cache,
                                                       max_calls=HOSTED_MAX_CALLS if HOSTED and not is_demo else pipeline.MAX_CALLS)

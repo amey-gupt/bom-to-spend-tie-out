@@ -337,6 +337,9 @@ def step4(data_dir: str | Path = "data", materiality: float | None = None):
             extra = f"; not planted but on a part with an engineering change: {', '.join(r['explained_by_engineering_change'])}"
         print(f"  {kind:<20} found {r['found']:>3}, planted {r['planted']:>3}: precision {r['precision']:.0%}, recall {r['recall']:.0%}{extra}; "
               f"range ${r['low_usd']:,.0f} to ${r['high_usd']:,.0f}")
+    similar = leads[leads["lead_type"] == "similar_parts"]  # nothing was planted for this lead, so its accuracy is not measured
+    report["similar_parts"] = dict(found=int(len(similar)), low_usd=float(similar["low_usd"].sum()), high_usd=float(similar["high_usd"].sum()), measured=False)
+    print(f"  similar_parts        found {len(similar):>3}: UNMEASURED, nothing was planted for it; range ${similar['low_usd'].sum():,.0f} to ${similar['high_usd'].sum():,.0f}")
 
     allocate.write_outputs(inp, lines, alloc, products, leads)
     Path("out/eval_step4.json").write_text(json.dumps(report, indent=2, default=float))
