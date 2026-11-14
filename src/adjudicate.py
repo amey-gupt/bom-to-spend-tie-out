@@ -55,7 +55,7 @@ def build_prompts(inp: Inputs, rules: pd.DataFrame, pairs: pd.DataFrame, lines) 
     ref_price = settled.groupby("part")["unit_price_usd"].median()
     suppliers = settled.groupby("part")["supplier"].agg(lambda s: next(iter(s.value_counts().index), ""))
     usage = inp.boms.groupby("part_number").apply(
-        lambda g: f"{g['assembly_id'].iloc[0]} assembly of {', '.join(g['product_id'])}", include_groups=False)
+        lambda g: f"{g['assembly_id'].iloc[0]} assembly of {', '.join(dict.fromkeys(g['product_id']))}", include_groups=False)
     cands = pairs[pairs["line"].isin(lines)].sort_values(["line", "emb_rank"]).groupby("line")["cand"].agg(list)
 
     item_cols = ["supplier_part_number", "item_description", "supplier_key", "plant", "uom", "po_type"]

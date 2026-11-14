@@ -37,34 +37,34 @@
     {
       "product_id": "DR-12C",
       "units_built": 74439,
-      "std_cost_per_unit": 77.24653487269545,
+      "std_cost_per_unit": 77.24653487269543,
       "allocated_production_spend_est": 5333068.335641413,
       "actual_cost_per_unit_est": 71.64347097141838,
-      "actual_vs_std": -0.07253482516090959
+      "actual_vs_std": -0.07253482516090937
     },
     {
       "product_id": "DR-18",
       "units_built": 119858,
-      "std_cost_per_unit": 90.47815896464944,
-      "allocated_production_spend_est": 10529493.526382908,
-      "actual_cost_per_unit_est": 87.84973490616319,
-      "actual_vs_std": -0.029050370703422423
+      "std_cost_per_unit": 90.46391628414418,
+      "allocated_production_spend_est": 10529433.241490247,
+      "actual_cost_per_unit_est": 87.84923193687736,
+      "actual_vs_std": -0.02890306383657082
     },
     {
       "product_id": "DR-18H",
       "units_built": 67354,
-      "std_cost_per_unit": 87.8484558811832,
-      "allocated_production_spend_est": 5822974.411761754,
-      "actual_cost_per_unit_est": 86.45328283044444,
-      "actual_vs_std": -0.01588158877403334
+      "std_cost_per_unit": 87.83604241204996,
+      "allocated_production_spend_est": 5822168.591825148,
+      "actual_cost_per_unit_est": 86.44131887972723,
+      "actual_vs_std": -0.015878715547996802
     },
     {
       "product_id": "DR-20",
       "units_built": 30633,
-      "std_cost_per_unit": 77.48502711703841,
-      "allocated_production_spend_est": 2477048.495576925,
-      "actual_cost_per_unit_est": 80.86209302310988,
-      "actual_vs_std": 0.04358346420877579
+      "std_cost_per_unit": 77.48502711703843,
+      "allocated_production_spend_est": 2477914.6004061913,
+      "actual_cost_per_unit_est": 80.89036661137307,
+      "actual_vs_std": 0.043948355198882405
     }
   ],
   "units": {
@@ -102,12 +102,16 @@
       "recall_of_detectable": 1.0
     },
     "over_purchase": {
-      "found": 1,
+      "found": 3,
       "planted": 2,
-      "precision": 1.0,
+      "precision": 0.3333333333333333,
       "recall": 0.5,
-      "low_usd": 2840.0,
-      "high_usd": 5681.0
+      "low_usd": 4737.0,
+      "high_usd": 9474.0,
+      "explained_by_engineering_change": [
+        "RES-69295",
+        "SCR-66681"
+      ]
     }
   }
 }

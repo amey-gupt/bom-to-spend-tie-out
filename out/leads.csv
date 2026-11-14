@@ -34,8 +34,10 @@ supplier_price_gap,WHR-16777,"Wire harness, 14 AWG, 120 mm long",Cableworks de M
 spares_premium,BMS-19545,"Battery management PCBA, 18 V, 20 A",,spares at $4.7754 vs production at $2.5744 (+85%),1157.0,2313.0
 supplier_price_gap,BCL-69304,"Belt clip, spring steel, 45 mm long",Precision Wireform Inc.,Calloway Spring & Stamping Co. at $0.2749; Precision Wireform Inc. at $0.3389 (+23%),1124.0,2249.0
 duplicate_part,WSH-19085,"Flat washer, M4, black oxide",WSH-19147,WSH-19085 at $0.0299; WSH-19147 at $0.0341 (+14%),1044.0,2089.0
+over_purchase,RES-69295,"Shunt resistor, 10 ohm, 0805",,"bought 635,343 EA against 538,896 required by builds in the 12 months to Jun 2026 (+18%); cause not determined",1017.0,2034.0
 supplier_price_gap,LVR-69923,"Forward/reverse lever, black","Dongguan Yusheng Plastics Co., Ltd.","Moldeados Regiomontanos S.A. de C.V. at $0.1521; Dongguan Yusheng Plastics Co., Ltd. at $0.1967 (+29%)",975.0,1950.0
 supplier_price_gap,HSL-37888,"Housing shell left, grey, PA6-GF30",Moldeados Regiomontanos S.A. de C.V.,Greer Injection Molding Inc. at $1.3902; Moldeados Regiomontanos S.A. de C.V. at $1.6121 (+16%),963.0,1926.0
+over_purchase,SCR-66681,"Countersunk screw, M3 x 8, stainless",,"bought 625,649 EA against 498,690 required by builds in the 12 months to Jun 2026 (+25%); cause not determined",880.0,1759.0
 supplier_price_gap,INS-43117,"Insulation pad, silicone foam, 60 x 20 mm","Hanbit Energy Solutions Co., Ltd.; Shenzhen Brightcell Energy Co., Ltd.","Voltera Cell Systems Inc. at $0.0593; Hanbit Energy Solutions Co., Ltd. at $0.0681 (+15%); Shenzhen Brightcell Energy Co., Ltd. at $0.0738 (+24%)",840.0,1680.0
 supplier_price_gap,SGR-63442,"Sintered sun gear, 9 teeth, module 0.6",Lakeshore Powder Metal Inc.,"Ningbo Tianyu Gear Co., Ltd. at $0.4229; Lakeshore Powder Metal Inc. at $0.4816 (+14%)",784.0,1569.0
 duplicate_part,TRY-61244,"Molded pulp tray, 300 x 90 x 70 mm",TRY-61253,TRY-61244 at $0.3384; TRY-61253 at $0.3867 (+14%),774.0,1549.0

@@ -396,6 +396,45 @@ def add_structure(bb: Backbone, purchases: list, truth: list, seed: int):
     return len(extra)
 
 
+def add_engineering_changes(bb: Backbone, seed: int) -> list[dict]:
+    """Two effective-dated engineering changes, on the BOM only. Purchases are left exactly as they were, as if
+    purchasing had not caught up with engineering.
+
+    1. A quantity change: one fastener position on one product drops by two from 2025-10-01.
+    2. A part swap: one position switches to another part that the same product's same assembly already uses, from 2026-01-01.
+    A changed row gets effective_to; its replacement is appended with effective_from. Blank means open-ended.
+    """
+    rng = random.Random(seed + 2)
+    for row in bb.bom:
+        row.update(effective_from="", effective_to="")
+    changes = []
+
+    def supersede(row: dict, day: str, **new) -> dict:
+        row["effective_to"] = (date.fromisoformat(day) - timedelta(days=1)).isoformat()
+        replacement = {**row, **new, "effective_from": day, "effective_to": ""}
+        bb.bom.append(replacement)
+        return replacement
+
+    buy = [r for r in bb.bom if r["make_buy"] == "buy" and r["uom"] == "EA"]
+    row = rng.choice([r for r in buy if r["product_id"] == "DR-18" and r["part_number"].startswith("SCR") and r["qty_per_unit"] >= 4])
+    changes.append(dict(change_type="quantity", product_id=row["product_id"], part_number=row["part_number"], new_part_number="",
+                        old_qty=row["qty_per_unit"], new_qty=row["qty_per_unit"] - 2, effective_from="2025-10-01"))
+    supersede(row, "2025-10-01", qty_per_unit=row["qty_per_unit"] - 2)
+
+    groups = defaultdict(dict)  # (product, assembly, part family) -> {part number: row}
+    for r in buy:
+        if r["effective_to"] == "" and r["effective_from"] == "":
+            groups[r["product_id"], r["assembly_id"], r["part_number"].split("-")[0]][r["part_number"]] = r
+    key = rng.choice(sorted(k for k, parts in groups.items() if len(parts) >= 2 and k[0] == "DR-18H"))
+    old, new = rng.sample(sorted(groups[key]), 2)
+    row, other = groups[key][old], groups[key][new]
+    changes.append(dict(change_type="part_swap", product_id=row["product_id"], part_number=old, new_part_number=new,
+                        old_qty=row["qty_per_unit"], new_qty=row["qty_per_unit"], effective_from="2026-01-01"))
+    supersede(row, "2026-01-01", part_number=new, revision=other["revision"], description=other["description"], std_cost=other["std_cost"],
+              uom=other["uom"], scrap_pct=other["scrap_pct"])
+    return changes
+
+
 # -------------------------------------------------------------------- output
 
 def write_csv(path: Path, rows: list[dict]):
@@ -411,6 +450,7 @@ def generate(out: Path, seed: int = SEED) -> dict:
     bb = build_backbone(rng)
     purchases, truth, xref = make_purchases(bb, rng)
     material_lines = add_structure(bb, purchases, truth, seed)
+    changes = add_engineering_changes(bb, seed)
 
     write_csv(out / "boms.csv", bb.bom)
     write_csv(out / "builds.csv", bb.builds)
@@ -420,6 +460,7 @@ def generate(out: Path, seed: int = SEED) -> dict:
     write_csv(out / "truth" / "ground_truth.csv", truth)
     write_csv(out / "truth" / "duplicate_parts.csv", [dict(part_number=a, duplicate_part_number=b) for a, b in bb.duplicates])
     write_csv(out / "truth" / "planted_findings.csv", bb.findings)
+    write_csv(out / "truth" / "engineering_changes.csv", changes)
 
     # Self-checks: the files must agree with each other.
     assert len({p["po_id"] for p in purchases}) == len(purchases)
@@ -435,7 +476,7 @@ def generate(out: Path, seed: int = SEED) -> dict:
         by_style[t["desc_style"] + " (desc)"] += 1
     unit_cost = defaultdict(float)
     for r in bb.bom:
-        if r["make_buy"] == "buy":  # ignores scrap; the flattened, scrap-adjusted cost is computed in allocate.py
+        if r["make_buy"] == "buy" and r["effective_to"] == "":  # current rows; ignores scrap; the flattened, scrap-adjusted cost is computed in allocate.py
             unit_cost[r["product_id"]] += r["qty_per_unit"] * r["std_cost"]
     return dict(material_lines=material_lines, parts=len(bom_pns), bom_lines=len(bb.bom), purchases=len(purchases), xref=len(xref), spend=dict(spend),
                 split=dict(by_split), styles=dict(by_style), unit_cost=dict(unit_cost), findings=len(bb.findings))

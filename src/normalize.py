@@ -118,7 +118,7 @@ def prepare(purchases: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame, x
     p["unit_price_usd"] = p["spend_usd"] / p["base_qty"]  # per base unit, comparable across suppliers
 
     boms = boms.copy()
-    for col, default in (("scrap_pct", 0.0), ("parent_part", ""), ("make_buy", "buy")):  # single-level BOMs need none of these
+    for col, default in (("scrap_pct", 0.0), ("parent_part", ""), ("make_buy", "buy"), ("effective_from", ""), ("effective_to", "")):  # all optional
         if col not in boms:
             boms[col] = default
     boms["qty_per_unit"] = boms["qty_per_unit"].astype(float)

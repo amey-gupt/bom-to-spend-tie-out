@@ -19,7 +19,7 @@ Then open http://localhost:8501. The app reads the committed snapshot in `out/` 
 
 - **Overview:** tie-out rate, the four buckets, and each stage from a plain part-number lookup to the full pipeline.
 - **Review queue:** uncertain lines, largest dollars first, with the suggested part, Claude's reason, and price and supplier evidence. Approve, reject or mark as not a BOM part; tie-out, buckets, product cost and leads update at once. The materiality slider is in the sidebar.
-- **Product cost:** BOM standard versus estimated actual per unit, and the parts driving the difference.
+- **Product cost:** BOM standard versus estimated actual per unit, the parts driving the difference, and the BOM in effect on any date.
 - **Leads:** price differences shown as ranges, with the purchase lines behind each one. They are leads, not savings.
 - **Evaluation:** held-out versus tuning results, accuracy by noise style, Claude cost, and limits.
 
@@ -72,9 +72,31 @@ Embedding backends on the same held-out lines (rules + classifier, before Claude
 
 The tool reports an 88.6% tie-out rate against a true 94.9%, with 100 lines ($1.91M) in review. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 93.9% and the bucket is right for 98.6% of spend.
 
-Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2. Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
+Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2 planted, plus 2 more on the parts with an engineering change (see below). Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
 
 Product cost is an estimate: matched production spend is split across products by gross BOM quantity x units built per quarter, and shown beside the BOM standard cost.
+
+## Effective-dated BOM revisions
+
+- **BOM columns:** `effective_from` and `effective_to`; blank means open-ended.
+- **Two engineering changes are in the data,** on the BOM only. From 2025-10-01 a screw on the DR-18 goes from 4 per unit to 2. From 2026-01-01 a resistor position on the DR-18H switches to another resistor already used in the same assembly. No purchase line was added, removed or altered, as if purchasing had not caught up with engineering.
+- **What uses the dates:** allocation, standard cost per unit and the purchased-versus-required lead all use the BOM rows in effect in each build month (taken as of the first of the month). Standard cost per unit is the average over the period's builds.
+- **In the app:** the Product cost tab has a date picker that shows the BOM in effect on that date, with changed rows marked and retired or future rows listed.
+
+Checked after the change: `purchases.csv`, `builds.csv`, `supplier_xref.csv` and the ground truth are byte-identical; steps 2 and 3 give identical results and `out/decisions.csv` is identical; no new Claude calls were made.
+
+What moved in step 4:
+
+| | Before | After |
+|---|---|---|
+| Tie-out rate, buckets, review queue | 88.6%, 100 lines | unchanged |
+| DR-18 standard cost per unit | $90.48 | $90.46 |
+| DR-18H standard cost per unit | $87.85 | $87.84 |
+| Allocated production spend | | DR-18 -$61, DR-18H -$805, DR-20 +$867 |
+| Purchased-above-requirement leads | 1 (grease) | 3: grease, plus the two changed parts |
+| Other leads (69) | | unchanged, same ranges |
+
+The two new leads are real gaps in this data: purchasing kept buying at the old rate. The screw shows +25% ($880 to $1,759) and the replaced resistor +18% ($1,017 to $2,034). They are not in the planted over-purchase list, so that lead's precision against the planted list reads 33%; the evaluation reports them separately as explained by an engineering change.
 
 ## Materiality by item
 
@@ -208,7 +230,7 @@ The generator uses the standard library only, with a fixed seed, and gives the s
 
 | File | Contents |
 |---|---|
-| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models; standard cost, unit of measure, scrap, parent part and make/buy |
+| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models; standard cost, unit of measure, scrap, parent part, make/buy and effective dates |
 | `data/builds.csv` | units built per product per month, Jan 2025 to Jun 2026 |
 | `data/purchases.csv` | purchase lines with noisy part numbers, descriptions, units and supplier names |
 | `data/supplier_xref.csv` | partial supplier-part-number crosswalk (about 40% coverage) |

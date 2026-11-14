@@ -1,0 +1,3 @@
+change_type,product_id,part_number,new_part_number,old_qty,new_qty,effective_from
+quantity,DR-18,SCR-66681,,4,2,2025-10-01
+part_swap,DR-18H,RES-69295,RES-69286,4,4,2026-01-01

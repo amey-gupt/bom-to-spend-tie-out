@@ -85,9 +85,9 @@ def compute(base: pd.DataFrame, bom: pd.DataFrame, builds: pd.DataFrame, materia
 
 
 @st.cache_data
-def flat_bom(bom: pd.DataFrame) -> pd.DataFrame:
-    """The BOM exploded to bought parts, with gross (scrap-adjusted) quantities per finished unit."""
-    return allocate.flatten_bom(bom)
+def requirements(bom: pd.DataFrame, builds: pd.DataFrame, q_from: str, q_to: str) -> pd.DataFrame:
+    """Gross requirement of every bought part per product and build month, using the BOM in effect that month."""
+    return allocate.requirements(bom, builds[quarter_of(builds["period"]).between(q_from, q_to)])
 
 
 sample_base, sample_bom, sample_builds, evals = load()
@@ -309,10 +309,12 @@ with tab_cost:
 
     product = st.selectbox("Parts driving the difference for", products["product_id"])
     units = products.set_index("product_id").at[product, "units_built"]
-    flat = flat_bom(bom)
-    use = flat[flat["product_id"] == product].groupby("part_number").agg(
-        description=("description", "first"), assembly=("assembly_id", "first"), qty=("qty_per_unit", "sum"), std_cost=("std_cost", "first"))
-    use["std_per_unit"] = (use["qty"] * use["std_cost"]).fillna(0.0)
+    req = requirements(bom, builds, q_from, q_to)
+    mine = req[req["product_id"] == product]
+    use = mine.assign(std_value=mine["need"] * mine["std_cost"]).groupby("part_number").agg(
+        description=("description", "first"), assembly=("assembly_id", "first"), need=("need", "sum"), std_value=("std_value", "sum"))
+    use["qty"] = use["need"] / units  # average gross quantity per unit built, with the BOM in effect each month
+    use["std_per_unit"] = (use["std_value"] / units).fillna(0.0)
     use["actual_per_unit"] = alloc[alloc["product_id"] == product].groupby("part_number")["allocated_usd"].sum().reindex(use.index).fillna(0.0) / units
     use["diff"] = use["actual_per_unit"] - use["std_per_unit"]
     drivers = use.reindex(use["diff"].abs().sort_values(ascending=False).index).head(12).reset_index()
@@ -331,9 +333,31 @@ with tab_cost:
         ).properties(height=330), width="stretch")
     st.dataframe(pd.DataFrame({
         "Part": drivers["part_number"], "Description": drivers["description"], "Assembly": drivers["assembly"],
-        "Qty per unit": drivers["qty"].map("{:g}".format), "Standard per unit": drivers["std_per_unit"].map("${:.3f}".format),
+        "Gross qty per unit": drivers["qty"].map("{:.3g}".format), "Standard per unit": drivers["std_per_unit"].map("${:.3f}".format),
         "Est. actual per unit": drivers["actual_per_unit"].map("${:.3f}".format), "Difference": drivers["diff"].map("{:+.3f}".format),
         "Note": drivers["actual_per_unit"].map(lambda v: "no matched production spend yet" if v == 0 else "")}), hide_index=True, width="stretch")
+
+    st.subheader("The BOM in effect on a date")
+    st.caption("Allocation, standard cost and the purchased-versus-required lead use the BOM rows in effect in each build month. "
+               "Pick a date to see that product's BOM as it stood then.")
+    day_min, day_max = pd.to_datetime(base["po_date"]).min().date(), pd.to_datetime(base["po_date"]).max().date()
+    day = st.date_input("BOM as of", value=day_max, min_value=day_min, max_value=day_max).isoformat()
+    full = bom[bom["product_id"] == product].copy()
+    for col in ("effective_from", "effective_to", "parent_part"):
+        full[col] = full[col].fillna("").astype(str) if col in full else ""
+    active = allocate.in_effect(full, day)
+    now = full[active]
+    change = now["effective_from"].map(lambda d: f"new or changed on {d}" if d else "") + now["effective_to"].map(lambda d: f" (ends {d})" if d else "")
+    st.dataframe(pd.DataFrame({
+        "Change": change.str.strip(), "Part": now["part_number"], "Description": now["description"], "Assembly": now["assembly_id"],
+        "Parent": now["parent_part"], "Make or buy": now.get("make_buy", "buy"), "Qty per parent": now["qty_per_unit"].map("{:g}".format), "Unit": now["uom"],
+        "Scrap": now.get("scrap_pct", pd.Series(0.0, index=now.index)).fillna(0.0).map("{:.0%}".format)}).sort_values("Change", ascending=False),
+        hide_index=True, width="stretch", height=300)
+    gone = full[~active & (full["effective_to"] != "") & (full["effective_to"] < day)]
+    later = full[~active & (full["effective_from"] > day)]
+    st.caption(f"{len(now)} rows in effect on {day}; {int((change.str.strip() != '').sum())} of them carry an engineering change. "
+               + (f"No longer in effect: " + "; ".join(f"{r.part_number} x{r.qty_per_unit:g} (until {r.effective_to})" for r in gone.itertuples()) + ". " if len(gone) else "")
+               + (f"Not yet in effect: " + "; ".join(f"{r.part_number} x{r.qty_per_unit:g} (from {r.effective_from})" for r in later.itertuples()) + "." if len(later) else ""))
 
 # -------------------------------------------------------------------- leads
 with tab_leads:
@@ -533,6 +557,7 @@ with tab_eval:
 - **One product family.** Four drill models and 280 bought parts. A real manufacturer has thousands of parts and many near-identical ones.
 - **Units convert only within a dimension.** Kilograms to grams or feet to metres are converted; wire bought by weight against a BOM in metres is not, and goes to review. On a purchase line the unit "M" is read as "per thousand" unless the matched part is measured in length.
 - **Purchased versus required is a gap, not a finding.** It can mean stock build, scrap above standard, service use, or a BOM quantity that is too low.
+- **Engineering changes count from the first of a month.** The BOM is taken as of the first day of each build month, so a change dated mid-month applies from the next month. Purchases are compared with the requirement, not corrected for it.
 - **Allocation is an estimate.** Spend is split by BOM quantity and build volume. It ignores inventory, scrap and timing between buying and building.
 - **Buckets lean on the PO type.** Where it is blank, the bucket is inferred from the match and the plant. A blank, unmatched spare is counted as unassigned.
 - **Duplicate detection is narrow.** It finds part numbers whose descriptions use the same words and numbers. Duplicates described differently are missed.
@@ -580,9 +605,7 @@ with tab_trend:
     st.caption("An estimate, not a stock count: cumulative production purchases minus the gross BOM requirement (scrap included, multi-level BOMs "
                "flattened) x units built, in the BOM's unit of measure, over the selected date range. "
                "It ignores opening stock, scrap and parts issued to service.")
-    need = flat_bom(bom)[["part_number", "product_id", "qty_per_unit"]].merge(units_q.reset_index(), on="product_id")
-    need["need"] = need["qty_per_unit"] * need["units_built"]
-    need_q = need.groupby(["part_number", "quarter"])["need"].sum()
+    need_q = requirements(bom, builds, q_from, q_to).groupby(["part_number", "quarter"])["need"].sum()
     bought = lines[(lines["decision"] == "accept") & (lines["bucket"] == "production")]
     bought_q = bought.groupby(["part", "quarter"])["qty_bom"].sum().rename_axis(["part_number", "quarter"])
     inv = pd.DataFrame({"bought": bought_q.groupby("part_number").sum(), "needed": need_q.groupby("part_number").sum()}).fillna(0.0)

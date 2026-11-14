@@ -23,7 +23,8 @@ if __name__ == "__main__":
     bom = bom[bom["product_id"].isin(PRODUCTS)]
     bom.rename(columns={"product_id": "Model", "assembly_id": "Sub-Assy", "part_number": "Item No.", "revision": "Rev", "description": "Item Text",
                         "qty_per_unit": "Qty/Unit", "uom": "UoM", "std_cost": "Std Cost (USD)",
-                        "scrap_pct": "Scrap", "parent_part": "Parent Item", "make_buy": "Make/Buy"}).to_csv(OUT / "bom_export.csv", index=False)
+                        "scrap_pct": "Scrap", "parent_part": "Parent Item", "make_buy": "Make/Buy",
+                        "effective_from": "Valid From", "effective_to": "Valid To"}).to_csv(OUT / "bom_export.csv", index=False)
 
     po = read("purchases.csv")
     po = po[(po["po_date"] < "2025-04-01") & po["plant"].isin(["P01", "SDC"])].copy()

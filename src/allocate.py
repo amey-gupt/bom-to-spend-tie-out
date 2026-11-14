@@ -61,14 +61,24 @@ def apply_crosswalk(lines: pd.DataFrame, crosswalk: dict) -> pd.DataFrame:
     return out
 
 
-def flatten_bom(boms: pd.DataFrame) -> pd.DataFrame:
-    """Explode a multi-level BOM down to the bought parts, per product.
+def in_effect(boms: pd.DataFrame, as_of: str | None = None) -> pd.Series:
+    """Which BOM rows are in effect on a date (ISO text). No date means the current BOM: rows with no end date."""
+    if "effective_to" not in boms:
+        return pd.Series(True, index=boms.index)
+    start, end = boms["effective_from"].fillna("").astype(str), boms["effective_to"].fillna("").astype(str)
+    if as_of is None:
+        return end == ""
+    return ((start == "") | (start <= as_of)) & ((end == "") | (end >= as_of))
+
+
+def flatten_bom(boms: pd.DataFrame, as_of: str | None = None) -> pd.DataFrame:
+    """Explode a multi-level BOM down to the bought parts, per product, using the rows in effect on as_of.
 
     qty_per_unit in the result is the gross quantity of the bought part per finished unit: the net quantities
     multiplied down the tree, each divided by (1 - scrap_pct) of its own row. Raises ValueError on a cycle or
     on a parent that is not on the product's BOM. A BOM without parent_part is treated as single-level.
     """
-    b = boms.copy()
+    b = boms[in_effect(boms, as_of)].copy()
     for col, default in (("scrap_pct", 0.0), ("parent_part", ""), ("make_buy", "buy")):
         if col not in b:
             b[col] = default
@@ -102,6 +112,27 @@ def flatten_bom(boms: pd.DataFrame) -> pd.DataFrame:
     return flat.groupby(["product_id", "part_number"], sort=False).agg(
         assembly_id=("assembly_id", "first"), description=("description", "first"), uom=("uom", "first"), std_cost=("std_cost", "first"),
         qty_per_unit=("qty_per_unit", "sum")).reset_index()
+
+
+def requirements(boms: pd.DataFrame, builds: pd.DataFrame) -> pd.DataFrame:
+    """Gross requirement of every bought part, per product and build month, using the BOM in effect that month.
+
+    The BOM is taken as of the first day of each build month, so an engineering change dated mid-month counts from
+    the following month. Columns: product_id, part_number, period, quarter, units_built, qty_per_unit, std_cost, need.
+    """
+    b = builds.copy()
+    month = pd.to_datetime(b["period"])
+    b["as_of"], b["quarter"] = month.dt.strftime("%Y-%m-01"), month.dt.year.astype(str) + "Q" + month.dt.quarter.astype(str)
+    versions, out = {}, []
+    for as_of, g in b.groupby("as_of"):
+        key = tuple(in_effect(boms, as_of))  # months with the same rows in effect share one flattened BOM
+        if key not in versions:
+            versions[key] = flatten_bom(boms, as_of)
+        out.append(versions[key].merge(g[["product_id", "period", "quarter", "units_built"]], on="product_id"))
+    cols = ["product_id", "part_number", "assembly_id", "description", "uom", "std_cost", "qty_per_unit", "period", "quarter", "units_built"]
+    req = pd.concat(out, ignore_index=True) if out else pd.DataFrame(columns=cols)
+    req["need"] = req["qty_per_unit"] * req["units_built"]
+    return req
 
 
 def apply_units(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
@@ -168,19 +199,13 @@ def tie_out(lines: pd.DataFrame) -> pd.DataFrame:
 def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Split matched production spend across products by gross quantity per unit x units_built in the purchase's quarter.
     The BOM is flattened to bought parts first, so parts inside in-house subassemblies are allocated like any other.
+    Each build month uses the BOM rows in effect that month, so an engineering change moves the weights from its date.
 
     Returns (allocation rows: product, quarter, part, spend; product table with estimated actual cost per unit
     beside the BOM standard cost).
     """
-    builds = builds.copy()
-    period = pd.to_datetime(builds["period"])
-    builds["quarter"] = period.dt.year.astype(str) + "Q" + period.dt.quarter.astype(str)
-    units_q = builds.groupby(["product_id", "quarter"])["units_built"].sum().rename("units").reset_index()
-    flat = flatten_bom(boms)
-    usage = flat[["part_number", "product_id", "qty_per_unit"]]
-
-    demand = usage.merge(units_q, on="product_id")
-    demand["need"] = demand["qty_per_unit"] * demand["units"]
+    req = requirements(boms, builds)
+    demand = req.groupby(["part_number", "product_id", "quarter"], as_index=False)["need"].sum()
     whole = demand.groupby(["part_number", "product_id"])["need"].sum().rename("need_all").reset_index()
 
     prod = lines[(lines["bucket"] == "production") & (lines["decision"] == "accept")]
@@ -193,9 +218,10 @@ def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> t
     rows["allocated_usd"] = rows["spend"] * weight / pd.Series(weight).groupby([rows["part_number"], rows["quarter"]]).transform("sum").to_numpy()
     alloc = rows[["product_id", "quarter", "part_number", "allocated_usd"]]
 
-    std = flat.assign(c=flat["qty_per_unit"] * flat["std_cost"]).groupby("product_id")["c"].sum(min_count=1)
+    units_built = builds.groupby("product_id")["units_built"].sum()
+    std = req.assign(c=req["need"] * req["std_cost"]).groupby("product_id")["c"].sum(min_count=1) / units_built  # average over the period's builds
     products = pd.DataFrame({
-        "units_built": builds.groupby("product_id")["units_built"].sum(),
+        "units_built": units_built,
         "std_cost_per_unit": std,
         "allocated_production_spend_est": alloc.groupby("product_id")["allocated_usd"].sum(),
     }).fillna({"allocated_production_spend_est": 0.0})
@@ -272,10 +298,9 @@ def find_leads(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame | N
         pooled = prod[dates > start].assign(part=lambda d: d["part"].replace(same_part))  # duplicates are one physical part
         recent = _vwap(pooled, "part")
         months = pd.to_datetime(builds["period"]).dt.to_period("M")
-        units = builds[(months > start.to_period("M")) & (months <= end.to_period("M"))].groupby("product_id")["units_built"].sum()
-        flat = flatten_bom(boms)
-        flat = flat.assign(need=flat["qty_per_unit"] * flat["product_id"].map(units).fillna(0), part_number=flat["part_number"].replace(same_part))
-        need, uom = flat.groupby("part_number")["need"].sum(), flat.drop_duplicates("part_number").set_index("part_number")["uom"]
+        req = requirements(boms, builds[(months > start.to_period("M")) & (months <= end.to_period("M"))])  # the BOM in effect each month
+        req = req.assign(part_number=req["part_number"].replace(same_part))
+        need, uom = req.groupby("part_number")["need"].sum(), req.drop_duplicates("part_number").set_index("part_number")["uom"]
         for part, r in recent.iterrows():
             required = need.get(part, 0.0)
             if required > 0 and r["qty"] > required * (1 + OVER_PURCHASE_MIN):

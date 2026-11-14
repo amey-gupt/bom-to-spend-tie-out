@@ -323,12 +323,18 @@ def step4(data_dir: str | Path = "data", materiality: float | None = None):
         mine = leads[leads["lead_type"] == kind]
         r = dict(found=len(found), planted=len(want), precision=len(hit) / max(len(found), 1), recall=len(hit) / max(len(want), 1),
                  low_usd=float(mine["low_usd"].sum()), high_usd=float(mine["high_usd"].sum()))
+        if kind == "over_purchase":  # an engineering change that purchasing did not follow also shows up as a real gap
+            ec_path = Path(data_dir) / "truth" / "engineering_changes.csv"
+            ec = pd.read_csv(ec_path, dtype=str, keep_default_na=False) if ec_path.exists() else pd.DataFrame(columns=["part_number", "new_part_number"])
+            r["explained_by_engineering_change"] = sorted((found - want) & (set(ec["part_number"]) | set(ec["new_part_number"])))
         if kind == "spares_premium":  # a planted premium can only be seen if spares of that part were actually bought
             bought = set(truth.loc[truth["line_kind"] == "spare", "true_part_number"])
             r["planted_with_spares_bought"] = len(want & bought)
             r["recall_of_detectable"] = len(hit) / max(len(want & bought), 1)
         report["leads"][kind] = r
         extra = f", {r['recall_of_detectable']:.0%} of the {r['planted_with_spares_bought']} that had spares bought" if kind == "spares_premium" else ""
+        if kind == "over_purchase" and r["explained_by_engineering_change"]:
+            extra = f"; not planted but on a part with an engineering change: {', '.join(r['explained_by_engineering_change'])}"
         print(f"  {kind:<20} found {r['found']:>3}, planted {r['planted']:>3}: precision {r['precision']:.0%}, recall {r['recall']:.0%}{extra}; "
               f"range ${r['low_usd']:,.0f} to ${r['high_usd']:,.0f}")
 

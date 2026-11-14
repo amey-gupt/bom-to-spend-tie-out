@@ -29,6 +29,8 @@ CANONICAL = {
         ("scrap_pct", False, "expected scrap or yield loss for the row, as a fraction or a percentage"),
         ("parent_part", False, "for multi-level BOMs: the part number of the parent subassembly; blank at the top level"),
         ("make_buy", False, "whether the item is made in-house or bought"),
+        ("effective_from", False, "date the BOM row comes into effect (engineering change); blank if always"),
+        ("effective_to", False, "last date the BOM row is in effect; blank if still current"),
     ],
     "purchases": [
         ("po_date", True, "purchase order or posting date"),
@@ -115,6 +117,8 @@ def apply_mapping(kind: str, df: pd.DataFrame, mapping: dict) -> tuple[pd.DataFr
         out["std_cost"] = _num(out["std_cost"])
         scrap = _num(out["scrap_pct"]).fillna(0.0)
         out["scrap_pct"] = scrap.where(scrap < 1, scrap / 100)  # 3 means 3%
+        for col in ("effective_from", "effective_to"):
+            out[col] = pd.to_datetime(out[col].replace("", None), errors="coerce").dt.strftime("%Y-%m-%d").fillna("")
         out["make_buy"] = out["make_buy"].str.lower().map(lambda v: "make" if v.startswith("m") or "house" in v else "buy")
         out.loc[out["assembly_id"] == "", "assembly_id"] = "ALL"
         out.loc[out["uom"] == "", "uom"] = "EA"
