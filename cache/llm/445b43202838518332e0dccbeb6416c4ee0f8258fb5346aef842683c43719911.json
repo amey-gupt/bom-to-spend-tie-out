@@ -1,0 +1,1 @@
+{"part_number": "CAP-40030", "confidence": 0.95, "reason": "Part number CAP-4O030 is CAP-40030 with letter O typed for zero, and the description (ceramic capacitor, 220 uF, 35 V) matches that candidate exactly; no other candidate has 220 uF/35 V.", "model": "claude-opus-5-5", "input_tokens": 1405, "output_tokens": 109}

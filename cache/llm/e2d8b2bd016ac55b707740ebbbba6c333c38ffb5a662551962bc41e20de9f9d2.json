@@ -1,0 +1,1 @@
+{"part_number": "RES-69295", "confidence": 0.72, "reason": "The description 'SH' (shunt), 10 ohm and 0805 match RES-69295, and the $0.0226 price fits its $0.0214 confirmed price; RES-69278 is a 10 ohm 0805 chip resistor from the same supplier, but it is not a shunt and is priced at $0.0130.", "model": "claude-opus-5-5", "input_tokens": 1409, "output_tokens": 132}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The line is a service gearbox assembly (SVC-71009, service PO, aftermarket supplier); complete assemblies and service kits are not BOM parts, and no candidate is a gearbox.", "model": "claude-opus-5-5", "input_tokens": 1385, "output_tokens": 88}

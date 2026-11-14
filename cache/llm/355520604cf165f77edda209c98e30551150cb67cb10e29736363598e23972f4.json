@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "PO part number PGR-79755 is an internal planet-gear number that belongs to none of the candidates, and its 20T M0.8 spec conflicts with every candidate: PGR-79741 is module 0.6, and PGR-79746 and PGR-79730 have different tooth counts and module.", "model": "claude-opus-5-5", "input_tokens": 1412, "output_tokens": 120}

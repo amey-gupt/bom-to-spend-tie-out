@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Earplugs bought from SafetyFirst Direct are a shop safety consumable, not a BOM part, and none of the candidates (cartons, wire harnesses, poly bag) matches the description.", "model": "claude-opus-5-5", "input_tokens": 1365, "output_tokens": 89}

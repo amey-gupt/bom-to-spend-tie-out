@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "PGR-79755 is an internal planet-gear number not among the candidates, and no candidate matches steel 20T M0.8 (PGR-79741 is 20T but module 0.6 and sintered; PGR-79746 is steel but 13T M0.5).", "model": "claude-opus-5-5", "input_tokens": 1404, "output_tokens": 110}

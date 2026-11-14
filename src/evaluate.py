@@ -6,6 +6,7 @@ The only module that reads data/truth/.
     python3 -m src.evaluate step3 [--no-llm]                  # classifier, three outcomes, Claude on the review band
     python3 -m src.evaluate step4 [--materiality USD]         # buckets, tie-out by bucket, leads vs planted findings
     python3 -m src.evaluate selftrain                         # experiment: classifier trained on rule-matched lines only
+    python3 -m src.evaluate crosswalk                         # experiment: does the reviewer crosswalk cut review work over time
 
 step3 also trains the classifier (labels come from the truth, tuning split only) and saves it to models/.
 
@@ -24,8 +25,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import adjudicate, match, score as scoring
-from .normalize import load_inputs
+from . import adjudicate, allocate, match, score as scoring
+from .normalize import Inputs, load_inputs
 
 
 def load_truth(data_dir: str | Path = "data") -> tuple[pd.DataFrame, dict]:
@@ -176,6 +177,8 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
     # Cross-validation folds leave one description style out at a time, so calibration and thresholds are set
     # on styles the fold's model never saw. That is the situation the held-out split tests.
     style = pd.factorize(truth["desc_style"])[0]
+    protect = scoring.material_items(p, allocate.MATERIALITY_USD)  # material items the classifier may not close on its own
+    previous = json.loads(Path("out/eval_step3.json").read_text()) if Path("out/eval_step3.json").exists() else {}
     report, runs = {"backends": {}}, {}
 
     for backend in backends:
@@ -188,7 +191,7 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
         train = pd.concat([a, b], ignore_index=True)
         y = np.concatenate([label[line_tune & line_open], label[line_tune & ~line_open]])
         scorer, info = scoring.fit(train, y, style[train["line"]], np.arange(len(train)) < len(a), backend)
-        dec = scoring.decide(rules, pairs, scorer)
+        dec = scoring.decide(rules, pairs, scorer, protect)
         hits = same(cand_parts[held & open_ & (true_part != "")]) == true_part[held & open_ & (true_part != "")][:, None]
         tune_open = tune & open_ & (true_part != "")
         tune_top1 = float((same(cand_parts[tune_open][:, 0]) == true_part[tune_open]).mean())
@@ -234,6 +237,13 @@ def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: 
             print_outcomes(f"HELD-OUT, rules + classifier + {model}", report["llm"][model]["heldout"])
             print_outcomes(f"TUNE, rules + classifier + {model}", report["llm"][model]["tune"])
         scorer.llm_accept_conf, scorer.llm_reject_conf = accept_conf, reject_conf
+
+        # Item-level materiality was added after seeing held-out results. Keep the last results from before it for comparison.
+        main = report["llm"][adjudicate.MODEL]
+        before = previous.get("item_materiality", {}).get("before") or {k: previous.get("llm", {}).get(adjudicate.MODEL, {}).get(k) for k in ("heldout", "tune", "band_lines")}
+        report["item_materiality"] = dict(threshold_usd=allocate.MATERIALITY_USD, protected_lines=int(protect.sum()),
+                                          held_from_classifier_no_match=int((protect & (scoring.decide(rules, pairs, scorer)["decision"] == "no_match").to_numpy()).sum()),
+                                          before=before, after={k: main[k] for k in ("heldout", "tune", "band_lines")})
 
     # Full-pipeline results by noise style, for both splits (the app's evaluation tab reads this).
     report["by_style"] = []
@@ -347,8 +357,9 @@ def selftrain(data_dir: str | Path = "data", backend: str = "openai"):
     report = {"backend": backend, "self_train_fit": info, "results": {}}
     print(f"self-trained on {info['train_lines']} rule-matched lines ({info['train_pairs']} pairs, {info['positives']} positives); "
           f"accept at p >= {info['accept_at']:.3f}, no match below {info['reject_below']:.3f}")
+    protect = scoring.material_items(p, allocate.MATERIALITY_USD)
     for name, scorer in scorers.items():
-        dec = scoring.decide(rules, pairs, scorer)
+        dec = scoring.decide(rules, pairs, scorer, protect)
         band = dec.index[dec["decision"] == "review"]
         verdicts, usage = adjudicate.adjudicate(adjudicate.build_prompts(inp, rules, pairs, band))
         final = adjudicate.apply(dec, verdicts, cut.llm_accept_conf, cut.llm_reject_conf)
@@ -366,13 +377,82 @@ def selftrain(data_dir: str | Path = "data", backend: str = "openai"):
     return report
 
 
+# ------------------------------------------------------ crosswalk over time
+
+def crosswalk_experiment(data_dir: str | Path = "data", backend: str = "openai"):
+    """Does the crosswalk cut review work over time? Purchases are processed one quarter at a time, in date order.
+    Each quarter the full pipeline runs with the crosswalk built so far; then a simulated reviewer resolves that
+    quarter's review queue from the truth and the decisions are saved. Compared with the same run with no crosswalk.
+
+    Two caveats: item text repeats by construction in this data (the generator reuses one item-master text per plant,
+    supplier and part about 80% of the time), and the classifier is the one trained on tuning-split lines from all quarters.
+    """
+    inp = load_inputs(data_dir)
+    p = inp.purchases
+    truth, canon = load_truth(data_dir)
+    same = np.vectorize(lambda x: canon.get(x, x))
+    true_raw, true_part = truth["true_part_number"].to_numpy(), same(truth["true_part_number"].to_numpy())
+    date = pd.to_datetime(p["po_date"])
+    quarter = (date.dt.year.astype(str) + "Q" + date.dt.quarter.astype(str)).to_numpy()
+    scorer = scoring.Scorer.load(backend)
+    report = {"backend": backend, "arms": {}}
+
+    for arm, use in (("With the crosswalk", True), ("No crosswalk", False)):
+        saved, rows = {}, []
+        for q in sorted(set(quarter)):
+            idx = np.flatnonzero(quarter == q)
+            inp_q = Inputs(p.iloc[idx].reset_index(drop=True), inp.boms, inp.parts, inp.builds, inp.xref)
+            pq = inp_q.purchases
+            rules = match.rule_match(inp_q, saved if use else None)
+            cand_parts, cand_sims = match.embedding_candidates(inp_q, backend=backend)
+            pairs = scoring.build_pairs(inp_q, rules, cand_parts, cand_sims)
+            dec = scoring.decide(rules, pairs, scorer, scoring.material_items(pq, allocate.MATERIALITY_USD))
+            band = dec.index[dec["decision"] == "review"]
+            usage = dict(calls=0, cost_usd=0.0)
+            if len(band):
+                verdicts, usage = adjudicate.adjudicate(adjudicate.build_prompts(inp_q, rules, pairs, band))
+                dec = adjudicate.apply(dec, verdicts, scorer.llm_accept_conf, scorer.llm_reject_conf)
+            else:
+                dec = dec.assign(llm_part="", llm_conf=np.nan, llm_reason="")
+            dec.insert(0, "po_id", pq["po_id"])
+            lines = allocate.apply_units(allocate.apply_materiality(allocate.build_lines(inp_q, dec)), inp.boms)
+
+            t, spend = true_part[idx], lines["spend_usd"].to_numpy()
+            accept, review = (lines["decision"] == "accept").to_numpy(), (lines["decision"] == "review").to_numpy()
+            right = accept & (same(lines["part"].to_numpy()) == t)
+            by_xw = rules["rule_method"].isin(["crosswalk", "crosswalk_none"]).to_numpy()
+            xw_right = by_xw & (same(rules["rule_part"].to_numpy()) == t)
+            rows.append(dict(quarter=q, lines=len(idx), spend=float(spend.sum()), settled_by_crosswalk=int(by_xw.sum()), crosswalk_right=int(xw_right.sum()),
+                             claude_lines=len(band), claude_calls=usage["calls"], claude_cost_usd=usage["cost_usd"],
+                             review_lines=int(review.sum()), review_spend=float(spend[review].sum()),
+                             precision=float(right.sum() / max(accept.sum(), 1)), recall=float(right.sum() / max((t != "").sum(), 1)),
+                             wrong_match_spend=float(spend[accept & ~right].sum()), crosswalk_entries=len(saved)))
+            if use:  # the reviewer clears this quarter's queue; each decision is saved against the item's text
+                for i in np.flatnonzero(review):
+                    key = f"{pq.at[i, 'pn_key']}|{pq.at[i, 'desc_norm']}"
+                    saved[key] = ("approve", true_raw[idx[i]]) if true_raw[idx[i]] else ("no_match", "")
+        report["arms"][arm] = rows
+        print(f"\n=== {arm} ===")
+        print(f"{'quarter':<9}{'lines':>6}{'by crosswalk':>14}{'(right)':>9}{'Claude calls':>14}{'review lines':>14}{'review $':>12}{'precision':>11}{'wrong-match $':>15}")
+        for r in rows:
+            print(f"{r['quarter']:<9}{r['lines']:>6}{r['settled_by_crosswalk']:>14}{r['crosswalk_right']:>9}{r['claude_calls']:>14}{r['review_lines']:>14}"
+                  f"{r['review_spend']:>12,.0f}{r['precision']:>11.2%}{r['wrong_match_spend']:>15,.0f}")
+        tot = {k: sum(r[k] for r in rows) for k in ("settled_by_crosswalk", "crosswalk_right", "claude_calls", "claude_cost_usd", "review_lines", "review_spend", "wrong_match_spend")}
+        print(f"{'total':<9}{sum(r['lines'] for r in rows):>6}{tot['settled_by_crosswalk']:>14}{tot['crosswalk_right']:>9}{tot['claude_calls']:>14}{tot['review_lines']:>14}"
+              f"{tot['review_spend']:>12,.0f}{'':>11}{tot['wrong_match_spend']:>15,.0f}   Claude ${tot['claude_cost_usd']:.2f}")
+    Path("out").mkdir(exist_ok=True)
+    Path("out/eval_crosswalk.json").write_text(json.dumps(report, indent=2, default=float))
+    print("\nwrote out/eval_crosswalk.json")
+    return report
+
+
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
-    ap.add_argument("step", choices=["step2", "step3", "step4", "selftrain"])
+    ap.add_argument("step", choices=["step2", "step3", "step4", "selftrain", "crosswalk"])
     ap.add_argument("--backend", choices=list(match.BACKENDS), default="local")
     ap.add_argument("--no-llm", action="store_true")
     ap.add_argument("--materiality", type=float, default=None)
     args = ap.parse_args()
     {"step2": lambda: step2(backend=args.backend), "step3": lambda: step3(use_llm=not args.no_llm),
-     "step4": lambda: step4(materiality=args.materiality), "selftrain": selftrain}[args.step]()
+     "step4": lambda: step4(materiality=args.materiality), "selftrain": selftrain, "crosswalk": crosswalk_experiment}[args.step]()

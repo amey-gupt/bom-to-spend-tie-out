@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase line is a 55 gal drum of ISO 46 hydraulic oil, which matches none of the candidates (housing shells, gearbox grease, and a carton), and no candidate is a hydraulic fluid.", "model": "claude-haiku-5-5", "input_tokens": 1362, "output_tokens": 99}

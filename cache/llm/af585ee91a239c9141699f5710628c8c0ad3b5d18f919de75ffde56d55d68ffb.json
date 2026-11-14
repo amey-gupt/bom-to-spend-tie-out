@@ -1,0 +1,1 @@
+{"part_number": "SCR-66688", "confidence": 0.85, "reason": "\"SCR ST M5X12 ZINC\" reads as a self-tapping screw, M5 x 12, zinc, which matches SCR-66688 exactly; SCR-66734 is M4, SCR-66712 is a socket cap screw at $0.0075 against $0.0309, and the washers are not screws.", "model": "claude-opus-5-5", "input_tokens": 1363, "output_tokens": 134}

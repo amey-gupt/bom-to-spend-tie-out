@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "A 55 gal drum of ISO 46 hydraulic oil is a shop consumable; no candidate matches it, since the only lubricant listed is GRS-58141, which is NLGI 2 grease, not hydraulic oil.", "model": "claude-opus-5-5", "input_tokens": 1360, "output_tokens": 101}

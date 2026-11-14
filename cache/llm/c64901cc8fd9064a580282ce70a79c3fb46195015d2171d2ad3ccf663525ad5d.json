@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.96, "reason": "A PH2 screwdriver bit 25-pack at $18.91 is a shop supply or consumable tool, not a screw on any BOM, and none of the candidates is a screwdriver bit.", "model": "claude-opus-5-5", "input_tokens": 1347, "output_tokens": 88}

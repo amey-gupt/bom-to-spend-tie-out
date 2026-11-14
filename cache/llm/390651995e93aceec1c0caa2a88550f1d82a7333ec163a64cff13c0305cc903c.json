@@ -1,0 +1,1 @@
+{"part_number": "LBL-74773", "confidence": 0.8, "reason": "The description 'barcode 25x25mm' matches LBL-74773 exactly, and the PO number LBL-74737 looks like a transposition typo of 74773; the price of $0.0232 is within 30% of the confirmed $0.0284, and the other candidates conflict on type or size.", "model": "claude-opus-5-5", "input_tokens": 1323, "output_tokens": 123}

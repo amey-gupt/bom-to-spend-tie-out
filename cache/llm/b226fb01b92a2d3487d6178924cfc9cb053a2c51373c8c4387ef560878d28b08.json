@@ -1,0 +1,1 @@
+{"part_number": "NPL-67921", "confidence": 0.85, "reason": "Description 'NMPLT GREY PC/ABS' matches NPL-67921 (nameplate, grey, PC/ABS) exactly; NPL-67932 is red, which conflicts with grey, and the $0.11 price fits a nameplate rather than the housing shell or grips.", "model": "claude-opus-5-5", "input_tokens": 1344, "output_tokens": 124}

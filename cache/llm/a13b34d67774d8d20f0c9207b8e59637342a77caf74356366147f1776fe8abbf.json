@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "GRP-62251 is an internal grip number that matches none of the candidates, and no candidate matches on attributes: GRP-62242 is yellow but TPE rather than PA6-GF30, and GRP-62234 is PA6-GF30 but grey rather than yellow.", "model": "claude-opus-5-5", "input_tokens": 1351, "output_tokens": 114}

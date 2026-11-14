@@ -1,0 +1,1 @@
+{"part_number": "VNT-77379", "confidence": 0.8, "reason": "Description 'vent cover black ABS' matches VNT-77379 exactly. VNT-77360 is PC/ABS, and the other vent covers differ in color and material. GRP-62236 is a grip, not a vent cover. A price of $0.15 is plausible for a service buy.", "model": "claude-opus-5-5", "input_tokens": 1312, "output_tokens": 122}

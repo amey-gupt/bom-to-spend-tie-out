@@ -1,0 +1,1 @@
+{"part_number": "MTR-75173", "confidence": 0.85, "reason": "Description 'brushed motor 0.4 kW 20VDC' matches MTR-75173 (brushed, 400 W, 20 V) exactly, and PO number MTR-75713 is a likely digit transposition of 75173; other motors differ in type, power or voltage.", "model": "claude-opus-5-5", "input_tokens": 1349, "output_tokens": 119}

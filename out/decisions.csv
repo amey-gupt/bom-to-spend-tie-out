@@ -187,7 +187,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000186,accept,rule_pn_exact,TRM-27434,1.0,,,
 4500000187,accept,rule_pn_exact,RES-69295,1.0,,,
 4500000188,accept,rule_xref,HSR-28958,1.0,,,
-4500000189,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500000189,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"Line is a complete 18V 4.0Ah battery pack (CPL = complete assembly, service PO, $36.60) rather than any single cell, housing or BMS component listed, and assemblies are not BOM parts."
 4500000190,no_match,classifier,GRP-62236,0.017825311942959002,,,
 4500000191,no_match,classifier,BTH-20635,0.02195121951219512,,,
 4500000192,accept,rule_pn_exact,SPD-62936,1.0,,,
@@ -200,7 +200,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000199,accept,rule_pn_exact,LBL-74774,1.0,,,
 4500000200,accept,rule_pn_exact,CLR-37722,1.0,,,
 4500000201,accept,rule_pn_exact,SPD-62936,1.0,,,
-4500000202,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500000202,no_match,llm,CEL-64007,0.0037546933667083854,,0.93,"The line is a complete 20V 4.0Ah battery pack ('BATT PACK CPL') at $43.04, which is a finished assembly rather than a single BOM part, and its price is far above any candidate cell, housing or BMS ($1–$3.5)."
 4500000203,accept,classifier,HSR-28954,1.0,,,
 4500000204,accept,llm,NPL-67921,0.8057142857142857,NPL-67921,0.85,"""NMPLT GREY PC/ABS"" matches NPL-67921 (nameplate, grey, PC/ABS); NPL-67932 is ruled out because it is red, despite the same supplier, and the $0.1082 price is consistent with a similar nameplate's $0.1338."
 4500000205,accept,rule_pn_exact,MTR-75169,1.0,,,
@@ -236,7 +236,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000235,accept,llm,WHR-16755,0.8057142857142857,WHR-16755,0.85,"Description matches WHR-16755 exactly (18 AWG, 160 mm), and the PO part number WHR-1675 reads as a truncation of WHR-16755; every other candidate differs in gauge or length."
 4500000236,accept,rule_pn_exact,HSR-28958,1.0,,,
 4500000237,accept,classifier,LBL-74764,1.0,,,
-4500000238,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500000238,no_match,llm,BHL-56003,0.00554016620498615,,0.93,"The line buys a complete 18V 2.0Ah battery pack (an assembly, ~$26) on a service PO, while the candidates are only housings and a single cell priced around $0.55–$1.98, so none is the same physical part."
 4500000239,no_match,llm,BAL-68342,0.03048780487804878,,0.8,"The line is for a 6 mm steel ball in grade G100, and no candidate matches both attributes: BAL-68336 is 6 mm but G25, while BAL-68342 is G100 but 5 mm; the MX- number is a supplier/plant code and gives no link to any candidate."
 4500000240,no_match,classifier,CLR-37704,0.00554016620498615,,,
 4500000241,accept,rule_pn_exact,SGR-63442,1.0,,,
@@ -244,7 +244,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000243,accept,rule_xref,RRG-28918,1.0,,,
 4500000244,accept,rule_pn_exact,BHU-18894,1.0,,,
 4500000245,accept,llm,CTN-23153,0.5454545454545454,CTN-23153,0.88,"Description 'CARON 560X330X270MM MASETR' is a misspelled 'master carton 560x330x270 mm', which matches only CTN-23153; part number CTN-21353 looks like a digit transposition of CTN-23153, and the $0.61 price is plausible for a carton this size."
-4500000246,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500000246,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (part number SVC 71027, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with the 10 mm candidate chucks."
 4500000247,no_match,llm,SPD-62936,0.03048780487804878,,0.88,"The PO's 82 mm spindle length conflicts with both candidate spindles (75 mm and 60 mm), and its part number SPD-62945 is an internal number of the same family that matches none of the candidates."
 4500000248,no_match,llm,NPL-67932,0.03048780487804878,,0.85,"The line is an orange PC/ABS nameplate, but every nameplate candidate conflicts on color (red, grey, yellow), the only orange candidate is a bit holder, and the supplier number 74835T841 matches none of them."
 4500000249,accept,rule_pn_exact,PCR-13101,1.0,,,
@@ -312,7 +312,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000311,accept,rule_pn_exact,MCU-14989,1.0,,,
 4500000312,accept,classifier,SCR-66726,1.0,,,
 4500000313,accept,rule_xref,CEL-64003,1.0,,,
-4500000314,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500000314,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chucks."
 4500000315,no_match,classifier,MTR-75169,0.02195121951219512,,,
 4500000316,accept,classifier,BRG-65697,1.0,,,
 4500000317,accept,classifier,SGR-63442,1.0,,,
@@ -387,7 +387,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000386,accept,rule_pn_exact,STL-29667,1.0,,,
 4500000387,accept,classifier,SPD-62936,1.0,,,
 4500000388,accept,rule_pn_exact,CEL-64003,1.0,,,
-4500000389,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500000389,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description 'W6MM' matches only the two 6 mm wide strips (NKS-29161, NKS-29162); the thickness is truncated to 'THK0', and the $0.0408 price is well below NKS-29162's $0.0767 (more than 30% lower), which favors the thinner 0.1 mm strip NKS-29161."
 4500000390,accept,classifier,SCR-66724,1.0,,,
 4500000391,accept,rule_pn_exact,PCB-45433,1.0,,,
 4500000392,accept,classifier,MTR-75168,1.0,,,
@@ -397,7 +397,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000396,accept,classifier,RES-69295,1.0,,,
 4500000397,accept,rule_pn_exact,MTR-75169,1.0,,,
 4500000398,accept,rule_pn_exact,BMS-19537,1.0,,,
-4500000399,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500000399,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance service (cavity polish) at $1345.90 rather than a BOM part, and part number 454006 matches none of the candidates."
 4500000400,accept,rule_pn_exact,BRG-65683,1.0,,,
 4500000401,accept,rule_pn_exact,PIN-61263,1.0,,,
 4500000402,accept,rule_pn_exact,WSH-19129,1.0,,,
@@ -619,7 +619,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000618,accept,classifier,SCR-66724,1.0,,,
 4500000619,accept,classifier,CHK-47564,1.0,,,
 4500000620,accept,classifier,CHK-47564,1.0,,,
-4500000621,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500000621,no_match,llm,BHL-56003,0.00554016620498615,,0.93,"The line is a complete 18V 2.0Ah battery pack (an assembly) bought on a service PO at $26.29, far above any single candidate part (housings $0.55–$1.01, cell $1.98), so it matches none of the BOM components."
 4500000622,no_match,classifier,FET-20825,0.017825311942959002,,,
 4500000623,accept,rule_pn_exact,SPR-38628,1.0,,,
 4500000624,accept,classifier,RRG-28930,1.0,,,
@@ -652,7 +652,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000651,accept,llm,BRS-17978,0.38965791870347005,BRS-17978,0.9,"Description 'CARBON RUSH 6X6X12MM' is a typo for carbon brush 6x6x12 mm, which matches BRS-17978 exactly. The PN BRS-71978 is a digit transposition of 17978, and the supplier is the same (Nordlicht). The $0.4711 price is about 1.4x the confirmed $0.3392, which is plausible for a service buy."
 4500000652,no_match,llm,MTR-75169,0.06666666666666667,,0.88,"The line is a service gearbox assembly (SVC-17009, 'GEARBOX ASSEMBLY 18V'), a complete assembly bought as a service part rather than a BOM part, and no candidate is a gearbox; the motor MTR-75169 only resembles it in price."
 4500000653,no_match,classifier,MNL-14606,0.017825311942959002,,,
-4500000654,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500000654,no_match,llm,BHL-56003,0.00554016620498615,,0.92,"The line buys a complete 18V 2.0Ah battery pack (an assembly, service PO, about $26), not a single housing (about $0.55-$1.01) or cell (about $1.98), so it is not one of the BOM candidate parts."
 4500000655,no_match,classifier,INS-43112,0.017825311942959002,,,
 4500000656,accept,rule_xref,SPR-38636,1.0,,,
 4500000657,accept,rule_pn_exact,RRG-28930,1.0,,,
@@ -662,14 +662,14 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000661,accept,classifier,PIN-61263,1.0,,,
 4500000662,accept,classifier,SPR-38617,1.0,,,
 4500000663,accept,classifier,PCB-45440,1.0,,,
-4500000664,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500000664,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (""BATT PACK CPL"") bought on a service PO under SVC 70986 at $37.89, so it is a finished assembly rather than any single candidate cell, housing or BMS board, all of which cost under $5."
 4500000665,no_match,classifier,MNL-14606,0.017825311942959002,,,
 4500000666,accept,classifier,ROT-73034,1.0,,,
 4500000667,accept,rule_pn_exact,HSL-37885,1.0,,,
 4500000668,accept,llm,BCL-69304,0.9380952380952381,BCL-69304,0.86,"The line reads 'Cinturon clip' (Spanish for belt clip), spring steel, L45, which matches BCL-69304 (45 mm long) and rules out BCL-69302 (55 mm); the $0.338 price is about 24% above the $0.272 confirmed price, within the range expected from a different supplier."
 4500000669,accept,rule_pn_exact,LBL-74799,1.0,,,
 4500000670,accept,rule_pn_exact,PCB-45433,1.0,,,
-4500000671,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500000671,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500000672,no_match,rule_xref_offbom,MTR-75169,0.0,,,
 4500000673,accept,classifier,BRG-65684,1.0,,,
 4500000674,accept,classifier,SGR-63434,1.0,,,
@@ -707,7 +707,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000706,accept,rule_pn_exact,SCR-66708,1.0,,,
 4500000707,accept,llm,LBL-74773,0.8057142857142857,LBL-74773,0.8,"LBL-74773 is the only candidate that is a barcode label at 25 x 25 mm, and the PO number LBL-74737 looks like a digit transposition of 74773; the $0.0233 price is about 17% below its $0.0280 confirmed price, within the range expected from a different supplier."
 4500000708,accept,classifier,TRM-27434,1.0,,,
-4500000709,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500000709,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance service (cavity polish) at $1294 with no part number, which is tooling upkeep rather than a BOM part, and no candidate (grips at ~$0.36-0.48, pulp trays at ~$0.18-0.39) matches."
 4500000710,no_match,llm,WHR-16779,0.03048780487804878,,0.97,"Earplugs bought from SafetyFirst Direct are a safety/shop consumable, not a BOM part, and no candidate (cartons, harnesses, poly bag) matches the description or the ~$25 price."
 4500000711,accept,classifier,SPR-38623,1.0,,,
 4500000712,accept,rule_xref,SPR-38659,1.0,,,
@@ -776,7 +776,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000775,accept,rule_pn_exact,WHR-16757,1.0,,,
 4500000776,accept,rule_pn_exact,MCU-14989,1.0,,,
 4500000777,accept,rule_pn_exact,BAL-68342,1.0,,,
-4500000778,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500000778,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (an assembly, service PO, SVC- number, $36.60) rather than any single cell, housing or BMS component on the candidate BOMs."
 4500000779,no_match,classifier,ECP-58913,0.02195121951219512,,,
 4500000780,accept,classifier,MAG-10905,1.0,,,
 4500000781,accept,rule_pn_exact,GCS-43891,1.0,,,
@@ -788,7 +788,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000787,accept,rule_xref,SGR-63457,1.0,,,
 4500000788,accept,rule_xref,RRG-28924,1.0,,,
 4500000789,no_match,llm,BHU-18894,0.7916666666666666,,0.88,"The line is a service housing KIT (part number SVC-17063, PO type service) priced at $5.55, which is over 6x the $0.86 price of the closest single part, BHU-18894 (18 V red upper housing); kits are not BOM parts."
-4500000790,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500000790,no_match,llm,CEL-64007,0.0037546933667083854,,0.93,"The line is a complete 20V 4.0Ah battery pack (""BATT PACK CPL"") bought on a service PO at $43.43, which is a complete assembly rather than a BOM component, and no candidate cell, housing or BMS matches that description or price."
 4500000791,no_match,llm,ORG-40036,0.03048780487804878,,0.8,"The line is an FKM 75 O-ring of 20 mm ID and 2 mm section. ORG-40045 matches the size but is NBR 70, which is a material conflict. ORG-40036 is FKM 75 but 12 mm ID with a 1.5 mm section. The other three candidates are retaining rings, so no candidate matches."
 4500000792,no_match,classifier,ORG-40045,0.02195121951219512,,,
 4500000793,accept,classifier,GCS-43891,1.0,,,
@@ -812,7 +812,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000811,accept,rule_pn_exact,WSH-19144,1.0,,,
 4500000812,review,classifier,CON-20104,0.5454545454545454,CON-20082,0.3,"The truncated description gives no position count or pitch, so the match rests only on price: $0.1859 is within about 18% of CON-20082's confirmed $0.1575, a normal supplier difference, while CON-20104 (the only part bought from Pacific Rim) would be 84% above its $0.1010 price, which is unusual for a production PO; the other candidates fit nearly as well, so confidence is low."
 4500000813,accept,rule_xref,ECL-51375,1.0,,,
-4500000814,no_match,classifier,MTR-75173,0.017825311942959002,,,
+4500000814,no_match,llm,MTR-75173,0.017825311942959002,,0.9,"The line is a service-exchange motor assembly (SVC part number, service PO), which is a service item and not a BOM part, and its 350W rating matches neither 400 W motor candidate (MTR-75173 or MTR-75169)."
 4500000815,no_match,llm,LAT-54794,0.03048780487804878,,0.85,"PO part number LAT-54802 is an internal latch number not among the candidates, and the only latch candidate (LAT-54794) is black while the PO specifies yellow; the remaining candidates are housings, not latches."
 4500000816,no_match,classifier,LBL-74774,0.017825311942959002,,,
 4500000817,accept,llm,BRS-17978,0.5454545454545454,BRS-17978,0.85,"Description 'carbon escobilla 6x6x12mm' matches BRS-17978's carbon brush 6 x 6 x 12 mm and the supplier Nordlicht is the same; the part number BRS-1797 looks like BRS-17978 truncated, and the $0.2148 price is about 37% below the $0.3392 confirmed price, but no other candidate fits (BRS-17975 is 6x9x14)."
@@ -853,7 +853,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000852,accept,llm,HSR-28957,0.8057142857142857,HSR-28957,0.8,"The description 'HSG SHL RH YELLOW TPE' matches HSR-28957 (housing shell right, yellow, TPE) on every attribute, while HSR-28958 is ruled out by its PC/ABS material; the part-number field GV-2456351 looks like a supplier code rather than an internal number, and there is no confirmed price to compare."
 4500000853,accept,rule_pn_exact,SCR-66741,1.0,,,
 4500000854,accept,rule_xref,BAG-28614,1.0,,,
-4500000855,no_match,classifier,ROT-73034,0.017825311942959002,,,
+4500000855,no_match,llm,ROT-73034,0.017825311942959002,,0.97,"The line is an assembly fixture (gearbox press nest) at about $2002, which is shop tooling and not a BOM part; no candidate clutch ring or rotor (all under $2) matches its description or price."
 4500000856,accept,rule_pn_exact,RSN-74843,1.0,,,
 4500000857,accept,classifier,SPR-38665,1.0,,,
 4500000858,accept,rule_pn_exact,LVR-69923,1.0,,,
@@ -911,7 +911,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000910,accept,classifier,VNT-77379,1.0,,,
 4500000911,no_match,rule_xref_offbom,MCU-14989,0.0,,,
 4500000912,no_match,classifier,FET-20825,0.02195121951219512,,,
-4500000913,no_match,classifier,GRS-58141,0.017825311942959002,,,
+4500000913,no_match,llm,GRS-58141,0.017825311942959002,,0.95,"Hydraulic oil ISO 46 in a 55 gal drum is a shop consumable, and it differs from the only lubricant candidate, GRS-58141, which is NLGI 2 lithium grease, so none of the candidates matches."
 4500000914,accept,rule_pn_exact,ROT-73034,1.0,,,
 4500000915,accept,rule_xref,ORG-40036,1.0,,,
 4500000916,accept,llm,CSC-39035,0.9380952380952381,CSC-39035,0.72,"The line is a chuck retaining screw with no size given, and the supplier (Hanlon Fastener Supply) and price ($0.0720 vs $0.0721) match CSC-39035's confirmed purchase; CSC-39037 and CSC-39029 are the same screw type in other sizes, and the part number 31684A364 is a supplier catalog number that does not separate them."
@@ -958,7 +958,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000957,accept,classifier,PIN-61259,1.0,,,
 4500000958,accept,rule_pn_exact,CEL-64003,1.0,,,
 4500000959,accept,rule_pn_exact,CON-20091,1.0,,,
-4500000960,no_match,classifier,CLR-37713,0.017825311942959002,,,
+4500000960,no_match,llm,CLR-37713,0.017825311942959002,,0.97,"The line is a calibration service for a torque analyzer (a shop service at about $250), not a physical BOM part, so it matches none of the clutch rings or the spindle."
 4500000961,accept,rule_pn_exact,PCR-13101,1.0,,,
 4500000962,accept,rule_pn_exact,BHL-55997,1.0,,,
 4500000963,accept,classifier,TRM-27412,1.0,,,
@@ -988,7 +988,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500000987,accept,rule_pn_exact,PCB-45433,1.0,,,
 4500000988,no_match,classifier,GRP-62236,0.017825311942959002,,,
 4500000989,no_match,llm,MTR-75169,0.06666666666666667,,0.88,"The line is a service gearbox assembly (SVC-17009, 'GEARBOX ASSEMBLY 18V S'), and complete assemblies and service kits are not BOM parts; none of the candidates is a gearbox, and the motor's similar price is coincidental."
-4500000990,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500000990,no_match,llm,BHL-56003,0.00554016620498615,,0.92,"The line buys a complete 18V 2.0Ah battery pack (a full assembly, service PO, about $26), whereas the candidates are only housings or single cells priced at $0.55 to $1.98, so none of them is the same part."
 4500000991,no_match,llm,BAG-28614,0.03048780487804878,,0.88,"The PO line's part number BAG28623-C is an internal BAG-family number (BAG-28623) that matches no candidate, and its 250x350 mm size conflicts with the only poly bag candidate, BAG-28614 (300x400 mm)."
 4500000992,accept,rule_pn_exact,RGR-62085,1.0,,,
 4500000993,accept,classifier,SPR-38617,1.0,,,
@@ -1014,7 +1014,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001013,accept,rule_pn_exact,CHK-47572,1.0,,,
 4500001014,accept,rule_pn_exact,PCB-45433,1.0,,,
 4500001015,no_match,classifier,LBL-74789,0.02195121951219512,,,
-4500001016,no_match,classifier,GRS-58141,0.017825311942959002,,,
+4500001016,no_match,llm,GRS-58141,0.017825311942959002,,0.95,"Hydraulic oil ISO 46 in a 55 gal drum is a shop consumable/maintenance supply, not a BOM part; the only lubricant candidate, GRS-58141, is NLGI 2 grease, not oil."
 4500001017,no_match,classifier,GRP-62242,0.0056179775280898875,,,
 4500001018,accept,classifier,BRG-65683,1.0,,,
 4500001019,accept,rule_xref,RRG-28916,1.0,,,
@@ -1066,14 +1066,14 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001065,accept,classifier,SCR-66750,1.0,,,
 4500001066,accept,classifier,SCR-66799,1.0,,,
 4500001067,accept,rule_xref,CTN-23169,1.0,,,
-4500001068,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500001068,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (""BATT PACK CPL"", service PO, SVC- number, $36.60), which is a complete assembly rather than any single candidate cell, housing or BMS part, so the answer is none."
 4500001069,no_match,classifier,RSN-74843,0.003870967741935484,,,
 4500001070,accept,classifier,MTR-75168,1.0,,,
 4500001071,accept,rule_pn_exact,RGR-62091,1.0,,,
 4500001072,accept,rule_pn_exact,GRP-62234,1.0,,,
 4500001073,accept,rule_pn_exact,SCR-66708,1.0,,,
 4500001074,no_match,rule_xref_offbom,GRS-58141,0.0,,,
-4500001075,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500001075,no_match,llm,BHL-56003,0.00554016620498615,,0.93,"The line is a complete 18V 2.0Ah battery pack (an assembly) bought on a service PO at $26.29, far above any single candidate part (housings $0.55–$1.01, cell $1.98), so it matches none of the BOM components."
 4500001076,accept,rule_pn_exact,MTR-75169,1.0,,,
 4500001077,accept,classifier,ROT-73034,1.0,,,
 4500001078,accept,rule_pn_exact,PCR-13098,1.0,,,
@@ -1155,7 +1155,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001154,accept,rule_pn_exact,SCR-66763,1.0,,,
 4500001155,accept,rule_pn_exact,LBL-74786,1.0,,,
 4500001156,no_match,llm,BHL-56003,0.03048780487804878,,0.9,"The line is a service-coded (SVC-17009) complete gearbox assembly bought on a service PO, and complete assemblies are not BOM parts; no candidate is a gearbox, and the price closeness to motor MTR-75169 is coincidental."
-4500001157,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500001157,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly rated 250 W 18 V, which is a service assembly rather than a BOM part, and its 250 W rating conflicts with the only 18 V motor candidate (MTR-75169, 400 W)."
 4500001158,no_match,llm,LBL-74774,0.03048780487804878,,0.8,"No candidate is a 30 x 50 mm rating label: the rating labels are 25x25, 40x60, 20x40 and 50x80 mm, and the only 30 x 50 mm part (LBL-74774) is a warning label, which conflicts with the 'rating' type."
 4500001159,no_match,classifier,BCL-69304,0.017825311942959002,,,
 4500001160,accept,rule_xref,FAN-30247,1.0,,,
@@ -1168,7 +1168,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001167,accept,classifier,SWT-28086,1.0,,,
 4500001168,no_match,rule_xref_offbom,GRS-58141,0.0,,,
 4500001169,no_match,classifier,BCL-69304,0.017825311942959002,,,
-4500001170,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500001170,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance service (cavity polish) at $776.98 with part number 354604, which matches none of the candidates; it is a service rather than a BOM part, and no candidate costs anywhere near that price."
 4500001171,accept,rule_pn_exact,WSH-19129,1.0,,,
 4500001172,accept,classifier,CAP-40036,1.0,,,
 4500001173,accept,rule_pn_exact,TIN-22661,1.0,,,
@@ -1180,7 +1180,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001179,accept,rule_pn_exact,STA-57656,1.0,,,
 4500001180,accept,rule_pn_exact,CTN-23169,1.0,,,
 4500001181,accept,rule_pn_exact,MNL-14614,1.0,,,
-4500001182,no_match,classifier,CHK-47564,0.00554016620498615,,,
+4500001182,no_match,llm,CHK-47564,0.00554016620498615,,0.95,"The line is a chuck service kit (part number SVC 71027, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with the 10 mm candidate chucks."
 4500001183,no_match,classifier,ORG-40045,0.02195121951219512,,,
 4500001184,no_match,llm,SCR-66772,0.03048780487804878,,0.88,"The line is an M4x12 stainless socket cap screw with internal number SCR-66848, which matches no candidate; every candidate conflicts on length (M4x20) or diameter (M2.5x8), or on head type (pan head)."
 4500001185,no_match,classifier,CTN-23139,0.017825311942959002,,,
@@ -1368,9 +1368,9 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001367,accept,rule_pn_exact,PIN-61253,1.0,,,
 4500001368,accept,rule_pn_exact,ORG-40045,1.0,,,
 4500001369,accept,rule_pn_exact,WSH-19110,1.0,,,
-4500001370,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500001370,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description 'W6MM' matches only the two 6 mm wide strips (NKS-29161, NKS-29162); the thickness is truncated to 'THK0', and the $0.0408 price is well below NKS-29162's $0.0767 (more than 30% lower), which favors the thinner 0.1 mm strip NKS-29161."
 4500001371,accept,rule_pn_exact,FET-20824,1.0,,,
-4500001372,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500001372,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (an assembly bought on a service PO at $36.60, under part number SVC-70986), not an individual BOM part; no candidate cell, housing or BMS matches a complete pack."
 4500001373,accept,rule_pn_exact,SPR-38665,1.0,,,
 4500001374,accept,rule_pn_exact,TRM-27434,1.0,,,
 4500001375,accept,classifier,NTC-13041,1.0,,,
@@ -1392,7 +1392,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001391,accept,rule_pn_exact,SCR-66634,1.0,,,
 4500001392,accept,classifier,RES-69278,1.0,,,
 4500001393,no_match,classifier,GRP-62236,0.017825311942959002,,,
-4500001394,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500001394,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly (MTR ASSY SVC EXCH) rated 250 W 18 V, which conflicts with the 400 W ratings of both candidate motors, and service assemblies are not BOM parts."
 4500001395,accept,rule_pn_exact,WSH-19096,1.0,,,
 4500001396,accept,classifier,FET-20829,1.0,,,
 4500001397,accept,classifier,SPR-38623,1.0,,,
@@ -1668,7 +1668,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001667,accept,classifier,SCR-66643,1.0,,,
 4500001668,accept,classifier,LBL-74793,1.0,,,
 4500001669,accept,rule_xref,BMS-19562,1.0,,,
-4500001670,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500001670,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500001671,no_match,classifier,LBL-74789,0.02195121951219512,,,
 4500001672,accept,classifier,ROT-73034,1.0,,,
 4500001673,accept,rule_pn_exact,BRG-65684,1.0,,,
@@ -1718,7 +1718,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001717,no_match,llm,BHU-18894,0.7916666666666666,,0.88,"The line is a service housing kit (SVC- number, service PO, $5.55 vs $0.86 for BHU-18894), and kits are not BOM parts even though the 18 V red wording resembles BHU-18894."
 4500001718,accept,classifier,SPD-62936,1.0,,,
 4500001719,accept,rule_xref,WSH-19090,1.0,,,
-4500001720,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500001720,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description 'W6MM' matches only the two 6 mm wide strips (NKS-29161, NKS-29162); the thickness is truncated to 'THK0', and the $0.0408 price is well below NKS-29162's $0.0767 (more than 30% lower), which favors the thinner 0.1 mm strip NKS-29161."
 4500001721,accept,rule_pn_exact,LAT-54794,1.0,,,
 4500001722,accept,rule_pn_exact,INS-43117,1.0,,,
 4500001723,accept,rule_pn_exact,LVR-69923,1.0,,,
@@ -1885,7 +1885,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001884,accept,llm,WHR-16755,0.8057142857142857,WHR-16755,0.88,"Description matches exactly (18 AWG, 160 mm) and the part-number field WHR-1675 looks like a truncation of WHR-16755; all other candidates differ in gauge or length."
 4500001885,accept,rule_pn_exact,BTH-20624,1.0,,,
 4500001886,accept,llm,NPL-67926,0.8057142857142857,NPL-67926,0.88,"NPL-76926 is a likely digit transposition of NPL-67926, and that candidate matches on description (nameplate, yellow, ABS), supplier (Greer) and price ($0.1450 vs $0.1459); the other nameplates are the wrong color or material."
-4500001887,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500001887,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500001888,no_match,classifier,GRS-58141,0.02195121951219512,,,
 4500001889,no_match,classifier,LBL-74789,0.02195121951219512,,,
 4500001890,accept,rule_pn_exact,SPR-38628,1.0,,,
@@ -1911,7 +1911,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001910,accept,rule_pn_exact,PIN-61263,1.0,,,
 4500001911,accept,classifier,WSH-19123,1.0,,,
 4500001912,accept,rule_xref,WSH-19144,1.0,,,
-4500001913,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500001913,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description 'W6MM' matches only the two 6 mm wide strips (NKS-29161, NKS-29162); the thickness is truncated to 'THK0', and the $0.0408 price is well below NKS-29162's $0.0767 (more than 30% lower), which favors the thinner 0.1 mm strip NKS-29161."
 4500001914,accept,classifier,NTC-13041,1.0,,,
 4500001915,accept,rule_pn_exact,LED-16300,1.0,,,
 4500001916,accept,rule_pn_exact,HSK-73619,1.0,,,
@@ -1974,7 +1974,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500001973,accept,rule_pn_exact,MCU-14989,1.0,,,
 4500001974,no_match,classifier,GRP-62236,0.017825311942959002,,,
 4500001975,no_match,llm,MTR-75169,0.06666666666666667,,0.9,"The line is a service-coded (SVC-17009) complete gearbox assembly bought on a service PO, and complete assemblies are not BOM parts; no candidate is a gearbox, and the price closeness to motor MTR-75169 is coincidental."
-4500001976,no_match,classifier,ROT-73034,0.017825311942959002,,,
+4500001976,no_match,llm,ROT-73034,0.017825311942959002,,0.97,"The line is a $2,001 gearbox press-nest assembly fixture (shop tooling) from an industrial supplier, not a production BOM part, and no candidate (clutch rings at under $1, rotor at $1.93) matches its description or price."
 4500001977,accept,llm,STL-29667,0.27692307692307694,STL-29667,0.8,"Description (cold rolled steel sheet, 0.8 mm) and supplier Great Lakes Steel Service match STL-29667, and part number STL-92667 looks like a digit transposition of it; the price per unit differs widely from the confirmed price (likely a unit-of-measure mismatch), which lowers certainty."
 4500001978,accept,classifier,MWR-17455,1.0,,,
 4500001979,accept,classifier,BRG-65703,1.0,,,
@@ -2012,9 +2012,9 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002011,accept,rule_pn_exact,HSL-37885,1.0,,,
 4500002012,accept,rule_xref,WCD-46800,1.0,,,
 4500002013,accept,rule_pn_exact,TRY-61253,1.0,,,
-4500002014,no_match,classifier,MTR-75173,0.017825311942959002,,,
+4500002014,no_match,llm,MTR-75173,0.017825311942959002,,0.9,"The line is a service-exchange motor assembly (SVC part number, service PO), which is a service item and not a BOM part, and its 350W rating matches neither 400 W motor candidate (MTR-75173 or MTR-75169)."
 4500002015,no_match,llm,BAL-68342,0.03048780487804878,,0.72,"The line specifies a 6 mm G100 ball, but BAL-68336 is 6 mm G25 (grade conflict) and BAL-68342 is G100 but 5 mm (diameter conflict), so no candidate matches on both size and grade."
-4500002016,no_match,classifier,CLR-37713,0.017825311942959002,,,
+4500002016,no_match,llm,CLR-37713,0.017825311942959002,,0.97,"The line is a calibration service for a torque analyzer at $363, which is a service rather than a BOM part, and it does not match any clutch ring or spindle candidate (all under $2)."
 4500002017,accept,rule_pn_exact,LVR-69923,1.0,,,
 4500002018,review,classifier,CON-20104,0.8057142857142857,CON-20104,0.5,"The description is truncated and gives no position count or pitch, so it cannot separate the candidates; the supplier, Pacific Rim, matches CON-20104's confirmed source, and $0.083 is within about 18% of its $0.101 price, while part number 24717T541 looks like a supplier code and gives no internal match."
 4500002019,accept,rule_pn_exact,HSL-37887,1.0,,,
@@ -2054,7 +2054,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002053,accept,rule_pn_exact,SCR-66799,1.0,,,
 4500002054,accept,classifier,BRG-65728,1.0,,,
 4500002055,no_match,classifier,GRP-62242,0.0056179775280898875,,,
-4500002056,no_match,classifier,CLR-37713,0.017825311942959002,,,
+4500002056,no_match,llm,CLR-37713,0.017825311942959002,,0.97,"The line is a calibration service for a torque analyzer (a shop service at $368.92, no part number), not a BOM part, so it matches none of the clutch rings or spindle priced under $2."
 4500002057,accept,rule_pn_exact,RSN-74843,1.0,,,
 4500002058,accept,classifier,BRG-65673,1.0,,,
 4500002059,accept,classifier,BRG-65675,1.0,,,
@@ -2073,7 +2073,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002072,accept,llm,SCR-66688,0.9380952380952381,SCR-66688,0.88,"""SCR ST M5X12 ZINC"" reads as a self-tapping screw, M5 x 12, zinc, which matches SCR-66688, bought from the same supplier (Apex) at $0.0340 versus $0.0311; the socket cap screw SCR-66712 is a different screw type and costs $0.0075, and the M4 parts and washers conflict with the stated size or type."
 4500002073,accept,rule_pn_exact,TIN-22661,1.0,,,
 4500002074,no_match,rule_xref_offbom,PGR-79741,0.0,,,
-4500002075,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500002075,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance and cavity polish service at $1294, not a physical BOM part, and its price is far above any candidate grip or tray ($0.18–$0.48)."
 4500002076,no_match,classifier,INS-43098,0.00554016620498615,,,
 4500002077,accept,classifier,MWR-17455,1.0,,,
 4500002078,accept,classifier,WSH-19085,1.0,,,
@@ -2122,7 +2122,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002121,accept,rule_xref,CTN-23169,1.0,,,
 4500002122,accept,rule_pn_exact,CLR-37722,1.0,,,
 4500002123,accept,rule_pn_exact,SWT-28080,1.0,,,
-4500002124,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500002124,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500002125,accept,classifier,GRS-58141,1.0,,,
 4500002126,accept,rule_pn_exact,MTR-75169,1.0,,,
 4500002127,accept,rule_pn_exact,PGR-79728,1.0,,,
@@ -2131,7 +2131,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002130,accept,rule_xref,NUT-31523,1.0,,,
 4500002131,accept,rule_pn_exact,MTR-75168,1.0,,,
 4500002132,accept,llm,BRS-17978,0.5454545454545454,BRS-17978,0.88,"The description 'carbon escobilla 6x6x12mm' and supplier Nordlicht match BRS-17978 exactly, and the PN field BRS-1797 looks like a truncation of BRS-17978; BRS-17975 is ruled out by its 6x9x14 size, and the $0.22 price is within a plausible range of $0.3392."
-4500002133,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500002133,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (""BATT PACK CPL"", service PO, SVC- number, $36.60), which is a complete assembly rather than any single candidate cell, housing or BMS part, so the answer is none."
 4500002134,no_match,llm,GRS-58141,0.03048780487804878,,0.95,"Air tool oil (1 qt) from an industrial supply house is a shop consumable for maintaining pneumatic tools, not a BOM part, and none of the candidates match; the closest one, GRS-58141, is a different product (EP2 gearbox grease)."
 4500002135,accept,rule_pn_exact,SPR-38654,1.0,,,
 4500002136,accept,rule_pn_exact,PIN-61268,1.0,,,
@@ -2299,7 +2299,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002298,accept,rule_pn_exact,SCR-66713,1.0,,,
 4500002299,accept,classifier,LBL-74786,1.0,,,
 4500002300,accept,llm,NKS-29161,0.8057142857142857,NKS-29161,0.8,"Description matches NKS-29161 exactly (6 mm wide, 0.1 mm thick nickel strip), and the PO number NKS-29116 looks like a transposition typo of 29161; every other candidate differs in width or thickness."
-4500002301,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500002301,no_match,llm,BHL-56003,0.00554016620498615,,0.93,"The line buys a complete 18V 2.0Ah battery pack (an assembly, ~$26) on a service PO, while the candidates are only housings and a single cell priced around $0.55–$1.98, so none is the same physical part."
 4500002302,no_match,llm,LBL-74789,0.03048780487804878,,0.95,"A handheld barcode scanner at $176 is shop equipment rather than a BOM part, and none of the candidates match it: they are barcode or rating labels priced around $0.03 and a master carton."
 4500002303,accept,rule_pn_exact,STL-29667,1.0,,,
 4500002304,accept,rule_pn_exact,RSN-74843,1.0,,,
@@ -2324,7 +2324,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002323,accept,classifier,RES-69278,1.0,,,
 4500002324,accept,rule_pn_exact,SCR-66681,1.0,,,
 4500002325,accept,rule_pn_exact,BMS-19554,1.0,,,
-4500002326,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500002326,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly (MTR ASSY SVC EXCH) rated 250 W, which conflicts with both candidate motors (400 W) and is a service item rather than a BOM part."
 4500002327,no_match,classifier,SCR-66836,0.004888268156424581,,,
 4500002328,accept,classifier,PCR-13101,1.0,,,
 4500002329,accept,classifier,RRG-28930,1.0,,,
@@ -2342,7 +2342,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002341,accept,llm,LBL-74773,0.8057142857142857,LBL-74773,0.75,"Barcode label 25x25 mm matches LBL-74773 exactly; PO number LBL-74737 looks like a transposition typo of 74773 (digits swapped), and the price $0.0233 is within supplier variance of the $0.0280 confirmed price, while the other candidates differ in size or label type."
 4500002342,accept,rule_pn_exact,LBL-74774,1.0,,,
 4500002343,accept,rule_pn_exact,WCD-46791,1.0,,,
-4500002344,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500002344,no_match,llm,CEL-64007,0.0037546933667083854,,0.95,"The line is a complete 20V 4.0Ah battery pack (an assembly, bought on a service PO at $43), not a single cell, housing or BMS board, so it matches no BOM candidate."
 4500002345,accept,rule_pn_exact,STA-57659,1.0,,,
 4500002346,accept,rule_pn_exact,BHU-18897,1.0,,,
 4500002347,accept,rule_xref,NKS-29162,1.0,,,
@@ -2435,7 +2435,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002434,accept,classifier,BAL-68342,1.0,,,
 4500002435,review,classifier,BMS-19545,0.8057142857142857,BMS-19554,0.6,"The description gives no rating, so the decision rests on supplier and price: $4.80 sits about 8% above BMS-19554's $4.44 Suntronix price, a normal service-buy markup, while BMS-19545 and BMS-19537 would need roughly a 1.8x markup and BMS-19562 comes from a different supplier."
 4500002436,no_match,rule_xref_offbom,GRS-58141,0.0,,,
-4500002437,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500002437,no_match,llm,CEL-64007,0.0037546933667083854,,0.93,"The line is a complete 20V 4.0Ah battery pack ('BATT PACK CPL') bought on a service PO at $43.43, which makes it a finished assembly and not a BOM component; the candidates are only individual cells, a housing and a BMS board priced at $1–4 each."
 4500002438,accept,classifier,WSH-19085,1.0,,,
 4500002439,accept,rule_pn_exact,LED-16300,1.0,,,
 4500002440,accept,llm,BAL-68336,0.9380952380952381,BAL-68336,0.88,"Description 'Steel ball D6/G25' matches BAL-68336 (6 mm, G25) exactly, while the other balls are 5 mm and the remaining candidates are a washer and a gear; the part number BI-247203 looks like a supplier code, and the $0.0188 price is plausible for a 6 mm ball."
@@ -2500,7 +2500,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002499,accept,rule_xref,RRG-28918,1.0,,,
 4500002500,accept,classifier,WSH-19094,1.0,,,
 4500002501,accept,classifier,MCL-53294,1.0,,,
-4500002502,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500002502,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description 'W6MM THK0' gives a 6 mm width, and the thickness is truncated after '0', so it could be 0.1 mm (NKS-29161) or 0.15 mm (NKS-29162); the $0.0415 price is well below the $0.0767 confirmed price for the 0.15 mm part, which points to the thinner NKS-29161."
 4500002503,accept,classifier,RES-69295,1.0,,,
 4500002504,accept,rule_pn_exact,CON-20082,1.0,,,
 4500002505,accept,rule_pn_exact,BTH-20624,1.0,,,
@@ -2514,7 +2514,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002513,accept,rule_pn_exact,SCR-66708,1.0,,,
 4500002514,accept,rule_xref,CEL-64003,1.0,,,
 4500002515,accept,rule_pn_exact,BMS-19554,1.0,,,
-4500002516,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500002516,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500002517,accept,classifier,SPR-38627,1.0,,,
 4500002518,accept,classifier,TRM-27420,1.0,,,
 4500002519,accept,rule_pn_exact,TIN-22681,1.0,,,
@@ -2530,7 +2530,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002529,accept,llm,BHL-55997,0.8057142857142857,BHL-55997,0.8,"BHL-59597 looks like a digit transposition of BHL-55997, the only candidate that is a lower housing, 18 V and yellow; the $0.6623 price is within supplier variation of $0.7450."
 4500002530,accept,classifier,SWT-28090,1.0,,,
 4500002531,no_match,classifier,MTR-75169,0.008583690987124463,,,
-4500002532,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500002532,no_match,llm,BHL-56003,0.00554016620498615,,0.92,"The line buys a complete 18V 2.0Ah battery pack (an assembly, service PO, about $26), not a single housing (about $0.55-$1.01) or cell (about $1.98), so it is not one of the BOM candidate parts."
 4500002533,no_match,llm,LAT-54794,0.5454545454545454,,0.85,"The line is an orange battery latch, but the only latch candidate (LAT-54794) is black, a clear color conflict, and the other candidates are battery housings rather than latches."
 4500002534,accept,classifier,GRS-58141,1.0,,,
 4500002535,accept,rule_pn_exact,BRG-65717,1.0,,,
@@ -2575,7 +2575,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002574,accept,rule_pn_exact,SCR-66806,1.0,,,
 4500002575,accept,rule_pn_exact,ORG-40036,1.0,,,
 4500002576,accept,classifier,NTC-13041,1.0,,,
-4500002577,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500002577,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (part number SVC 71027, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with the 10 mm candidate chucks."
 4500002578,accept,classifier,SPR-38647,1.0,,,
 4500002579,accept,classifier,WHR-16766,1.0,,,
 4500002580,accept,rule_pn_exact,WHR-16772,1.0,,,
@@ -2634,14 +2634,14 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002633,accept,rule_pn_exact,WSH-19096,1.0,,,
 4500002634,accept,classifier,RES-69278,1.0,,,
 4500002635,accept,classifier,TIN-22678,1.0,,,
-4500002636,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500002636,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"Line is a complete 18V 4.0Ah battery pack (CPL = complete assembly, service PO, $36.60) rather than any single cell, housing or BMS component listed, and assemblies are not BOM parts."
 4500002637,no_match,classifier,BHU-18894,0.02195121951219512,,,
 4500002638,accept,rule_xref,RRG-28918,1.0,,,
 4500002639,accept,classifier,GRP-62236,1.0,,,
 4500002640,accept,rule_pn_exact,SCR-66634,1.0,,,
 4500002641,accept,classifier,SCR-66658,1.0,,,
 4500002642,accept,llm,NKS-29168,0.8571428571428571,NKS-29168,0.72,"The description gives a width of 10 mm, and only NKS-29168 is a 10 mm wide nickel strip; the thickness value is truncated ('THK' with no number), so the thickness cannot be confirmed, and the $0.0517 price is plausible next to the other strips."
-4500002643,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500002643,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC part number, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500002644,no_match,classifier,PIN-61253,0.0056179775280898875,,,
 4500002645,accept,classifier,PCR-13098,1.0,,,
 4500002646,accept,classifier,PCR-13101,1.0,,,
@@ -2665,8 +2665,8 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002664,accept,classifier,SWT-28080,1.0,,,
 4500002665,accept,llm,LBL-74779,0.9380952380952381,LBL-74779,0.85,"Description 'LAABEL 40X60MM RATING' (typo for label) matches only LBL-74779's rating label at 40 x 60 mm; LBL-74786 is the same size but a warning label, and $0.0220 is within about 30% of the $0.0175 confirmed price from a different supplier."
 4500002666,accept,rule_pn_exact,RRG-28916,1.0,,,
-4500002667,no_match,classifier,MTR-75169,0.017825311942959002,,,
-4500002668,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500002667,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly rated 250 W 18 V, a service item that conflicts with both motor candidates (400 W), and supplier part number PS-879278 matches no candidate."
+4500002668,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance service (cavity polish) at $777, not a physical BOM part, and it matches no candidate grip or tray by description or price."
 4500002669,accept,rule_pn_exact,MTR-75169,1.0,,,
 4500002670,accept,rule_pn_exact,ROT-73034,1.0,,,
 4500002671,accept,rule_pn_exact,PCR-13101,1.0,,,
@@ -2687,7 +2687,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002686,accept,rule_pn_exact,TIN-22661,1.0,,,
 4500002687,accept,rule_pn_exact,CEL-64007,1.0,,,
 4500002688,accept,classifier,SCR-66676,1.0,,,
-4500002689,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500002689,no_match,llm,BHL-56003,0.00554016620498615,,0.93,"The line buys a complete 18V 2.0Ah battery pack (an assembly, ~$26) on a service PO, while the candidates are only housings and a single cell priced around $0.55–$1.98, so none is the same physical part."
 4500002690,accept,rule_pn_exact,RGR-62085,1.0,,,
 4500002691,accept,rule_xref,LVR-69923,1.0,,,
 4500002692,accept,rule_pn_exact,CTN-23169,1.0,,,
@@ -2710,7 +2710,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002709,accept,llm,CTN-23187,0.8057142857142857,CTN-23187,0.9,"The description's dimensions 340x110x280 mm match CTN-23187 exactly, and no other candidate shares them; the part-number field MX-3748603 looks like a supplier or plant code rather than a conflicting internal number."
 4500002710,accept,rule_pn_exact,BRS-17975,1.0,,,
 4500002711,no_match,classifier,BCL-69304,0.017825311942959002,,,
-4500002712,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500002712,no_match,llm,CEL-64007,0.0037546933667083854,,0.93,"The line is a complete 20V 4.0Ah battery pack ('BATT PACK CPL') bought as a service item for $43.43, which makes it a complete assembly rather than a BOM part; the candidates are individual cells, a housing and a BMS board priced at $1–4."
 4500002713,no_match,classifier,CTN-23176,0.017825311942959002,,,
 4500002714,accept,rule_pn_exact,ROT-73041,1.0,,,
 4500002715,accept,rule_xref,SGR-63452,1.0,,,
@@ -2723,8 +2723,8 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002722,accept,classifier,CTN-23162,1.0,,,
 4500002723,accept,classifier,CTN-23176,1.0,,,
 4500002724,accept,llm,BRS-17978,0.38965791870347005,BRS-17978,0.88,"BRS-71978 is a digit transposition of BRS-17978, and the description (carbon brush, 6x6x12 mm) and supplier (Nordlicht) match; the $0.4865 price is about 1.4x the $0.3392 confirmed price, which fits a spares buy."
-4500002725,no_match,classifier,BHL-56003,0.0037546933667083854,,,
-4500002726,no_match,classifier,GRS-58141,0.017825311942959002,,,
+4500002725,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (an assembly bought on a service PO at $36.60, under part number SVC-70986), not an individual BOM part; no candidate cell, housing or BMS matches a complete pack."
+4500002726,no_match,llm,GRS-58141,0.017825311942959002,,0.95,"A 55 gal drum of ISO 46 hydraulic oil is a shop consumable, not a BOM part, and it does not match the gearbox grease GRS-58141 (NLGI 2 grease vs ISO 46 oil) or any housing or carton candidate."
 4500002727,accept,classifier,PGR-79741,1.0,,,
 4500002728,accept,rule_pn_exact,SPD-62936,1.0,,,
 4500002729,accept,rule_xref,RRG-28916,1.0,,,
@@ -2965,7 +2965,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500002964,accept,rule_xref,BAG-28614,1.0,,,
 4500002965,no_match,classifier,BRS-17978,0.017825311942959002,,,
 4500002966,no_match,classifier,GRP-62236,0.017825311942959002,,,
-4500002967,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500002967,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (SVC 71027, service PO), and kits are not BOM parts; its 13 mm capacity also conflicts with both 10 mm chuck candidates."
 4500002968,no_match,classifier,SPR-38617,0.02195121951219512,,,
 4500002969,no_match,llm,GRS-58141,0.03048780487804878,,0.97,"A forklift propane cylinder exchange is a plant consumable or shop supply, not a BOM part, and it matches none of the candidates (grease, housing shells, lever, clutch ring)."
 4500002970,no_match,classifier,CTN-23169,0.017825311942959002,,,
@@ -3028,7 +3028,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003027,accept,classifier,BRG-65689,1.0,,,
 4500003028,accept,rule_pn_exact,PCB-45433,1.0,,,
 4500003029,no_match,classifier,GRP-62242,0.008583690987124463,,,
-4500003030,no_match,classifier,GRS-58141,0.017825311942959002,,,
+4500003030,no_match,llm,GRS-58141,0.017825311942959002,,0.95,"A 55 gal drum of ISO 46 hydraulic oil is a shop consumable, and it differs from the only lubricant candidate, GRS-58141 (lithium EP2 grease, NLGI 2), so it matches no BOM part."
 4500003031,no_match,classifier,MCL-53294,0.02195121951219512,,,
 4500003032,accept,rule_pn_exact,SPR-38665,1.0,,,
 4500003033,accept,classifier,MCL-53294,1.0,,,
@@ -3045,7 +3045,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003044,accept,rule_xref,WCD-46800,1.0,,,
 4500003045,review,classifier,BMS-19545,0.8571428571428571,BMS-19545,0.4,"The description carries no voltage or current rating, so only price and supplier separate the candidates: at $2.8064 from Suntronix EMS it sits close to BMS-19545 ($2.5871, Suntronix) and BMS-19537 ($2.6307, Suntronix), and nothing else distinguishes them, hence the low confidence. BMS-19554 ($4.4364) is ruled out because warranty buys can run up to about 2x, not below the production price; BMS-19562 is ruled out because it comes from a different supplier."
 4500003046,accept,rule_pn_exact,CEL-63994,1.0,,,
-4500003047,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500003047,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (an assembly bought on a service PO at $36.60, under part number SVC-70986), not an individual BOM part; no candidate cell, housing or BMS matches a complete pack."
 4500003048,accept,classifier,BRG-65683,1.0,,,
 4500003049,accept,classifier,BMS-19537,1.0,,,
 4500003050,accept,classifier,BHL-56005,1.0,,,
@@ -3053,7 +3053,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003052,accept,rule_pn_exact,BCL-69304,1.0,,,
 4500003053,accept,rule_pn_exact,SWT-28080,1.0,,,
 4500003054,accept,rule_pn_exact,INS-43117,1.0,,,
-4500003055,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500003055,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (part number SVC 71027, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with the 10 mm candidate chucks."
 4500003056,no_match,llm,BRG-65675,0.27692307692307694,,0.85,"PO part number BRG-65737 is an internal number of the same family that matches no candidate, and the only 698 candidate (BRG-65675) is ZZ-shielded, which conflicts with the PO's 'open'."
 4500003057,accept,classifier,MTR-75169,1.0,,,
 4500003058,accept,llm,SPR-38645,0.05270836162870684,SPR-38645,0.88,"Description D6 L20 1.0 mm wire matches only SPR-38645 (others differ in diameter or wire size), and the part-number field SPR-3864 is a truncated form of SPR-38645."
@@ -3109,7 +3109,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003108,accept,classifier,MWR-17455,1.0,,,
 4500003109,accept,classifier,PCR-13101,1.0,,,
 4500003110,accept,rule_pn_exact,CEL-63994,1.0,,,
-4500003111,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500003111,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description says 6 mm wide with the thickness truncated (""THK0""), so only the 6 mm strips NKS-29161 (0.1 mm) and NKS-29162 (0.15 mm) fit; $0.0408 is about half of NKS-29162's confirmed $0.0767, beyond the ~30% supplier spread, which favors the thinner, cheaper NKS-29161."
 4500003112,accept,rule_pn_exact,TRY-61235,1.0,,,
 4500003113,accept,rule_pn_exact,ECP-58906,1.0,,,
 4500003114,accept,classifier,SWT-28080,1.0,,,
@@ -3217,7 +3217,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003216,no_match,llm,GRP-62234,0.27692307692307694,,0.88,"PO part number GRP-62251 is an internal grip number matching no candidate, and no candidate is a yellow PA6-GF30 grip (GRP-62234 is grey, GRP-62242 is TPE, GRP-62236 is black ABS)."
 4500003217,no_match,llm,BAL-68342,0.03048780487804878,,0.72,"The line asks for a 6 mm steel ball in grade G100; no candidate has both, since BAL-68336 is 6 mm but G25 and BAL-68342 is G100 but 5 mm, and the MX-7167090 number matches no candidate."
 4500003218,no_match,classifier,CTN-23139,0.02195121951219512,,,
-4500003219,no_match,classifier,CLR-37713,0.017825311942959002,,,
+4500003219,no_match,llm,CLR-37713,0.017825311942959002,,0.97,"The line is a calibration service for a torque analyzer at $363, which is a service rather than a BOM part, and it matches none of the clutch rings or the spindle priced under $2."
 4500003220,accept,rule_pn_exact,RSN-74843,1.0,,,
 4500003221,accept,rule_pn_exact,MTR-75169,1.0,,,
 4500003222,accept,rule_pn_exact,SPD-62933,1.0,,,
@@ -3266,7 +3266,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003265,accept,rule_xref,SCR-66708,1.0,,,
 4500003266,accept,llm,BAL-68336,0.8571428571428571,BAL-68336,0.8,"Description 'Steel ball D6/G25' matches BAL-68336 (6 mm, G25) exactly, while the other balls are 5 mm and the rest are not balls; the MX- number looks like a supplier code rather than an internal number, and the price cannot be checked because BAL-68336 has no confirmed purchases."
 4500003267,accept,rule_pn_exact,SCR-66836,1.0,,,
-4500003268,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500003268,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly rated 250 W 18 V, which is a service assembly rather than a BOM part, and its 250 W rating conflicts with the only 18 V motor candidate (MTR-75169, 400 W)."
 4500003269,no_match,classifier,GRP-62236,0.017825311942959002,,,
 4500003270,no_match,rule_xref_offbom,PGR-79741,0.0,,,
 4500003271,accept,classifier,GRS-58141,1.0,,,
@@ -3276,7 +3276,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003275,accept,classifier,CAP-40030,1.0,,,
 4500003276,review,classifier,CON-20104,0.5454545454545454,CON-20082,0.3,"The description is truncated with no position count or pitch and no part number, so it fits all five; the $0.1859 unit price is closest to CON-20082's $0.1575 (within a different-supplier margin), while the same-supplier CON-20104 at $0.1010 would be about 84% higher, so the choice is weak."
 4500003277,accept,classifier,LBL-74793,1.0,,,
-4500003278,no_match,classifier,BHL-56003,0.0037546933667083854,,,
+4500003278,no_match,llm,BHL-56003,0.0037546933667083854,,0.93,"The line is a complete 18V 4.0Ah battery pack (""BATT PACK CPL"", service PO, SVC- number, $36.60), which is a complete assembly rather than any single candidate cell, housing or BMS part, so the answer is none."
 4500003279,no_match,classifier,MNL-14606,0.017825311942959002,,,
 4500003280,accept,classifier,STL-29667,1.0,,,
 4500003281,accept,classifier,TRM-27408,1.0,,,
@@ -3445,7 +3445,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003444,accept,rule_pn_exact,VNT-77374,1.0,,,
 4500003445,accept,rule_pn_exact,WSH-19147,1.0,,,
 4500003446,accept,rule_pn_exact,CLR-37704,1.0,,,
-4500003447,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500003447,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly rated 250 W 18 V, a service item that conflicts with both motor candidates (400 W), and supplier part number PS-879278 matches no candidate."
 4500003448,accept,rule_xref,WSH-19144,1.0,,,
 4500003449,accept,rule_xref,HSK-73614,1.0,,,
 4500003450,accept,rule_xref,INS-43092,1.0,,,
@@ -3474,7 +3474,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003473,accept,classifier,SCR-66750,1.0,,,
 4500003474,accept,classifier,NUT-31532,1.0,,,
 4500003475,accept,rule_pn_exact,CTN-23169,1.0,,,
-4500003476,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500003476,no_match,llm,CEL-64007,0.0037546933667083854,,0.95,"The line is a complete 20V 4.0Ah battery pack (an assembly, bought on a service PO at $43), not a single cell, housing or BMS board, so it matches no BOM candidate."
 4500003477,no_match,classifier,SCR-66750,0.02195121951219512,,,
 4500003478,accept,rule_pn_exact,BRS-17975,1.0,,,
 4500003479,accept,classifier,BRG-65697,1.0,,,
@@ -3498,7 +3498,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003497,accept,rule_pn_exact,WHR-16772,1.0,,,
 4500003498,accept,rule_pn_exact,BTH-20624,1.0,,,
 4500003499,no_match,classifier,GRS-58141,0.02195121951219512,,,
-4500003500,no_match,classifier,MTR-75173,0.017825311942959002,,,
+4500003500,no_match,llm,MTR-75173,0.017825311942959002,,0.9,"The line is a service-exchange motor assembly (SVC part number, service PO type), and service kits and assemblies are not BOM parts; its 350 W rating also conflicts with the 400 W motors MTR-75173 and MTR-75169."
 4500003501,accept,rule_pn_exact,BRG-65712,1.0,,,
 4500003502,accept,classifier,RGR-62091,1.0,,,
 4500003503,accept,rule_pn_exact,CLR-37713,1.0,,,
@@ -3537,7 +3537,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003536,accept,classifier,SPD-62936,1.0,,,
 4500003537,no_match,llm,WHR-16776,0.03048780487804878,,0.55,"The line specifies 16 AWG at L20 (20 mm), and no candidate is a 16 AWG harness of 20 mm (the 16 AWG options are 80, 120 and 200 mm); reading L20 as 200 mm would point to WHR-16779, but that is not certain, and MX-7762794 appears to be a supplier code."
 4500003538,accept,classifier,MNL-14614,1.0,,,
-4500003539,no_match,classifier,MTR-75173,0.017825311942959002,,,
+4500003539,no_match,llm,MTR-75173,0.017825311942959002,,0.9,"The line is a service-exchange motor assembly (SVC part number, service PO type), and service kits and assemblies are not BOM parts; its 350 W rating also conflicts with the 400 W motors MTR-75173 and MTR-75169."
 4500003540,no_match,llm,BAG-28614,0.03048780487804878,,0.85,"Part number BAG28623-C points to internal BAG-28623, which is not among the candidates, and the 250x350 mm size conflicts with the only poly bag candidate, BAG-28614 (300x400 mm)."
 4500003541,accept,rule_pn_exact,PGR-79741,1.0,,,
 4500003542,accept,rule_pn_exact,SGR-63442,1.0,,,
@@ -3564,7 +3564,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003563,accept,classifier,INS-43117,1.0,,,
 4500003564,accept,llm,LVR-69923,0.852139114710766,LVR-69923,0.8,"Description 'forward/reverse lever black' matches LVR-69923 exactly (LVR-69919 is teal); part number MX-7006602 looks like a supplier/plant code rather than an internal number, and $0.2015 is about 32% above the $0.1532 price, roughly the allowance for a different supplier."
 4500003565,accept,rule_pn_exact,SCR-66741,1.0,,,
-4500003566,no_match,classifier,CEL-64007,0.0037546933667083854,,,
+4500003566,no_match,llm,CEL-64007,0.0037546933667083854,,0.95,"The line is a complete 20V 4.0Ah battery pack (an assembly, bought on a service PO at $43), not a single cell, housing or BMS board, so it matches no BOM candidate."
 4500003567,no_match,classifier,SCR-66772,0.02195121951219512,,,
 4500003568,no_match,classifier,BCL-69304,0.017825311942959002,,,
 4500003569,accept,rule_pn_exact,BRG-65728,1.0,,,
@@ -3709,7 +3709,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003708,accept,rule_pn_exact,BRG-65684,1.0,,,
 4500003709,accept,classifier,PCB-45448,1.0,,,
 4500003710,accept,rule_xref,BMS-19562,1.0,,,
-4500003711,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500003711,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly rated 250 W 18 V, which is a service assembly rather than a BOM part, and its 250 W rating conflicts with the only 18 V motor candidate (MTR-75169, 400 W)."
 4500003712,accept,rule_xref,SGR-63452,1.0,,,
 4500003713,accept,classifier,SPD-62936,1.0,,,
 4500003714,accept,rule_pn_exact,INS-43117,1.0,,,
@@ -3737,9 +3737,9 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003736,accept,classifier,SCR-66694,1.0,,,
 4500003737,accept,rule_pn_exact,BAL-68329,1.0,,,
 4500003738,no_match,classifier,MNL-14606,0.017825311942959002,,,
-4500003739,no_match,classifier,MTR-75173,0.017825311942959002,,,
+4500003739,no_match,llm,MTR-75173,0.017825311942959002,,0.9,"The line is a service-exchange motor assembly (SVC part number, service PO type), and service kits and assemblies are not BOM parts; its 350 W rating also conflicts with the 400 W motors MTR-75173 and MTR-75169."
 4500003740,no_match,classifier,TRM-27425,0.008583690987124463,,,
-4500003741,no_match,classifier,ROT-73034,0.017825311942959002,,,
+4500003741,no_match,llm,ROT-73034,0.017825311942959002,,0.97,"The line is an assembly fixture (gearbox press nest), which is shop tooling rather than a BOM part, and its $1197.61 price is far from every candidate's price of $0.36–$1.93."
 4500003742,accept,rule_pn_exact,SGR-63457,1.0,,,
 4500003743,accept,llm,CSC-39029,0.8057142857142857,CSC-39029,0.85,"The part-number field CSC-39O29 reads as CSC-39029 with a letter O typed in place of the zero, and the description ""chuck retaining screw"" matches that candidate; the $0.0672 price fits the family even though the same supplier sells CSC-39035 at $0.0721."
 4500003744,accept,rule_pn_exact,NKS-29154,1.0,,,
@@ -3951,7 +3951,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500003950,accept,classifier,CON-20105,1.0,,,
 4500003951,accept,rule_pn_exact,SCR-66634,1.0,,,
 4500003952,accept,classifier,VNT-77379,1.0,,,
-4500003953,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500003953,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (part number SVC 71027, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with the 10 mm candidate chucks."
 4500003954,no_match,classifier,SCR-66836,0.004888268156424581,,,
 4500003955,no_match,classifier,GRP-62236,0.02195121951219512,,,
 4500003956,accept,classifier,MWR-17455,1.0,,,
@@ -4013,7 +4013,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004012,accept,rule_pn_exact,SCR-66669,1.0,,,
 4500004013,accept,rule_pn_exact,CTN-23178,1.0,,,
 4500004014,accept,classifier,WHR-16772,1.0,,,
-4500004015,no_match,classifier,MTR-75169,0.017825311942959002,,,
+4500004015,no_match,llm,MTR-75169,0.017825311942959002,,0.88,"The line is a service-exchange motor assembly rated 250 W at 18 V, and assemblies are not BOM parts; the only 18 V motor candidate (MTR-75169) is 400 W, so the wattage conflicts as well."
 4500004016,no_match,rule_xref_offbom,GRS-58141,0.0,,,
 4500004017,accept,classifier,RGR-62091,1.0,,,
 4500004018,accept,rule_pn_exact,SPD-62936,1.0,,,
@@ -4127,7 +4127,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004126,accept,rule_pn_exact,TRY-61244,1.0,,,
 4500004127,accept,rule_pn_exact,CHK-47572,1.0,,,
 4500004128,accept,rule_pn_exact,BRG-65717,1.0,,,
-4500004129,no_match,classifier,BHL-56003,0.00554016620498615,,,
+4500004129,no_match,llm,BHL-56003,0.00554016620498615,,0.93,"The line is a complete 18V 2.0Ah battery pack (an assembly) bought on a service PO at $26.29, far above any single candidate part (housings $0.55–$1.01, cell $1.98), so it matches none of the BOM components."
 4500004130,accept,rule_pn_exact,FAN-30241,1.0,,,
 4500004131,accept,rule_pn_exact,CLR-37713,1.0,,,
 4500004132,accept,rule_pn_exact,HCM-34673,1.0,,,
@@ -4241,7 +4241,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004240,accept,rule_xref,WHR-16777,1.0,,,
 4500004241,accept,rule_pn_exact,HSK-73619,1.0,,,
 4500004242,accept,rule_pn_exact,BRS-17975,1.0,,,
-4500004243,no_match,classifier,MTR-75173,0.017825311942959002,,,
+4500004243,no_match,llm,MTR-75173,0.017825311942959002,,0.9,"The line is a service-exchange motor assembly (SVC part number, service PO), which is a service item and not a BOM part, and its 350W rating matches neither 400 W motor candidate (MTR-75173 or MTR-75169)."
 4500004244,no_match,classifier,FET-20825,0.02195121951219512,,,
 4500004245,accept,rule_xref,WSH-19114,1.0,,,
 4500004246,accept,classifier,WSH-19129,1.0,,,
@@ -4293,7 +4293,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004292,accept,classifier,TIN-22678,1.0,,,
 4500004293,accept,classifier,CHK-47572,1.0,,,
 4500004294,no_match,llm,WSH-19094,0.03048780487804878,,0.97,"An ultrasonic welding horn tip at $589 is production tooling or shop equipment; none of the candidates matches it, since they are washers, stators and a spring priced at cents to a few dollars."
-4500004295,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500004295,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance service (cavity polish) costing $1410.65, not a physical BOM part, and the number 530936 does not match any candidate."
 4500004296,accept,rule_xref,SPR-38636,1.0,,,
 4500004297,accept,rule_xref,ORG-40036,1.0,,,
 4500004298,accept,rule_pn_exact,CEL-63994,1.0,,,
@@ -4306,7 +4306,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004305,no_match,classifier,CTN-23139,0.017825311942959002,,,
 4500004306,accept,rule_pn_exact,PIN-61271,1.0,,,
 4500004307,accept,llm,RRG-28924,0.8057142857142857,RRG-28924,0.88,"RRG-28294 is a likely transposition of RRG-28924, which is the internal retaining ring for a 10 mm shaft from the same supplier, Precision Wireform, at a nearly identical price ($0.0236 vs $0.0237)."
-4500004308,no_match,classifier,NKS-29161,0.02195121951219512,,,
+4500004308,review,classifier,NKS-29161,0.02195121951219512,NKS-29161,0.6,"The description 'W6MM' matches only the two 6 mm wide strips (NKS-29161, NKS-29162); the thickness is truncated to 'THK0', and the $0.0408 price is well below NKS-29162's $0.0767 (more than 30% lower), which favors the thinner 0.1 mm strip NKS-29161."
 4500004309,accept,rule_pn_exact,MCU-14989,1.0,,,
 4500004310,accept,rule_xref,WCD-46800,1.0,,,
 4500004311,accept,rule_pn_exact,BRS-17978,1.0,,,
@@ -4339,7 +4339,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004338,accept,rule_pn_exact,LBL-74774,1.0,,,
 4500004339,review,classifier,BMS-19545,0.8057142857142857,BMS-19554,0.55,"The description gives no voltage or current, so it fits all three Suntronix BMS PCBAs; the $4.80 service-PO price is only about 8% above BMS-19554's $4.44 Suntronix price, while BMS-19545 and BMS-19537 would need a markup of about 1.8x."
 4500004340,accept,classifier,CHK-47564,1.0,,,
-4500004341,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500004341,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a $1485 mold maintenance service (cavity polish) from a safety supplier, not a physical BOM part, and none of the candidate grips or trays (all under $0.50) match it."
 4500004342,review,classifier,CON-20104,0.8057142857142857,CON-20104,0.45,"The description is truncated and gives no position count or pitch, and the part number 24717T541 looks like a supplier code, so the choice rests on supplier and price: CON-20104 is bought from the same supplier (Pacific Rim) at $0.1010, about 18% above the PO's $0.083, which is within normal supplier variation; CON-20113 (also 2-position, no purchase history yet) remains a plausible alternative."
 4500004343,accept,rule_xref,SCR-66767,1.0,,,
 4500004344,accept,rule_pn_exact,SCR-66806,1.0,,,
@@ -4387,7 +4387,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004386,no_match,classifier,BCL-69304,0.017825311942959002,,,
 4500004387,no_match,classifier,BHU-18894,0.02195121951219512,,,
 4500004388,no_match,classifier,CTN-23139,0.017825311942959002,,,
-4500004389,no_match,classifier,GRP-62236,0.02195121951219512,,,
+4500004389,no_match,llm,GRP-62236,0.02195121951219512,,0.97,"The line is a mold maintenance service (cavity polish) at $777, not a physical BOM part, and its price is far above any candidate's sub-$1 unit price."
 4500004390,accept,rule_pn_exact,MTR-75173,1.0,,,
 4500004391,accept,rule_pn_exact,SGR-63452,1.0,,,
 4500004392,accept,llm,LAT-54794,0.9380952380952381,LAT-54794,0.9,"The description 'Battery latch BLACK' matches LAT-54794 (Battery latch, black), and the price of $0.1282 is within about 3% of its $0.1316 confirmed price; the part-number field DY-804726 looks like the supplier's own number, and the other candidates are housings."
@@ -4439,7 +4439,7 @@ po_id,decision,source,part,prob,llm_part,llm_conf,llm_reason
 4500004438,accept,rule_xref,NUT-31543,1.0,,,
 4500004439,accept,rule_pn_exact,LBL-74799,1.0,,,
 4500004440,accept,rule_pn_exact,MTR-75169,1.0,,,
-4500004441,no_match,classifier,CHK-47572,0.008583690987124463,,,
+4500004441,no_match,llm,CHK-47572,0.008583690987124463,,0.95,"The line is a chuck service kit (part number SVC 71027, service PO), and service kits are not BOM parts; its 13 mm capacity also conflicts with the 10 mm candidate chucks."
 4500004442,no_match,classifier,MCU-14989,0.017825311942959002,,,
 4500004443,no_match,classifier,PCB-45448,0.008583690987124463,,,
 4500004444,accept,rule_xref,BRG-65722,1.0,,,

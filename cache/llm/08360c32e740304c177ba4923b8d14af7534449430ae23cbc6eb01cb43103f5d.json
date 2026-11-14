@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A forklift propane cylinder exchange is a plant shop supply/consumable, not a BOM part, and none of the candidates (grease, housing shells, lever, clutch ring) match the description.", "model": "claude-opus-5-5", "input_tokens": 1359, "output_tokens": 87}

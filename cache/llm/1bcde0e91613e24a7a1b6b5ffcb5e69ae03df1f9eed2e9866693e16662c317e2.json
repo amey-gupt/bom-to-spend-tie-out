@@ -1,0 +1,1 @@
+{"part_number": "NPL-67926", "confidence": 0.88, "reason": "NPL-76926 looks like a digit transposition of NPL-67926, the yellow ABS nameplate, and supplier (Greer) and price ($0.1442 vs $0.1446) both match; the other nameplates are grey or red PC/ABS.", "model": "claude-opus-5-5", "input_tokens": 1363, "output_tokens": 113}

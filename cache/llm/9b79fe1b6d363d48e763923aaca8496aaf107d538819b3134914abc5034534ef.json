@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The PO line is for a teal TPE overmold grip, but every candidate grip conflicts on color or material (GRP-62242 is yellow TPE, GRP-62236 is black ABS, GRP-62234 is grey PA6-GF30), and the other two candidates are not grips.", "model": "claude-opus-5-5", "input_tokens": 1337, "output_tokens": 117}

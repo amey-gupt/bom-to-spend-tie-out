@@ -1,0 +1,1 @@
+{"part_number": "LBL-74773", "confidence": 0.8, "reason": "Barcode label 25x25 mm matches LBL-74773 exactly; PO number LBL-74737 is a likely digit transposition of 74773, and $0.0231 is within ~20% of the confirmed $0.0279 from a different supplier, while other candidates differ in size or label type.", "model": "claude-opus-5-5", "input_tokens": 1334, "output_tokens": 124}

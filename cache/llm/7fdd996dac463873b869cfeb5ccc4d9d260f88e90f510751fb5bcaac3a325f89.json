@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a compressed air filter element, a shop/maintenance consumable at about $60, while every candidate is a small compression spring priced around $0.10, so nothing matches.", "model": "claude-opus-5-5", "input_tokens": 1410, "output_tokens": 80}

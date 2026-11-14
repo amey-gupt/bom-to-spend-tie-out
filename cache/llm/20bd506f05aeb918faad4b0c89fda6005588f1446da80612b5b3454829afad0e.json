@@ -1,0 +1,1 @@
+{"part_number": "VNT-77360", "confidence": 0.85, "reason": "Description 'vent cover black PC/ABS' matches only VNT-77360 on all attributes. VNT-77379 is ABS rather than PC/ABS, and VNT-77374 is orange TPE. The part-number field 47485K286 looks like a supplier catalog number, not an internal number.", "model": "claude-opus-5-5", "input_tokens": 1283, "output_tokens": 127}

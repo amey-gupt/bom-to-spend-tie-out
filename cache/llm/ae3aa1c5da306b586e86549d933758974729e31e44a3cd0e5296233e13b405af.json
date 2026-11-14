@@ -1,0 +1,1 @@
+{"part_number": "BAL-68336", "confidence": 0.88, "reason": "The description 'Steel ball D6/G25' matches only BAL-68336 (6 mm, G25); the other balls are 5 mm, the part number BI-247203 looks like the supplier's own code, and $0.0187 is plausible since BAL-68336 has no confirmed price to compare.", "model": "claude-opus-5-5", "input_tokens": 1393, "output_tokens": 125}

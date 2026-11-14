@@ -1,0 +1,1 @@
+{"part_number": "WHR-16755", "confidence": 0.88, "reason": "Description matches WHR-16755 exactly (18 AWG, 160 mm), the PO part number WHR-1675 looks like a truncation of WHR-16755, and every other candidate differs in gauge or length.", "model": "claude-opus-5-5", "input_tokens": 1344, "output_tokens": 99}

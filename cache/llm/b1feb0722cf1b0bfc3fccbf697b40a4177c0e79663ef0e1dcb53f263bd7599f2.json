@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a mold maintenance service (cavity polish) at $1410.65 from an industrial supplier, which is not a BOM part, and its price is far above any candidate grip or tray (under $0.50).", "model": "claude-opus-5-5", "input_tokens": 1425, "output_tokens": 91}

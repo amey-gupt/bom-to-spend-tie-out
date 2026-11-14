@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.93, "reason": "The purchase is a service-type battery pack assembly (SVC- part number, service PO type, EACH at $36.60), which is a complete assembly rather than any individual BOM component, and none of the candidates is a full 18V 4.0Ah pack.", "model": "claude-haiku-5-5", "input_tokens": 1386, "output_tokens": 105}

@@ -127,7 +127,7 @@ def apply_units(lines: pd.DataFrame, boms: pd.DataFrame) -> pd.DataFrame:
             qty_bom.append(np.nan)
             issue.append(f"Bought in {uom} ({ldim}) but the BOM measures {part} in {bom_uom[part]} ({bdim}); the quantity cannot be converted without a factor")
     out["qty_bom"], out["uom_issue"] = qty_bom, issue
-    hold = (out["decision"] == "accept") & (out["uom_issue"] != "") & (out["source"] != "crosswalk")
+    hold = (out["decision"] == "accept") & (out["uom_issue"] != "") & ~out["source"].isin(["crosswalk", "rule_crosswalk"])
     out.loc[hold, ["decision", "source"]] = ["review", "uom_mismatch"]
     return out
 

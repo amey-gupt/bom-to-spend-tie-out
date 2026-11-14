@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line is a service-exchange motor assembly rated 250W, but the closest candidate MTR-75169 is a 400 W motor, a clear power conflict, and the other candidates are a switch and controllers rather than a motor.", "model": "claude-haiku-5-5", "input_tokens": 1393, "output_tokens": 231}

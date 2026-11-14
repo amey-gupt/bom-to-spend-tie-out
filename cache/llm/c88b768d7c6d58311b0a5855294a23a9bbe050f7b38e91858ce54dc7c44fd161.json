@@ -1,0 +1,1 @@
+{"part_number": "CON-20082", "confidence": 0.88, "reason": "6-position 2.54 mm pitch matches only CON-20082, and the $0.1338 price is within supplier variance of its $0.1549; the part number 65586T219 appears to be a supplier code, not an internal number.", "model": "claude-opus-5-5", "input_tokens": 1408, "output_tokens": 100}

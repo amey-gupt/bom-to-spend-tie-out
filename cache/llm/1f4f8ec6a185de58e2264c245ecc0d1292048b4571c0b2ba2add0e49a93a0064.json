@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "Earplugs (box of 200) are a shop safety consumable, not a BOM part, and no candidate (cartons, harnesses, poly bag) matches the description or the $23.52 price.", "model": "claude-opus-5-5", "input_tokens": 1390, "output_tokens": 86}

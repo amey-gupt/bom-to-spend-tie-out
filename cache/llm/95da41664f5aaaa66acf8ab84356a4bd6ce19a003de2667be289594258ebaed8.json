@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for hydraulic oil ISO 46 in a 55-gallon drum, which matches none of the candidates (housing shells, gearbox grease, and a carton), and the oil is not a BOM part of these assemblies.", "model": "claude-haiku-5-5", "input_tokens": 1363, "output_tokens": 103}

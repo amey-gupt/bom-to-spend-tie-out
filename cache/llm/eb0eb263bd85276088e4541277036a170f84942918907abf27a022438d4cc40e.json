@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a $1,198 assembly fixture (gearbox press nest), which is shop tooling rather than a BOM part, and no candidate (sub-$2 clutch rings and a rotor) matches it.", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 92}

@@ -1,0 +1,1 @@
+{"part_number": "WHR-16755", "confidence": 0.88, "reason": "The description (18 AWG, 160 mm) exactly matches WHR-16755 and no other candidate. The PO number WHR-1675 looks like WHR-16755 with the last digit dropped, and the $0.34 price is plausible for this harness.", "model": "claude-opus-5-5", "input_tokens": 1348, "output_tokens": 111}

@@ -1,0 +1,1 @@
+{"part_number": "BAL-68336", "confidence": 0.88, "reason": "Description 'Steel ball D6/G25' matches BAL-68336 (6 mm, G25) exactly; the other balls are 5 mm and conflict, and the BI- part number is the supplier's own code, not an internal number.", "model": "claude-opus-5-5", "input_tokens": 1400, "output_tokens": 104}

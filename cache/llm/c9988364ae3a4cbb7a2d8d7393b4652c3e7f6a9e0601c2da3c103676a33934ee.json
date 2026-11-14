@@ -1,0 +1,1 @@
+{"part_number": "LBL-74773", "confidence": 0.75, "reason": "LBL-74773 is the only barcode label at 25 x 25 mm, and the PO number LBL-74737 looks like a digit transposition of it; the price of $0.0235 is about 17% below the confirmed $0.0283 from another supplier, which is within the allowed range.", "model": "claude-opus-5-5", "input_tokens": 1323, "output_tokens": 246}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line is for a 250x350 mm poly bag under internal-style number BAG28623, which matches no candidate; the only bag candidate, BAG-28614, is 300x400 mm, so the dimensions conflict despite the identical $0.0242 price.", "model": "claude-opus-5-5", "input_tokens": 1359, "output_tokens": 110}

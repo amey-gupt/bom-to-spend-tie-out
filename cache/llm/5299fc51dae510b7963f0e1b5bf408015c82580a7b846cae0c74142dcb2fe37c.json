@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase is a service-type complete battery pack assembly (SVC 70986, $37.89 per unit), which is not a BOM part; none of the candidates is a complete 18V 4.0Ah pack, and the cells, housings, and PCBA are components.", "model": "claude-haiku-5-5", "input_tokens": 1394, "output_tokens": 109}

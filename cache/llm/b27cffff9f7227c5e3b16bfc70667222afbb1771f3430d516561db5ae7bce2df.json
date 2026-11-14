@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service housing kit (SVC-17063, 'HOUSING KIT ... SERVICE', service PO) priced at $5.52, far above any single housing price (BHU-18894 red 18 V costs $0.85); kits are not BOM parts.", "model": "claude-opus-5-5", "input_tokens": 1350, "output_tokens": 109}

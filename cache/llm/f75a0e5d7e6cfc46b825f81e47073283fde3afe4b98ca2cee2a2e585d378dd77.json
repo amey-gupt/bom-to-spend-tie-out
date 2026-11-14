@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line is a service-exchange motor assembly rated 250W, which conflicts with MTR-75169's 400W rating and is not a BOM part, while the other candidates are switches or controller PCBAs, not motors.", "model": "claude-haiku-5-5", "input_tokens": 1395, "output_tokens": 310}

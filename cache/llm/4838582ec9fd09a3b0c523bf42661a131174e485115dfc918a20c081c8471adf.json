@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The purchase line specifies a 21-position (21P) torque clutch ring, but the candidate clutch rings are 15-, 18- and 24-position, so each conflicts on position count, and the supplier code MR5672-26 does not match any candidate.", "model": "claude-opus-5-5", "input_tokens": 1351, "output_tokens": 105}

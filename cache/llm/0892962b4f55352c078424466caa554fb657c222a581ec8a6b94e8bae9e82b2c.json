@@ -1,0 +1,1 @@
+{"part_number": "SPD-62936", "confidence": 0.8, "reason": "The description 'Output spindle 1/2-20' fits both spindles, and the line states no length to separate them; the supplier Kessler Praezision and the price ($2.395 vs $2.638 confirmed) match SPD-62936, whereas SPD-62933 is bought from Ningbo at $1.62.", "model": "claude-opus-5-5", "input_tokens": 1444, "output_tokens": 130}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line asks for a 100 kOhm 0603 chip resistor, and no candidate has that value and package: RES-69290 is 100 ohm 0805, RES-69281 is 10k 0603, and RES-69286 is 0.002 ohm. MX-9650748 is a supplier or plant code that does not tie to any of them.", "model": "claude-opus-5-5", "input_tokens": 1406, "output_tokens": 133}

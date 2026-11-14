@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO's internal number SPD-62945 and its 82 mm length match no candidate (SPD-62933 is 75 mm and SPD-62936 is 60 mm), so this is likely a spindle for a product whose BOM is not in this set.", "model": "claude-opus-5-5", "input_tokens": 1451, "output_tokens": 104}

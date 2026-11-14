@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is an injection mold maintenance service (cavity polish) at $1485.62 from a safety supplier, not a physical BOM part, and part number 177912 matches none of the candidates.", "model": "claude-opus-5-5", "input_tokens": 1405, "output_tokens": 85}

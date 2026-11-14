@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The purchase line is a calibration service for a torque analyzer, not a BOM part, and none of the candidates are clutch rings or spindles that a service would match; the service is also priced far above any candidate's unit cost.", "model": "claude-haiku-5-5", "input_tokens": 1387, "output_tokens": 94}

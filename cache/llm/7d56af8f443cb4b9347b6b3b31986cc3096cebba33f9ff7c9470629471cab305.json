@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO's internal-style number BAG28623 (rev C) matches no candidate, and its 250x350 mm size conflicts with the only bag candidate, BAG-28614 at 300x400 mm; the other candidates are cartons.", "model": "claude-opus-5-5", "input_tokens": 1374, "output_tokens": 101}

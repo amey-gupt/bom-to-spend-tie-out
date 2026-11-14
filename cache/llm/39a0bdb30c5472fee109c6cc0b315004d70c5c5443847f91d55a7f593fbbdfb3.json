@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The PO calls for an M4x12 stainless socket cap screw under internal number SCR-66848, which is not among the candidates, and no candidate matches the size (they are M4x20 or M2.5x8).", "model": "claude-opus-5-5", "input_tokens": 1392, "output_tokens": 92}

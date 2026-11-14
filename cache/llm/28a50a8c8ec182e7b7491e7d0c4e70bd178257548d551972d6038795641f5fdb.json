@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "Part number SPD-62945 is an internal spindle number matching no candidate, and the 82 mm length conflicts with both spindle candidates (75 mm for SPD-62933, 60 mm for SPD-62936).", "model": "claude-opus-5-5", "input_tokens": 1456, "output_tokens": 97}

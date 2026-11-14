@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "A first aid kit refill bought from an industrial supplier is a shop/safety consumable rather than a BOM part, and no candidate (labels, vent cover, cartons) matches its description or its $40 price.", "model": "claude-opus-5-5", "input_tokens": 1339, "output_tokens": 91}

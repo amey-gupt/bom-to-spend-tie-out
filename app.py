@@ -450,6 +450,48 @@ with tab_eval:
 - **Real no-match lines are rejected correctly more than 99% of the time** after Claude. The two or three accepted in error were accepted by the classifier, not by Claude.
 """)
 
+    im = s3.get("item_materiality")
+    if im and im.get("before", {}).get("heldout"):
+        st.subheader("Materiality by item")
+        st.caption(f"When the lines sharing one item text add up to more than {usd(im['threshold_usd'])}, the classifier may not close the item as "
+                   "\"no match\" on its own: it goes to Claude, and to a person if Claude is not confident either way. "
+                   "This rule was added after seeing held-out results, so the \"after\" column is not a clean held-out measurement.")
+        rows_im = {"Precision of accepted matches": lambda m: f"{m['accept_precision']:.2%}", "Recall": lambda m: pct(m["recall"]),
+                   "Review queue": lambda m: f"{m['review_lines']} lines, {usd(m['review_spend'])}",
+                   "No-match calls that are right": lambda m: pct(m["no_match_accuracy"]),
+                   "Spend with a BOM part dropped as no match": lambda m: usd(m["no_match_missed_spend"]), "Wrong-match dollars": lambda m: usd(m["wrong_match_spend"])}
+        st.table(pd.DataFrame({"Held-out, before": {k: f(im["before"]["heldout"]) for k, f in rows_im.items()},
+                               "Held-out, after": {k: f(im["after"]["heldout"]) for k, f in rows_im.items()}}))
+        st.caption(f"{im['held_from_classifier_no_match']} lines across both splits were kept open by this rule. "
+                   f"Lines sent to Claude rose from {im['before']['band_lines']} to {im['after']['band_lines']}.")
+
+    xe = evals.get("eval_crosswalk")
+    if xe:
+        st.subheader("Experiment: does the crosswalk cut review work over time?")
+        st.caption("Purchases are processed one quarter at a time. Each quarter the pipeline runs with the crosswalk built so far, then a simulated "
+                   "reviewer clears that quarter's review queue from the truth and the decisions are saved. The comparison is the same run with no crosswalk.")
+        xr = pd.concat([pd.DataFrame(rows_x).assign(arm=arm) for arm, rows_x in xe["arms"].items()])
+        arms = list(xe["arms"])
+        st.altair_chart(
+            alt.Chart(xr).mark_line(strokeWidth=2, point=alt.OverlayMarkDef(size=70)).encode(
+                x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)), y=alt.Y("review_lines:Q", title="Lines left for review"),
+                color=alt.Color("arm:N", scale=alt.Scale(domain=arms, range=SERIES[:2]), legend=alt.Legend(title=None, orient="top")),
+                tooltip=[alt.Tooltip("arm:N", title="Run"), alt.Tooltip("quarter:N", title="Quarter"), alt.Tooltip("review_lines:Q", title="Review lines"),
+                         alt.Tooltip("review_spend:Q", title="Review spend", format="$,.0f"), alt.Tooltip("claude_calls:Q", title="Claude calls"),
+                         alt.Tooltip("settled_by_crosswalk:Q", title="Settled by crosswalk")]).properties(height=240), width="stretch")
+        st.dataframe(pd.DataFrame({
+            "Run": xr["arm"], "Quarter": xr["quarter"], "Lines": xr["lines"], "Settled by crosswalk": xr["settled_by_crosswalk"],
+            "Claude calls": xr["claude_calls"], "Review lines": xr["review_lines"], "Review spend": xr["review_spend"].map(usd),
+            "Precision": xr["precision"].map("{:.2%}".format), "Wrong-match $": xr["wrong_match_spend"].map(usd)}), hide_index=True, width="stretch")
+        tot = xr.groupby("arm")[["review_lines", "review_spend", "claude_calls", "settled_by_crosswalk", "crosswalk_right"]].sum()
+        w, n = tot.loc[arms[0]], tot.loc[arms[1]]
+        st.markdown(f"""
+- **Review work:** {int(w['review_lines'])} lines ({usd(w['review_spend'])}) over six quarters with the crosswalk, against {int(n['review_lines'])} lines ({usd(n['review_spend'])}) without.
+- **Claude calls:** {int(w['claude_calls'])} against {int(n['claude_calls'])}. The saving is smaller because most Claude calls are for lines Claude settles itself, which never reach a reviewer or the crosswalk.
+- **Crosswalk accuracy:** it settled {int(w['settled_by_crosswalk'])} later lines and {int(w['crosswalk_right'])} were right.
+- **Caveat:** item text repeats by construction in this data. The generator reuses one item text per plant, supplier and part about 80% of the time, so the size of the effect says little about a real company's exports. The classifier used here was also trained on lines from all six quarters.
+""")
+
     st.subheader("Experiment: self-training without truth labels")
     st.caption("Can the classifier be trained on a dataset's own rule-matched lines, with no confirmed labels? Positives are the lines a rule "
                "matched; negatives are their other nearest candidates. Part-number features are hidden and the matched number is stripped from the text.")

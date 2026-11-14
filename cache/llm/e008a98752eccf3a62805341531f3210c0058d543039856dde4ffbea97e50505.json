@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "PO part number LAT-45809 is an internal latch number matching no candidate, and the only latch candidate (LAT-54794) is black while the PO specifies teal, so it likely belongs to a product outside this BOM set.", "model": "claude-opus-5-5", "input_tokens": 1372, "output_tokens": 96}

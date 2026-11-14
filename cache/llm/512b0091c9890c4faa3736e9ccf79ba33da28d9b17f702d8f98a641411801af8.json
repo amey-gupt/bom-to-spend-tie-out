@@ -1,0 +1,1 @@
+{"part_number": "NKS-29168", "confidence": 0.8, "reason": "The description 'W10MM' (10 mm wide nickel strip) matches only NKS-29168, since the other strips are 6 or 8 mm wide; thickness is not stated, and the $0.0544 price fits the nickel-strip range.", "model": "claude-opus-5-5", "input_tokens": 1393, "output_tokens": 108}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "PO part number PGR-79755 is an internal planet-gear number not among the candidates, and no candidate matches the 20T module 0.8 steel gear (PGR-79741 is 20T but module 0.6 and sintered).", "model": "claude-opus-5-5", "input_tokens": 1404, "output_tokens": 99}

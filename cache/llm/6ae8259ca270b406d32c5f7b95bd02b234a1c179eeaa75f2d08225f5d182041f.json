@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase is a complete 20V 4.0Ah battery pack, which is an assembly rather than any listed BOM component; the candidates are only a cell, housing, and BMS, and the $43 price is far above their combined cost.", "model": "claude-haiku-5-5", "input_tokens": 1385, "output_tokens": 221}

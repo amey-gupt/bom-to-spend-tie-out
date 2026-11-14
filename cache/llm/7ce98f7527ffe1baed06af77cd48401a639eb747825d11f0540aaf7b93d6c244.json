@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line is for a gearbox press nest assembly fixture, a shop tool rather than any torque clutch ring or rotor BOM part, and the $1197.61 unit price is far above the candidates' sub-$2 prices.", "model": "claude-haiku-5-5", "input_tokens": 1368, "output_tokens": 100}

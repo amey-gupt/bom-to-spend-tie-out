@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The line is a 21-position torque clutch ring with internal number CLR-37724, but no candidate has 21 positions (they are 18, 24, 15 and 15) and CLR-37724 is not among them, so it likely belongs to a product whose BOM is not in this set.", "model": "claude-opus-5-5", "input_tokens": 1382, "output_tokens": 112}

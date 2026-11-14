@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The PO line is an orange battery latch, but the only latch candidate (LAT-54794) is black, which is a color conflict; the other four candidates are housings, not latches, and supplier number DY-240177 does not identify any of them.", "model": "claude-opus-5-5", "input_tokens": 1378, "output_tokens": 98}

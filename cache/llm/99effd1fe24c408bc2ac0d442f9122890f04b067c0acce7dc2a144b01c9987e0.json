@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "LAT-54802 is an internal latch part number that matches none of the candidates, and the only latch candidate, LAT-54794, is black, which conflicts with the yellow in the description; the other candidates are housings.", "model": "claude-opus-5-5", "input_tokens": 1356, "output_tokens": 92}

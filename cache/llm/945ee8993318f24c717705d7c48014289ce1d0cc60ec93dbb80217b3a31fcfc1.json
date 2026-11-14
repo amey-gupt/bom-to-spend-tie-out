@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.6, "reason": "The line specifies 16 AWG at L20 (20 mm, or 200 mm if a digit was truncated); no 16 AWG candidate is 20 mm long, WHR-16779 matches only under the truncation reading, and the supplier code MX-7762794 links to no candidate.", "model": "claude-opus-5-5", "input_tokens": 1350, "output_tokens": 117}

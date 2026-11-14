@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The 82 mm length conflicts with SPD-62933 (75 mm) and SPD-62936 (60 mm), and part number SPD-62945 is an internal number of the same family that matches none of the candidates, so it likely belongs to a product whose BOM is not in this set.", "model": "claude-opus-5-5", "input_tokens": 1450, "output_tokens": 114}

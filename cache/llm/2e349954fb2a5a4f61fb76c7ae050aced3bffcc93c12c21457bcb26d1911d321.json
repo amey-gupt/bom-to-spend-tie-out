@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.72, "reason": "The line is a 6 mm G100 steel ball; the only 6 mm candidate, BAL-68336, is grade G25, which conflicts, and BAL-68342 is G100 but 5 mm, so neither matches and the MX- code does not tie to any candidate.", "model": "claude-opus-5-5", "input_tokens": 1380, "output_tokens": 112}

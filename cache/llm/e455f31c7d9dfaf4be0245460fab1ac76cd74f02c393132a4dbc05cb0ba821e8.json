@@ -1,0 +1,1 @@
+{"part_number": "CTN-23153", "confidence": 0.85, "reason": "Description 'CARON 560X330X270MM MASETR' (typo for master carton) matches CTN-23153's 560 x 330 x 270 mm exactly, and PN CTN-21353 looks like a digit transposition of CTN-23153; no other candidate has these dimensions.", "model": "claude-opus-5-5", "input_tokens": 1318, "output_tokens": 123}

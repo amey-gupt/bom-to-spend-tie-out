@@ -1,0 +1,1 @@
+{"part_number": "BMS-19537", "confidence": 0.88, "reason": "BMS-19357 looks like a digit transposition of BMS-19537, which is the only battery management PCBA at 12 V, 30 A; the supplier (Suntronix) matches and the price is close ($2.52 vs $2.61).", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 108}

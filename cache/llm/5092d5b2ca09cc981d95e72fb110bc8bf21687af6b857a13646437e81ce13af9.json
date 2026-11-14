@@ -1,0 +1,1 @@
+{"part_number": "SPR-38627", "confidence": 0.8, "reason": "The description D8 L10 1.0 mm wire matches SPR-38627 exactly (8 mm dia, 10 mm long, 1.0 mm wire), and the PO number SPR-38672 looks like a transposition typo of 38627; every other candidate conflicts on diameter, length or wire size.", "model": "claude-opus-5-5", "input_tokens": 1450, "output_tokens": 129}

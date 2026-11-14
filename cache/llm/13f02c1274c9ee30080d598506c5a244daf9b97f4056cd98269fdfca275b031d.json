@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.95, "reason": "The purchase line describes an assembly fixture (tooling for pressing a gearbox nest) at $2001.59, while all candidates are small molded torque clutch rings or a rotor assembly priced under $2, so no candidate is the same physical part.", "model": "claude-haiku-5-5", "input_tokens": 1371, "output_tokens": 104}

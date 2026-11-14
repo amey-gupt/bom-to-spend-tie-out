@@ -1,0 +1,1 @@
+{"part_number": "BRG-65712", "confidence": 0.88, "reason": "Description 6200 open matches BRG-65712 exactly, same supplier Brennan, and the price ($0.4868 vs $0.4885) agrees; the part-number field BRG-6571 looks like a truncation of BRG-65712.", "model": "claude-opus-5-5", "input_tokens": 1358, "output_tokens": 108}

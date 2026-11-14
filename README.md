@@ -47,15 +47,15 @@ Uploaded data is matched with rules, embeddings and Claude only. The classifier 
 | Naive exact part number | 27.5% | 100.0% | 21.3% | n/a | $0 |
 | Rules only | 34.2% | 100.0% | 40.1% | n/a | $0 |
 | Rules + embeddings, fixed threshold | 84.1% | 95.3% | 86.3% | n/a | $86,119 |
-| Rules + classifier | 77.1% | 100.0% | 83.7% | 315 lines, $2.29M | $0 |
-| Rules + classifier + Claude | 97.9% | 100.0% | 98.8% | 11 lines, $25K | $0 |
+| Rules + classifier | 77.1% | 100.0% | 83.7% | 328 lines, $2.35M | $0 |
+| Rules + classifier + Claude | 97.9% | 100.0% | 98.8% | 18 lines, $55K | $0 |
 
 How the numbers are kept honest:
 
 - The classifier is trained on the tuning split only. Its accept threshold is set for at least 99% precision using leave-one-noise-style-out cross-validation, so the threshold is chosen on styles the model had not seen.
-- Claude sees only the review band (534 lines, 345 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
-- Claude cost: 345 calls on `claude-opus-5-5` used 478,128 input and 42,619 output tokens, $2.76 at list price. The same calls on `claude-haiku-5-5` cost $0.09, but its picks never reached 99% precision on the tuning split, so none were auto-accepted and the held-out review queue stayed at 267 lines ($2.22M).
-- "No match" calls are the weak spot: on held-out, 92.3% of them are right, and $43,572 of spend that does have a BOM part is dropped. Most of it is truncated descriptions.
+- Claude sees only the review band (614 lines, 392 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
+- Claude cost: 392 calls on `claude-opus-5-5` used 543,378 input and 47,275 output tokens, $3.12 at list price. The same calls on `claude-haiku-5-5` cost $0.10, but its picks never reached 99% precision on the tuning split, so none were auto-accepted and the held-out review queue stayed at 274 lines ($2.25M).
+- "No match" calls are the weak spot: on held-out, 96.6% of them are right, and $13,536 of spend that does have a BOM part is dropped. This figure is after the item-level materiality rule below, which was added after seeing held-out results.
 - On the tuning split the full pipeline is not perfect: 99.95% precision and $18,953 of wrong-match spend.
 - All of this is measured on synthetic noise. Real exports will be messier in ways the generator does not model.
 
@@ -70,11 +70,47 @@ Embedding backends on the same held-out lines (rules + classifier, before Claude
 | Warranty | 1.1% | 1.3% |
 | Unassigned | 11.4% | 5.1% |
 
-The tool reports an 88.6% tie-out rate against a true 94.9%. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 93.9% and the bucket is right for 98.6% of spend.
+The tool reports an 88.6% tie-out rate against a true 94.9%, with 100 lines ($1.91M) in review. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 93.9% and the bucket is right for 98.6% of spend.
 
 Leads against the planted findings: supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2. Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
 
 Product cost is an estimate: matched production spend is split across products by gross BOM quantity x units built per quarter, and shown beside the BOM standard cost.
+
+## Materiality by item
+
+**This rule was added after seeing held-out results**, so its "after" numbers are not a clean held-out measurement. The earlier results showed the classifier closing some material items as "no match" when they did have a BOM part.
+
+Spend is summed over every line with the same item text. If the total is above the materiality threshold ($25,000), the classifier may not close the item as "no match" on its own: the lines go to Claude, and to a reviewer if Claude is not confident either way. A confident "none" from Claude still closes them.
+
+| Held-out split | Before | After |
+|---|---|---|
+| Precision of accepted matches | 100.00% | 100.00% |
+| Recall | 98.8% | 98.8% |
+| Review queue | 11 lines, $25K | 18 lines, $55K |
+| No-match calls that are right | 92.3% | 96.6% |
+| Spend with a BOM part dropped as no match | $43,572 | $13,536 |
+| Wrong-match dollars | $0 | $0 |
+
+The rule kept 80 lines open across both splits and raised the lines sent to Claude from 534 to 614 ($2.76 to $3.12). The tuning split is unchanged. The $13,536 still dropped is lines where Claude itself answered "none" with moderate confidence.
+
+## Experiment: does the crosswalk cut review work over time?
+
+Purchases are processed one quarter at a time, in date order. Each quarter the full pipeline runs with the crosswalk built so far; then a simulated reviewer clears that quarter's review queue from the truth, and those decisions are saved. The comparison is the same run with no crosswalk. Reproduce with `uv run python -m src.evaluate crosswalk`.
+
+| Quarter | Lines | Settled by crosswalk | Claude calls (with / without) | Review lines (with / without) | Review spend (with / without) | Precision (with / without) |
+|---|---|---|---|---|---|---|
+| 2025Q1 | 719 | 0 | 101 / 101 | 14 / 14 | $352K / $352K | 99.83% / 99.83% |
+| 2025Q2 | 706 | 16 | 86 / 100 | 0 / 16 | $0 / $276K | 100% / 100% |
+| 2025Q3 | 756 | 13 | 89 / 104 | 5 / 15 | $5K / $358K | 100% / 100% |
+| 2025Q4 | 770 | 16 | 77 / 94 | 4 / 19 | $36K / $514K | 100% / 100% |
+| 2026Q1 | 766 | 22 | 83 / 99 | 2 / 18 | $3K / $202K | 100% / 99.84% |
+| 2026Q2 | 770 | 20 | 69 / 84 | 1 / 15 | $18K / $202K | 100% / 100% |
+| Total | 4,487 | 87 | 505 / 582 | 26 / 97 | $414K / $1.90M | |
+
+- Review work falls by about three quarters: 26 lines against 97 over six quarters, and $414K against $1.90M.
+- Claude calls fall by 13% (505 against 582, $3.98 against $4.65). Most Claude calls are for lines Claude settles itself, which never reach a reviewer or the crosswalk.
+- All 87 lines the crosswalk settled were right.
+- **Item text repeats by construction in this data.** The generator reuses one item text per plant, supplier and part about 80% of the time, so the size of this effect says little about a real company's exports. The classifier used was also trained on tuning-split lines from all six quarters.
 
 ## Units of measure, scrap and multi-level BOMs
 
@@ -144,8 +180,8 @@ uv run python -m src.external.selftrain_parts     # needs the external data
 
 | Classifier | Stage | Precision | Recall | Review queue | Wrong-match dollars |
 |---|---|---|---|---|---|
-| Truth-trained | Rules + classifier | 100.00% | 83.7% | 315 lines, $2.29M | $0 |
-| Truth-trained | + Claude | 100.00% | 98.8% | 11 lines, $25K | $0 |
+| Truth-trained | Rules + classifier | 100.00% | 83.7% | 328 lines, $2.35M | $0 |
+| Truth-trained | + Claude | 100.00% | 98.8% | 18 lines, $55K | $0 |
 | Self-trained | Rules + classifier | 96.51% | 95.8% | 145 lines, $1.01M | $75,999 |
 | Self-trained | + Claude | 96.60% | 98.4% | 16 lines, $37K | $75,999 |
 

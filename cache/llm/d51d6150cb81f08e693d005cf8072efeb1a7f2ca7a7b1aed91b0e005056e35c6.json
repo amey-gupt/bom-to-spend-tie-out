@@ -1,0 +1,1 @@
+{"part_number": "NKS-29168", "confidence": 0.8, "reason": "The description specifies a 10 mm wide nickel strip, and NKS-29168 is the only candidate at 10 mm width (the others are 6 or 8 mm); the thickness value is truncated after 'THK', so it cannot be checked against the 0.1 mm spec.", "model": "claude-opus-5-5", "input_tokens": 1386, "output_tokens": 119}

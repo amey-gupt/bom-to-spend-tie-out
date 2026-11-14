@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "An ultrasonic welding horn tip at about $633 is production tooling, and none of the candidates (washers, stators, spring) match it in description or price; the part number 201101 matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1371, "output_tokens": 87}

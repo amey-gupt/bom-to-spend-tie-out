@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.8, "reason": "The line asks for a 32-bit microcontroller, but both MCU candidates are 8-bit (MCU-14994 shares supplier Corvin yet conflicts on bit width) and the others are PCBAs, so no candidate matches.", "model": "claude-opus-5-5", "input_tokens": 1394, "output_tokens": 102}

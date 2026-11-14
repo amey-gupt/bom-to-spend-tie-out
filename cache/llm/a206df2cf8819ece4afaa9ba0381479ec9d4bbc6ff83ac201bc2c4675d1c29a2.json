@@ -1,0 +1,1 @@
+{"part_number": "BAL-68329", "confidence": 0.9, "reason": "The PO's 5 mm G25 steel ball matches BAL-68329, the truncated part number BAL-6832 is its prefix, the supplier is the same (Okabe), and the price is close ($0.0060 vs $0.0051); BAL-68342 is G100 and BAL-68336 is 6 mm.", "model": "claude-opus-5-5", "input_tokens": 1394, "output_tokens": 133}

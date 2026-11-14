@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.88, "reason": "The line is a service housing kit (part number SVC-71063, PO type service, $5.44 versus about $0.85 for the single red 18 V upper housing BHU-18894), and service kits are not BOM parts.", "model": "claude-opus-5-5", "input_tokens": 1350, "output_tokens": 93}

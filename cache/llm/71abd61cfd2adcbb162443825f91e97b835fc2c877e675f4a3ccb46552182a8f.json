@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.85, "reason": "The purchase line is a 250W 18V service-exchange motor assembly, which conflicts with MTR-75169's stated 400 W rating, and the service-exchange assembly wording means it is not a plain BOM part.", "model": "claude-haiku-5-5", "input_tokens": 1390, "output_tokens": 268}

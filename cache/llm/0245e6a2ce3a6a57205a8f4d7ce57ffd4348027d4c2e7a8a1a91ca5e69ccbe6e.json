@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.9, "reason": "The purchase line is for a complete 18V 2.0Ah battery pack, which is a service/assembly item rather than any single housing or cell candidate, and the $26.29 price is far above the component prices of all candidates.", "model": "claude-haiku-5-5", "input_tokens": 1374, "output_tokens": 94}

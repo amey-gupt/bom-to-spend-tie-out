@@ -220,15 +220,26 @@ def self_train(inp: Inputs, rules: pd.DataFrame, backend: str, train_lines: np.n
     return scorer, info
 
 
-def decide(rules: pd.DataFrame, pairs: pd.DataFrame, scorer: Scorer) -> pd.DataFrame:
-    """Per purchase line: decision, where it came from, the part (best candidate even when not accepted), probability."""
+def material_items(purchases: pd.DataFrame, threshold: float) -> np.ndarray:
+    """True for lines whose item is material: spend summed over every line with the same text is above the threshold."""
+    item = purchases["pn_key"] + "|" + purchases["desc_norm"]
+    return (purchases["spend_usd"].groupby(item).transform("sum") > threshold).to_numpy()
+
+
+def decide(rules: pd.DataFrame, pairs: pd.DataFrame, scorer: Scorer, protect: np.ndarray | None = None) -> pd.DataFrame:
+    """Per purchase line: decision, where it came from, the part (best candidate even when not accepted), probability.
+
+    protect: lines the classifier may not close as "no match" on its own (material items). They join the review band
+    instead, so Claude sees them and, if Claude is not confident either way, a person does.
+    """
     best = best_per_line(pairs, scorer.proba(pairs))
     out = pd.DataFrame({"decision": "review", "source": "classifier", "part": best["cand"], "prob": best["prob"]}, index=rules.index)
     out.loc[out["prob"] >= scorer.accept_at, "decision"] = "accept"
-    out.loc[out["prob"] < scorer.reject_below, "decision"] = "no_match"
+    closed = (out["prob"] < scorer.reject_below).to_numpy()
+    out.loc[closed & ~protect if protect is not None else closed, "decision"] = "no_match"
     hit = rules["rule_part"] != ""
     out.loc[hit, ["decision", "part", "prob"]] = np.column_stack([np.full(hit.sum(), "accept"), rules.loc[hit, "rule_part"], np.ones(hit.sum())])
-    off = rules["rule_method"] == "xref_offbom"
+    off = rules["rule_method"].isin(["xref_offbom", "crosswalk_none"])
     out.loc[off, ["decision", "prob"]] = ["no_match", 0.0]
     out.loc[hit | off, "source"] = "rule_" + rules.loc[hit | off, "rule_method"]
     out["prob"] = out["prob"].astype(float)
@@ -239,7 +250,8 @@ def run(backend: str = "local") -> pd.DataFrame:
     inp = load_inputs()
     rules = match.rule_match(inp)
     cand_parts, cand_sims = match.embedding_candidates(inp, backend=backend)
-    out = decide(rules, build_pairs(inp, rules, cand_parts, cand_sims), Scorer.load(backend))
+    from .allocate import MATERIALITY_USD
+    out = decide(rules, build_pairs(inp, rules, cand_parts, cand_sims), Scorer.load(backend), material_items(inp.purchases, MATERIALITY_USD))
     out.insert(0, "po_id", inp.purchases["po_id"])
     out["spend_usd"] = inp.purchases["spend_usd"].round(2)
     return out

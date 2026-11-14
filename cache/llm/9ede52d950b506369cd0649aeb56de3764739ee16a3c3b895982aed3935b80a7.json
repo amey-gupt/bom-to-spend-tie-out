@@ -1,0 +1,1 @@
+{"part_number": "PGR-79746", "confidence": 0.85, "reason": "Description 'PLNT GR STL 13T M0.5' matches only PGR-79746 (steel planet gear, 13 teeth, module 0.5); PGR-79728 is sintered, SGR parts are sun gears, PGR-79730 has 16 teeth, and the MX- number is a supplier code, not an internal number.", "model": "claude-opus-5-5", "input_tokens": 1385, "output_tokens": 138}

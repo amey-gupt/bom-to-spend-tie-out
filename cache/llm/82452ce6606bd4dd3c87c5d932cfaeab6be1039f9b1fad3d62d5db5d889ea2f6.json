@@ -1,0 +1,1 @@
+{"part_number": "TIN-22681", "confidence": 0.95, "reason": "Only TIN-22681 matches M3, 4 mm long (L4), brass heat-set, and it has the same supplier (Hanlon) at a close price ($0.0288 vs $0.0275); the other candidates differ in thread size or length.", "model": "claude-opus-5-5", "input_tokens": 1406, "output_tokens": 109}

@@ -1,0 +1,1 @@
+{"part_number": "none", "confidence": 0.97, "reason": "The line is a mold maintenance service (cavity polish) at $776.98, not a BOM part, and part number 354604 matches no candidate.", "model": "claude-opus-5-5", "input_tokens": 1376, "output_tokens": 70}
