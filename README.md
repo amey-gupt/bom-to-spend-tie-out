@@ -22,6 +22,7 @@ How the numbers are kept honest:
 
 - The classifier is trained on the tuning split only. Its accept threshold is set for at least 99% precision using leave-one-noise-style-out cross-validation, so the threshold is chosen on styles the model had not seen.
 - Claude sees only the review band (647 lines, 451 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
+- Claude cost: 451 calls on `claude-opus-5-5` used 623,414 input and 51,015 output tokens, $3.51 at list price. The same calls on `claude-haiku-5-5` cost $0.11, but its picks never reached 99% precision on the tuning split, so none were auto-accepted and the held-out review queue stayed at 216 lines ($2.13M).
 - On the tuning split the full pipeline is not perfect: 99.95% precision and $18,953 of wrong-match spend.
 - All of this is measured on synthetic noise. Real exports will be messier in ways the generator does not model.
 
