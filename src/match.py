@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .normalize import Inputs, load_inputs, norm_pn
+from .normalize import Inputs, load_inputs, norm_desc, norm_pn
 
 BACKENDS = {"local": "sentence-transformers/all-MiniLM-L6-v2", "openai": "text-embedding-3-small"}
 CACHE_DIR = Path("cache")
@@ -34,8 +34,10 @@ def naive_match(inp: Inputs) -> pd.Series:
     return inp.purchases["supplier_part_number"].where(inp.purchases["supplier_part_number"].isin(known), "")
 
 
-def rule_match(inp: Inputs) -> pd.DataFrame:
+def rule_match(inp: Inputs, crosswalk: dict | None = None) -> pd.DataFrame:
     """Returns rule_part ('' when none) and rule_method per purchase line.
+
+    crosswalk    a reviewer already decided this exact item text (see crosswalk.py); checked first
 
     pn_exact     normalized part number equals a BOM part's
     xref         crosswalk maps the supplier's part number to a BOM part
@@ -51,7 +53,12 @@ def rule_match(inp: Inputs) -> pd.DataFrame:
     part, method = [], []
     for key, text in zip(p["pn_key"], p["item_description"]):
         in_text = long_keys & {norm_pn(tok) for tok in re.split(r"[\s,;()]+", text)} if long_keys else set()
-        if key and key in by_key.index:
+        decided = (crosswalk or {}).get(f"{key}|{norm_desc(text)}")
+        if decided and decided[0] == "approve" and decided[1] in on_bom:
+            part.append(decided[1]); method.append("crosswalk")
+        elif decided and decided[0] == "no_match":
+            part.append(""); method.append("crosswalk_none")
+        elif key and key in by_key.index:
             part.append(by_key[key]); method.append("pn_exact")
         elif key and key in xref.index:
             target = xref[key]
@@ -105,7 +112,7 @@ def embedding_candidates(inp: Inputs, k: int = TOP_K, backend: str = "local") ->
     part_vecs = embed(inp.parts["desc_norm"].tolist(), backend)
     line_vecs = embed(inp.purchases["desc_norm"].tolist(), backend)
     sims = line_vecs @ part_vecs.T
-    top = np.argsort(-sims, axis=1)[:, :k]
+    top = np.argsort(-sims, axis=1)[:, :min(k, sims.shape[1])]
     return inp.parts["part_number"].to_numpy()[top], np.take_along_axis(sims, top, axis=1)
 
 

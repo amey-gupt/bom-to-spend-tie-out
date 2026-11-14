@@ -2,9 +2,9 @@
 
     uv run streamlit run app.py
 
-Reads out/*.csv and out/eval_*.json only. No API keys, no model loading: every match,
-reason and metric was computed earlier and saved. Reviewer actions and the materiality
-slider recompute buckets, product cost and leads live, in session state.
+The built-in sample reads out/*.csv and out/eval_*.json only: no API keys, no model loading.
+The Upload tab runs the matcher on a company's own files and does need API keys.
+Reviewer decisions are written to crosswalk.csv and applied to every line with the same text.
 """
 from __future__ import annotations
 
@@ -15,15 +15,22 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from src import allocate
+from src import allocate, crosswalk, mapping, pipeline
+from src.normalize import norm_desc, norm_pn, prepare
 
 OUT = Path("out")
+SAMPLE_DIR = Path("samples/second_company")
+SAMPLE_FILES = {"boms": "bom_export.csv", "purchases": "po_lines.xlsx", "builds": "production_output.csv"}
+KIND_LABEL = {"boms": "Bill of materials", "purchases": "Purchase order lines", "builds": "Production volumes"}
 BUCKETS = ["production", "spares", "warranty", "unassigned"]
 BUCKET_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#9a9890"]  # unassigned is neutral: it is the absence of a tie
+SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
 SURFACE = "#ffffff"
 HOW = {
     "rule_pn_exact": "Rule: part number", "rule_xref": "Rule: supplier crosswalk", "rule_xref_offbom": "Rule: crosswalk to a part on no BOM",
-    "classifier": "Classifier", "llm": "Claude", "llm_material": "Claude, held by the materiality rule", "reviewer": "Reviewer (this session)",
+    "rule_pn_in_text": "Rule: part number in the description", "rule_crosswalk": "Reviewer crosswalk", "rule_crosswalk_none": "Reviewer crosswalk",
+    "classifier": "Classifier", "embedding": "Nearest description only", "llm": "Claude", "llm_material": "Claude, held by the materiality rule",
+    "crosswalk": "Reviewer crosswalk",
 }
 MAIN_MODEL, SMALL_MODEL = "claude-opus-5-5", "claude-haiku-5-5"
 
@@ -31,11 +38,16 @@ st.set_page_config(page_title="BOM-to-Spend Tie-Out", layout="wide")
 
 
 def usd(x: float) -> str:
-    return f"${x:,.0f}"
+    return "n/a" if pd.isna(x) else f"${x:,.0f}"
 
 
 def pct(x: float) -> str:
-    return f"{x:.1%}"
+    return "n/a" if pd.isna(x) else f"{x:.1%}"
+
+
+def quarter_of(dates: pd.Series) -> pd.Series:
+    d = pd.to_datetime(dates)
+    return d.dt.year.astype(str) + "Q" + d.dt.quarter.astype(str)
 
 
 @st.cache_data
@@ -46,45 +58,68 @@ def load():
     bom = pd.read_csv(OUT / "bom.csv")
     builds = pd.read_csv(OUT / "builds.csv", dtype={"period": str})
     evals = {p.stem: json.loads(p.read_text()) for p in sorted(OUT.glob("eval_*.json"))}
-    # what rule-confirmed purchases say about each part: its usual price and who sells it
-    confirmed = lines[lines["source_pre"].isin(["rule_pn_exact", "rule_xref"])]
-    ref = confirmed.groupby("part").agg(ref_price=("unit_price_usd", "median"), ref_suppliers=("supplier_key", lambda s: sorted(set(s))))
-    return lines, bom, builds, evals, ref
+    return lines, bom, builds, evals
 
 
 @st.cache_data
-def compute(materiality: float, actions: tuple):
-    """The whole downstream state for one materiality threshold and one set of reviewer actions."""
-    base, bom, builds, _, _ = load()
+def reference(base: pd.DataFrame) -> pd.DataFrame:
+    """What rule-confirmed purchases say about each part: its usual price and who sells it."""
+    confirmed = base[base["source_pre"].str.startswith("rule_") & (base["decision_pre"] == "accept")]
+    return confirmed.groupby("part").agg(ref_price=("unit_price_usd", "median"), ref_suppliers=("supplier_key", lambda s: sorted(set(s))))
+
+
+@st.cache_data
+def compute(base: pd.DataFrame, bom: pd.DataFrame, builds: pd.DataFrame, materiality: float, rules: tuple, q_from: str, q_to: str):
+    """The whole downstream state for one materiality threshold, one crosswalk and one date range."""
     lines = base.copy()
     lines["decision"], lines["source"] = lines["decision_pre"], lines["source_pre"]
     lines = allocate.apply_materiality(lines, materiality)
-    for po_id, action in actions:
-        row = lines["po_id"] == po_id
-        if action == "approve":
-            lines.loc[row, "part"] = lines.loc[row, "suggested_part"]
-        lines.loc[row, ["decision", "source"]] = [{"approve": "accept", "no_match": "no_match", "reject": "rejected"}[action], "reviewer"]
+    lines = allocate.apply_crosswalk(lines, {k: (d, part) for k, d, part in rules})
+    lines = lines[(lines["quarter"] >= q_from) & (lines["quarter"] <= q_to)].reset_index(drop=True)
+    in_range = quarter_of(builds["period"]).between(q_from, q_to)
     lines = allocate.assign_buckets(lines)
-    alloc, products = allocate.allocate(lines, bom, builds)
+    alloc, products = allocate.allocate(lines, bom, builds[in_range])
     return lines, alloc, products, allocate.find_leads(lines, bom)
 
 
-base, bom, builds, evals, ref = load()
-part_desc = bom.drop_duplicates("part_number").set_index("part_number")["description"]
-st.session_state.setdefault("actions", {})
+sample_base, sample_bom, sample_builds, evals = load()
+if st.session_state.pop("_switch_to_uploaded", False):
+    st.session_state["dataset"] = "Uploaded files"
+uploaded = st.session_state.get("uploaded")
 
 # ------------------------------------------------------------------ sidebar
 with st.sidebar:
     st.header("Controls")
+    options = ["Built-in sample"] + (["Uploaded files"] if uploaded else [])
+    if st.session_state.get("dataset") not in options:
+        st.session_state["dataset"] = options[0]
+    dataset = st.radio("Data", options, key="dataset")
+    is_sample = dataset == "Built-in sample"
+    base, bom, builds = (sample_base, sample_bom, sample_builds) if is_sample else (uploaded["lines"], uploaded["bom"], uploaded["builds"])
+
     materiality = st.slider("Materiality threshold (USD)", 0, 200_000, int(allocate.MATERIALITY_USD), 5_000,
                             help="A match that only Claude vouched for goes to a person when the line is worth more than this.")
-    st.caption(f"{len(st.session_state.actions)} reviewer decisions this session")
-    if st.button("Undo all reviewer decisions", disabled=not st.session_state.actions):
-        st.session_state.actions = {}
-        st.rerun()
+    quarters = sorted(base["quarter"].unique())
+    q_from, q_to = (st.select_slider("Date range (quarters)", options=quarters, value=(quarters[0], quarters[-1]), key=f"quarters_{dataset}")
+                    if len(quarters) > 1 else (quarters[0], quarters[0]))
 
-lines, alloc, products, leads = compute(float(materiality), tuple(sorted(st.session_state.actions.items())))
-start_lines = compute(float(allocate.MATERIALITY_USD), ())[0]
+    st.subheader("Reviewer crosswalk")
+    xw = crosswalk.load()
+    st.caption(f"{len(xw)} decisions saved in crosswalk.csv. Each one applies to every line with the same text, now and on the next run.")
+    b1, b2 = st.columns(2)
+    if b1.button("Undo last", disabled=xw.empty):
+        crosswalk.undo_last()
+        st.rerun()
+    if b2.button("Clear all", disabled=xw.empty):
+        crosswalk.clear()
+        st.rerun()
+    st.download_button("Download crosswalk.csv", xw.to_csv(index=False), "crosswalk.csv", "text/csv", disabled=xw.empty)
+
+rules = tuple(sorted((k, d, part) for k, (d, part) in crosswalk.as_rules(xw).items()))
+lines, alloc, products, leads = compute(base, bom, builds, float(materiality), rules, q_from, q_to)
+start_lines = compute(base, bom, builds, float(allocate.MATERIALITY_USD), (), q_from, q_to)[0]
+ref = reference(base)
+part_desc = bom.drop_duplicates("part_number").set_index("part_number")["description"]
 total = lines["spend_usd"].sum()
 by_bucket = lines.groupby("bucket")["spend_usd"].sum().reindex(BUCKETS, fill_value=0.0)
 tied = 1 - by_bucket["unassigned"] / total
@@ -93,17 +128,21 @@ queue = lines[lines["decision"] == "review"].sort_values("spend_usd", ascending=
 
 # ------------------------------------------------------------------- header
 st.title("BOM-to-Spend Tie-Out")
-st.warning("**Synthetic data.** The products, parts, suppliers and prices are invented, and the true matches are planted so accuracy "
-           "can be measured. Nothing here comes from a real company.", icon=":material/science:")
+if is_sample or uploaded.get("demo_sample"):
+    st.warning("**Synthetic data.** The products, parts, suppliers and prices are invented, and the true matches are planted so accuracy "
+               "can be measured. Nothing here comes from a real company.", icon=":material/science:")
+if not is_sample:
+    st.info(f"**Uploaded files:** {', '.join(uploaded['files'])}. Matched with rules, embeddings and Claude. The classifier is skipped "
+            "until this company has confirmed matches to train on; every reviewer decision in the crosswalk is one.", icon=":material/upload_file:")
 
 k1, k2, k3 = st.columns(3)
-k1.metric("Tie-out rate", pct(tied), f"{(tied - tied_start) * 100:+.1f} pts this session" if abs(tied - tied_start) > 1e-9 else None,
+k1.metric("Tie-out rate", pct(tied), f"{(tied - tied_start) * 100:+.1f} pts from reviewer decisions and settings" if abs(tied - tied_start) > 1e-9 else None,
           help="Share of spend tied to a product bucket: production, spares or warranty.")
 k2.metric("Waiting for review", f"{len(queue)} lines", usd(queue["spend_usd"].sum()), delta_color="off")
 k3.metric("Total spend", usd(total), f"{len(lines):,} purchase lines", delta_color="off")
 
-tab_overview, tab_queue, tab_cost, tab_leads, tab_eval = st.tabs(
-    ["Overview", f"Review queue ({len(queue)})", "Product cost", "Leads", "Evaluation"])
+tab_overview, tab_queue, tab_cost, tab_leads, tab_trend, tab_eval, tab_upload = st.tabs(
+    ["Overview", f"Review queue ({len(queue)})", "Product cost", "Leads", "Trends and inventory", "Evaluation", "Upload"])
 
 # ----------------------------------------------------------------- overview
 with tab_overview:
@@ -124,40 +163,55 @@ with tab_overview:
     st.caption(f"Unassigned includes the {len(queue)} lines waiting for review. The bucket was inferred from the match and the plant, "
                f"because the PO type was blank, on {len(inferred):,} lines ({usd(inferred['spend_usd'].sum())}).")
 
-    st.subheader("From a spreadsheet lookup to the full pipeline")
-    s2 = evals["eval_step2_local"]["splits"]["heldout"]
-    s3 = evals["eval_step3"]
-    clf, full = s3["backends"][s3["chosen_backend"]]["heldout"], s3["llm"][MAIN_MODEL]["heldout"]
-    true_rate = full["true_tie_out"]
-    stages = pd.DataFrame([
-        ("1. Exact part-number lookup", s2["(a) naive exact part number"]["tie_out"], s2["(a) naive exact part number"]["precision"],
-         s2["(a) naive exact part number"]["recall"], None, s2["(a) naive exact part number"]["wrong_match_spend"]),
-        ("2. Rules (normalized numbers, crosswalk)", s2["(b) rules only"]["tie_out"], s2["(b) rules only"]["precision"],
-         s2["(b) rules only"]["recall"], None, s2["(b) rules only"]["wrong_match_spend"]),
-        ("3. Rules + embeddings, fixed cutoff", s2["(c) rules + embeddings"]["tie_out"], s2["(c) rules + embeddings"]["precision"],
-         s2["(c) rules + embeddings"]["recall"], None, s2["(c) rules + embeddings"]["wrong_match_spend"]),
-        ("4. Rules + calibrated classifier", clf["tie_out"], clf["accept_precision"], clf["recall"], clf["review_spend"], clf["wrong_match_spend"]),
-        ("5. Rules + classifier + Claude", full["tie_out"], full["accept_precision"], full["recall"], full["review_spend"], full["wrong_match_spend"]),
-    ], columns=["stage", "tie_out", "precision", "recall", "review_spend", "wrong"])
-    left, right = st.columns([3, 2])
-    with left:
-        bars = alt.Chart(stages).mark_bar(height=22, color="#2a78d6", cornerRadiusEnd=4).encode(
-            y=alt.Y("stage:N", sort=None, title=None, axis=alt.Axis(labelLimit=320)),
-            x=alt.X("tie_out:Q", scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(format="%", title="Spend tied out (held-out lines)")),
-            tooltip=[alt.Tooltip("stage:N", title="Stage"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
-                     alt.Tooltip("precision:Q", title="Precision", format=".1%"), alt.Tooltip("recall:Q", title="Recall", format=".1%")])
-        labels = bars.mark_text(align="left", dx=6).encode(text=alt.Text("tie_out:Q", format=".1%"))
-        truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
-        rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
-        st.altair_chart((bars + labels + rule).properties(height=230), width="stretch")
-        st.caption(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}.")
-    with right:
-        st.dataframe(pd.DataFrame({
-            "Stage": stages["stage"], "Tied out": stages["tie_out"].map(pct), "Precision": stages["precision"].map(pct),
-            "Recall": stages["recall"].map(pct), "Left for review": stages["review_spend"].map(lambda v: "n/a" if pd.isna(v) else usd(v)),
-            "Wrong-match $": stages["wrong"].map(usd)}), hide_index=True, width="stretch")
-    st.caption(f"Measured on {full['lines']:,} held-out purchase lines ({usd(full['spend'])}) written in noise styles that were never used "
-               "to tune the matcher. Stage 4 ties less than stage 3 because it refuses to guess: uncertain lines wait for review instead.")
+    if is_sample:
+        st.subheader("From a spreadsheet lookup to the full pipeline")
+        s2 = evals["eval_step2_local"]["splits"]["heldout"]
+        s3 = evals["eval_step3"]
+        clf, full = s3["backends"][s3["chosen_backend"]]["heldout"], s3["llm"][MAIN_MODEL]["heldout"]
+        true_rate = full["true_tie_out"]
+        stages = pd.DataFrame([
+            ("1. Exact part-number lookup", s2["(a) naive exact part number"]["tie_out"], s2["(a) naive exact part number"]["precision"],
+             s2["(a) naive exact part number"]["recall"], None, s2["(a) naive exact part number"]["wrong_match_spend"]),
+            ("2. Rules (normalized numbers, crosswalk)", s2["(b) rules only"]["tie_out"], s2["(b) rules only"]["precision"],
+             s2["(b) rules only"]["recall"], None, s2["(b) rules only"]["wrong_match_spend"]),
+            ("3. Rules + embeddings, fixed cutoff", s2["(c) rules + embeddings"]["tie_out"], s2["(c) rules + embeddings"]["precision"],
+             s2["(c) rules + embeddings"]["recall"], None, s2["(c) rules + embeddings"]["wrong_match_spend"]),
+            ("4. Rules + calibrated classifier", clf["tie_out"], clf["accept_precision"], clf["recall"], clf["review_spend"], clf["wrong_match_spend"]),
+            ("5. Rules + classifier + Claude", full["tie_out"], full["accept_precision"], full["recall"], full["review_spend"], full["wrong_match_spend"]),
+        ], columns=["stage", "tie_out", "precision", "recall", "review_spend", "wrong"])
+        left, right = st.columns([3, 2])
+        with left:
+            bars = alt.Chart(stages).mark_bar(height=22, color="#2a78d6", cornerRadiusEnd=4).encode(
+                y=alt.Y("stage:N", sort=None, title=None, axis=alt.Axis(labelLimit=320)),
+                x=alt.X("tie_out:Q", scale=alt.Scale(domain=[0, 1]), axis=alt.Axis(format="%", title="Spend tied out (held-out lines)")),
+                tooltip=[alt.Tooltip("stage:N", title="Stage"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
+                         alt.Tooltip("precision:Q", title="Precision", format=".1%"), alt.Tooltip("recall:Q", title="Recall", format=".1%")])
+            labels = bars.mark_text(align="left", dx=6).encode(text=alt.Text("tie_out:Q", format=".1%"))
+            truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
+            rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
+            st.altair_chart((bars + labels + rule).properties(height=230), width="stretch")
+            st.caption(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}.")
+        with right:
+            st.dataframe(pd.DataFrame({
+                "Stage": stages["stage"], "Tied out": stages["tie_out"].map(pct), "Precision": stages["precision"].map(pct),
+                "Recall": stages["recall"].map(pct), "Left for review": stages["review_spend"].map(lambda v: "n/a" if pd.isna(v) else usd(v)),
+                "Wrong-match $": stages["wrong"].map(usd)}), hide_index=True, width="stretch")
+        st.caption(f"Measured on {full['lines']:,} held-out purchase lines ({usd(full['spend'])}) written in noise styles that were never used "
+                   "to tune the matcher. Stage 4 ties less than stage 3 because it refuses to guess: uncertain lines wait for review instead.")
+    else:
+        st.subheader("How this run was matched")
+        stats = uploaded["stats"]
+        st.markdown(f"{stats['lines']:,} purchase lines against {stats['bom_parts']:,} BOM parts. Rules settled {stats['settled_by_rules']:,} lines; "
+                    f"{stats['sent_to_claude']:,} went to Claude with their five nearest BOM parts ({stats['claude']['calls']} distinct calls, "
+                    f"${stats['claude']['cost_usd']:.2f} at list price). Embeddings: {stats['embedding_backend']}.")
+        how = lines.assign(how=lines["source"].map(HOW).fillna(lines["source"])).groupby(["decision", "how"]).agg(
+            lines=("po_id", "size"), spend=("spend_usd", "sum")).reset_index()
+        st.dataframe(pd.DataFrame({"Outcome": how["decision"], "Decided by": how["how"], "Lines": how["lines"], "Spend": how["spend"].map(usd)}),
+                     hide_index=True, width="stretch")
+        for note in uploaded["notes"]:
+            st.caption(note)
+        st.caption("There is no ground truth for uploaded files, so accuracy cannot be reported here. The Evaluation tab shows how the same "
+                   "steps score on the built-in sample and on external data.")
 
 # ------------------------------------------------------------- review queue
 with tab_queue:
@@ -172,7 +226,7 @@ with tab_queue:
                 return "Claude picked a part, below its confidence cutoff"
             if pd.notna(r["llm_conf"]):
                 return "Claude leaned towards no BOM part, not confidently"
-            return "Classifier unsure"
+            return "Classifier unsure" if r["source"] == "classifier" else "Not judged by Claude: over the call limit or the call failed"
 
         view = pd.DataFrame({
             "Spend": queue["spend_usd"].map(usd), "Description on the PO": queue["item_description"],
@@ -194,7 +248,7 @@ with tab_queue:
         with b:
             st.markdown("**The suggested match**")
             st.markdown(f"`{sug}` {part_desc.get(sug, '')}")
-            st.markdown(f"**How it was decided:** {why(r)}. Classifier probability for its best candidate: {r['prob']:.2f}.")
+            st.markdown(f"**How it was decided:** {why(r)}. {'Classifier probability for its best candidate' if is_sample else 'Description similarity of the nearest BOM part'}: {r['prob']:.2f}.")
             if r["llm_reason"]:
                 answer = f"`{r['llm_part']}`" if r["llm_part"] else "no BOM part"
                 st.info(f"**Claude's answer: {answer}, confidence {r['llm_conf']:.2f}.** {r['llm_reason']}")
@@ -212,17 +266,21 @@ with tab_queue:
         for col, label, action, kind in ((c1, f"Approve match to {sug}", "approve", "primary"), (c2, "Reject suggestion", "reject", "secondary"),
                                          (c3, "Confirm: not a BOM part", "no_match", "secondary")):
             if col.button(label, type=kind, key=f"{action}_{r['po_id']}"):
-                st.session_state.actions[r["po_id"]] = action
+                crosswalk.add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
                 st.rerun()
         st.caption("Approve ties the line to the suggested part. Reject removes the suggestion and leaves the line untied for a manual lookup. "
-                   "Not a BOM part closes the line as correctly unmatched. Tie-out, buckets, product cost and leads update immediately.")
+                   "Not a BOM part closes the line as correctly unmatched. The decision is saved to crosswalk.csv and applies to every line with the "
+                   "same text, so tie-out, buckets, product cost and leads update immediately.")
 
-    if st.session_state.actions:
-        st.markdown("**Decided this session**")
-        done = lines[lines["po_id"].isin(st.session_state.actions)]
-        st.dataframe(pd.DataFrame({"PO line": done["po_id"], "Spend": done["spend_usd"].map(usd), "Description": done["item_description"],
-                                   "Action": done["po_id"].map(st.session_state.actions), "Part": done["part"].where(done["decision"] == "accept", ""),
-                                   "Bucket now": done["bucket"]}), hide_index=True, width="stretch")
+    if not xw.empty:
+        st.markdown("**Reviewer crosswalk**")
+        keys = lines["supplier_part_number"].map(norm_pn) + "|" + lines["item_description"].map(norm_desc)
+        settled = keys.value_counts()
+        shown_xw = xw.assign(lines_settled=[int(settled.get(f"{norm_pn(a)}|{norm_desc(d)}", 0)) for a, d in zip(xw["supplier_part_number"], xw["item_description"])])
+        st.dataframe(shown_xw.rename(columns={"supplier_part_number": "Part-number field", "item_description": "Description on the PO", "part_number": "BOM part",
+                                              "decision": "Decision", "decided_at": "Decided at", "dataset": "Data", "lines_settled": "Lines it settles here"}),
+                     hide_index=True, width="stretch")
+        st.caption("Undo, clear and download are in the sidebar.")
 
 # ------------------------------------------------------------- product cost
 with tab_cost:
@@ -235,12 +293,15 @@ with tab_cost:
         "Estimated actual per unit": products["actual_cost_per_unit_est"].map("${:.2f}".format),
         "Actual vs standard": products["actual_vs_std"].map("{:+.1%}".format),
         "Allocated production spend": products["allocated_production_spend_est"].map(usd)}), hide_index=True, width="stretch")
+    st.download_button("Download product cost (CSV)", products.to_csv(index=False), "product_cost.csv", "text/csv")
+    if products["std_cost_per_unit"].isna().all():
+        st.info("The BOM has no standard cost, so the parts below are ranked by estimated actual cost per unit.")
 
     product = st.selectbox("Parts driving the difference for", products["product_id"])
     units = products.set_index("product_id").at[product, "units_built"]
     use = bom[bom["product_id"] == product].groupby("part_number").agg(
         description=("description", "first"), assembly=("assembly_id", "first"), qty=("qty_per_unit", "sum"), std_cost=("std_cost", "first"))
-    use["std_per_unit"] = use["qty"] * use["std_cost"]
+    use["std_per_unit"] = (use["qty"] * use["std_cost"]).fillna(0.0)
     use["actual_per_unit"] = alloc[alloc["product_id"] == product].groupby("part_number")["allocated_usd"].sum().reindex(use.index).fillna(0.0) / units
     use["diff"] = use["actual_per_unit"] - use["std_per_unit"]
     drivers = use.reindex(use["diff"].abs().sort_values(ascending=False).index).head(12).reset_index()
@@ -275,6 +336,7 @@ with tab_leads:
     m1, m2 = st.columns(2)
     m1.metric("Leads", len(shown))
     m2.metric("Combined range", f"{usd(shown['low_usd'].sum())} to {usd(shown['high_usd'].sum())}")
+    st.download_button("Download leads (CSV)", shown.to_csv(index=False), "leads.csv", "text/csv", disabled=shown.empty)
     if shown.empty:
         st.info("No leads for this selection.")
     else:
@@ -297,6 +359,8 @@ with tab_leads:
 
 # --------------------------------------------------------------- evaluation
 with tab_eval:
+    if not is_sample:
+        st.info("Uploaded files have no ground truth. Everything below was measured on the built-in sample and on external data.")
     s3, s4 = evals["eval_step3"], evals["eval_step4"]
     llm = s3["llm"][MAIN_MODEL]
     st.subheader("Held-out versus tuning split, full pipeline")
@@ -383,6 +447,154 @@ with tab_eval:
 - **Buckets lean on the PO type.** Where it is blank, the bucket is inferred from the match and the plant. A blank, unmatched spare is counted as unassigned.
 - **Duplicate detection is narrow.** It finds part numbers whose descriptions use the same words and numbers. Duplicates described differently are missed.
 - **Leads are not savings.** A price gap can have a good reason. Each one needs a buyer's judgment before it means anything.
-- **Reviewer decisions here last for the session.** A real deployment would store them and use them to retrain the matcher.
+- **Uploaded files skip the classifier.** They are matched with rules, embeddings and Claude, and there is no ground truth to score the result against.
+- **The crosswalk is a local file.** Reviewer decisions are stored in crosswalk.csv and reused as the first rule; a real deployment would also retrain the classifier on them.
+- **Trends and inventory are rough.** They have no opening stock, scrap, or lead time between buying and building.
 - **What a pilot would test:** match accuracy on one plant's real exports, how much spend lands in review, and how long a reviewer takes to clear it.
 """)
+
+# ------------------------------------------------------- trends and inventory
+with tab_trend:
+    st.subheader("Tie-out by quarter")
+    tq = lines.assign(un=lines["spend_usd"].where(lines["bucket"] == "unassigned", 0.0)).groupby("quarter")[["un", "spend_usd"]].sum().reset_index()
+    tq["tie_out"] = 1 - tq["un"] / tq["spend_usd"]
+    st.altair_chart(
+        alt.Chart(tq).mark_line(color=SERIES[0], strokeWidth=2, point=alt.OverlayMarkDef(size=70, color=SERIES[0])).encode(
+            x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)),
+            y=alt.Y("tie_out:Q", axis=alt.Axis(format="%", title="Spend tied out"), scale=alt.Scale(zero=False)),
+            tooltip=[alt.Tooltip("quarter:N", title="Quarter"), alt.Tooltip("tie_out:Q", title="Tied out", format=".1%"),
+                     alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=220), width="stretch")
+    st.caption("Use the date range in the sidebar to narrow every tab to a period.")
+
+    st.subheader("Estimated actual versus standard cost per unit, by quarter")
+    units_q = builds.assign(quarter=quarter_of(builds["period"])).groupby(["product_id", "quarter"])["units_built"].sum()
+    aq = alloc.groupby(["product_id", "quarter"])["allocated_usd"].sum().to_frame("spend").join(units_q, how="inner").reset_index()
+    aq = aq[aq["units_built"] > 0].merge(products[["product_id", "std_cost_per_unit"]], on="product_id")
+    aq["vs_std"] = aq["spend"] / aq["units_built"] / aq["std_cost_per_unit"] - 1
+    aq = aq.dropna(subset=["vs_std"])
+    if aq.empty:
+        st.info("This needs a standard cost on the BOM and at least one quarter with units built.")
+    else:
+        product_ids = sorted(aq["product_id"].unique())
+        st.altair_chart(
+            alt.Chart(aq).mark_line(strokeWidth=2, point=alt.OverlayMarkDef(size=60)).encode(
+                x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)),
+                y=alt.Y("vs_std:Q", axis=alt.Axis(format="+%", title="Estimated actual vs standard")),
+                color=alt.Color("product_id:N", scale=alt.Scale(domain=product_ids, range=SERIES[:len(product_ids)]), legend=alt.Legend(title=None, orient="top")),
+                tooltip=[alt.Tooltip("product_id:N", title="Product"), alt.Tooltip("quarter:N", title="Quarter"),
+                         alt.Tooltip("vs_std:Q", title="Actual vs standard", format="+.1%"), alt.Tooltip("units_built:Q", title="Units built", format=",")],
+            ).properties(height=260), width="stretch")
+        st.caption("An estimate. Parts are bought ahead of the builds that use them, so a single quarter can swing; lines still in review are not included.")
+
+    st.subheader("Estimated inventory: bought minus built")
+    st.caption("An estimate, not a stock count: cumulative production purchases minus BOM quantity x units built, over the selected date range. "
+               "It ignores opening stock, scrap and parts issued to service.")
+    need = bom.groupby(["part_number", "product_id"])["qty_per_unit"].sum().reset_index().merge(units_q.reset_index(), on="product_id")
+    need["need"] = need["qty_per_unit"] * need["units_built"]
+    need_q = need.groupby(["part_number", "quarter"])["need"].sum()
+    bought = lines[(lines["decision"] == "accept") & (lines["bucket"] == "production")]
+    bought_q = bought.groupby(["part", "quarter"])["base_qty"].sum().rename_axis(["part_number", "quarter"])
+    inv = pd.DataFrame({"bought": bought_q.groupby("part_number").sum(), "needed": need_q.groupby("part_number").sum()}).fillna(0.0)
+    price = bought.groupby("part")["spend_usd"].sum() / bought.groupby("part")["base_qty"].sum()
+    inv["units"] = inv["bought"] - inv["needed"]
+    inv["value"] = inv["units"] * price.reindex(inv.index)
+    inv = inv.dropna(subset=["value"])
+    if inv.empty:
+        st.info("No matched production purchases in this range.")
+    else:
+        top = inv.reindex(inv["value"].abs().sort_values(ascending=False).index).head(15)
+        st.dataframe(pd.DataFrame({
+            "Part": top.index, "Description": top.index.map(part_desc), "Bought": top["bought"].map("{:,.0f}".format),
+            "Needed for builds": top["needed"].map("{:,.0f}".format), "Est. units on hand": top["units"].map("{:+,.0f}".format),
+            "Est. value": top["value"].map(lambda v: f"{'-' if v < 0 else ''}${abs(v):,.0f}"),
+            "Note": top["units"].map(lambda u: "bought less than built: opening stock, or purchases not yet matched" if u < 0 else "")}),
+            hide_index=True, width="stretch")
+        part_pick = st.selectbox("Cumulative bought versus needed for", list(top.index), format_func=lambda x: f"{x}  {part_desc.get(x, '')}")
+        qs = sorted(lines["quarter"].unique())
+        cum = pd.DataFrame({"Bought": bought_q.xs(part_pick).reindex(qs).fillna(0.0).cumsum() if part_pick in bought_q.index.get_level_values(0) else 0.0,
+                            "Needed for builds": need_q.xs(part_pick).reindex(qs).fillna(0.0).cumsum() if part_pick in need_q.index.get_level_values(0) else 0.0},
+                           index=pd.Index(qs, name="quarter")).reset_index().melt("quarter", var_name="series", value_name="units")
+        st.altair_chart(
+            alt.Chart(cum).mark_line(strokeWidth=2, point=alt.OverlayMarkDef(size=60)).encode(
+                x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)), y=alt.Y("units:Q", axis=alt.Axis(format=",", title="Cumulative units")),
+                color=alt.Color("series:N", scale=alt.Scale(domain=["Bought", "Needed for builds"], range=SERIES[:2]), legend=alt.Legend(title=None, orient="top")),
+                tooltip=[alt.Tooltip("series:N", title="Series"), alt.Tooltip("quarter:N", title="Quarter"), alt.Tooltip("units:Q", title="Cumulative units", format=",.0f")],
+            ).properties(height=240), width="stretch")
+
+# ------------------------------------------------------------------- upload
+with tab_upload:
+    st.subheader("Run it on your own exports")
+    st.caption("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. "
+               "This step needs ANTHROPIC_API_KEY (and uses OPENAI_API_KEY for embeddings if present). It sends the headers and 20 sample rows of "
+               "each file to Claude for the mapping, then purchase descriptions and BOM parts to the embedding model and Claude for matching.")
+    up = st.session_state.setdefault("up_files", {})
+    for col, kind in zip(st.columns(3), KIND_LABEL):
+        f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
+        if f is not None:
+            up[kind] = (f.name, f.getvalue())
+        if kind in up:
+            col.caption(f"Loaded: {up[kind][0]}")
+    if st.button("Load the second sample: the same kind of data with different column names"):
+        for kind, name in SAMPLE_FILES.items():
+            up[kind] = (name, (SAMPLE_DIR / name).read_bytes())
+        st.session_state.pop("up_map", None)
+        st.rerun()
+
+    if len(up) == 3:
+        raw = {kind: mapping.read_table(*up[kind]) for kind in KIND_LABEL}
+        if st.button("Ask Claude to map the columns", type="secondary" if "up_map" in st.session_state else "primary"):
+            try:
+                with st.spinner("Claude is reading the headers and 20 sample rows of each file"):
+                    proposals = {kind: mapping.propose(kind, raw[kind])[0] for kind in KIND_LABEL}
+            except Exception as e:  # most often a missing API key
+                st.error(f"Could not get a mapping from Claude: {e}")
+            else:
+                st.session_state["up_map"] = proposals
+                for kind, prop in proposals.items():
+                    for row in prop.itertuples():
+                        st.session_state[f"map_{kind}_{row.canonical}"] = row.source or "(none)"
+                st.rerun()
+
+        if "up_map" in st.session_state:
+            st.markdown("**Confirm or fix the mapping**")
+            chosen, problems = {}, []
+            for kind, prop in st.session_state["up_map"].items():
+                chosen[kind] = {}
+                with st.expander(f"{KIND_LABEL[kind]}: {up[kind][0]}, {len(raw[kind]):,} rows", expanded=True):
+                    st.dataframe(raw[kind].head(5), hide_index=True, width="stretch")
+                    grid = st.columns(4)
+                    for i, row in enumerate(prop.itertuples()):
+                        with grid[i % 4]:
+                            pick = st.selectbox(f"{row.canonical} ({'required' if row.required else 'optional'})", ["(none)"] + list(raw[kind].columns),
+                                                key=f"map_{kind}_{row.canonical}", help=row.meaning)
+                            st.caption(f"Claude: {row.confidence:.0%} sure. {row.note}" if row.source else f"Claude found no column. {row.note}")
+                            chosen[kind][row.canonical] = None if pick == "(none)" else pick
+                            if row.required and pick == "(none)":
+                                problems.append(f"{KIND_LABEL[kind]}: {row.canonical} is required")
+                    used = [v for v in chosen[kind].values() if v]
+                    if len(used) != len(set(used)):
+                        problems.append(f"{KIND_LABEL[kind]}: one source column is used twice")
+            for problem in problems:
+                st.error(problem)
+            st.info("On uploaded data the matcher uses rules, embeddings and Claude only. The classifier is skipped until this company has "
+                    "confirmed matches to train it on. Decisions already in the crosswalk are applied first.")
+            if st.button("Run the pipeline", type="primary", disabled=bool(problems)):
+                try:
+                    with st.spinner("Matching: rules, then embeddings, then Claude on the open lines. A minute or two the first time; cached after that."):
+                        canon, notes = {}, []
+                        for kind in KIND_LABEL:
+                            canon[kind], kind_notes = mapping.apply_mapping(kind, raw[kind], chosen[kind])
+                            notes += kind_notes
+                        inp = prepare(canon["purchases"], canon["boms"], canon["builds"])
+                        dec, stats = pipeline.run(inp, crosswalk.as_rules(crosswalk.load()))
+                        st.session_state["uploaded"] = dict(
+                            lines=allocate.build_lines(inp, dec), bom=inp.boms, builds=inp.builds, stats=stats, notes=notes,
+                            files=[up[kind][0] for kind in KIND_LABEL], demo_sample=all(up[kind][0] == SAMPLE_FILES[kind] for kind in KIND_LABEL))
+                        st.session_state["_switch_to_uploaded"] = True
+                except Exception as e:
+                    st.error(f"The run failed: {e}")
+                else:
+                    st.rerun()
+    if uploaded:
+        st.success(f"Last run: {', '.join(uploaded['files'])}: {uploaded['stats']['lines']:,} purchase lines. Select \"Uploaded files\" under Data in the sidebar to view it.")
+

@@ -11,3 +11,4 @@ models/
 cache/*
 !cache/llm/
 data/external/
+crosswalk.csv

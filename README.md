@@ -15,7 +15,7 @@ uv sync
 uv run streamlit run app.py
 ```
 
-Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys and starts in about a second. It has five tabs:
+Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys and starts in about a second. It has seven tabs:
 
 - **Overview:** tie-out rate, the four buckets, and each stage from a plain part-number lookup to the full pipeline.
 - **Review queue:** uncertain lines, largest dollars first, with the suggested part, Claude's reason, and price and supplier evidence. Approve, reject or mark as not a BOM part; tie-out, buckets, product cost and leads update at once. The materiality slider is in the sidebar.
@@ -23,7 +23,22 @@ Then open http://localhost:8501. The app reads the committed snapshot in `out/` 
 - **Leads:** price differences shown as ranges, with the purchase lines behind each one. They are leads, not savings.
 - **Evaluation:** held-out versus tuning results, accuracy by noise style, Claude cost, and limits.
 
-Reviewer decisions last for the browser session only.
+- **Trends and inventory:** tie-out and estimated actual versus standard by quarter, and an estimated inventory view (bought minus built). Both are rough estimates.
+- **Upload:** run the matcher on your own CSV or Excel files (see below).
+
+The sidebar has the data switch, the materiality slider, a date range, and the reviewer crosswalk.
+
+### Reviewer crosswalk
+
+Every approve, reject or not-a-BOM-part decision is written to `crosswalk.csv` (purchase text and part-number field to BOM part). It applies at once to every line with the same text, persists across sessions, and is the first rule on the next pipeline run. Undo, clear and download are in the sidebar. The file is local working state and is gitignored. Leads and product cost also have download buttons.
+
+### Your own files
+
+The Upload tab takes a BOM, purchase lines and production volumes as CSV or Excel. Column names do not need to match: Claude reads the headers and 20 sample rows of each file and proposes a mapping with a confidence per column, which you confirm or fix before anything runs. This needs `ANTHROPIC_API_KEY` (and uses `OPENAI_API_KEY` for embeddings if present, otherwise a local model), in the environment or in `.env.local`.
+
+Uploaded data is matched with rules, embeddings and Claude only. The classifier is skipped: it has to be trained on a company's own confirmed matches, and the external tests show one trained elsewhere does not transfer. There is no ground truth for uploaded files, so the app reports how lines were decided, not accuracy.
+
+`samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Load the second sample" in the Upload tab uses it. On that slice the mapping was right for all 22 columns, and matching reached 100% precision and 97% recall against the planted truth (256 Claude calls, $2.00, about 85 seconds uncached).
 
 ## Results so far (held-out noise styles, 1,669 lines, $9.8M, true tie-out rate 98.7%)
 
@@ -145,6 +160,10 @@ src/score.py     pair features, calibrated classifier, accept / review / no matc
 src/adjudicate.py Claude on the review band: part or "none", confidence, one-sentence reason
 src/allocate.py  buckets, materiality rule, allocation to products, leads
 src/evaluate.py  trains and scores against data/truth/ (the only module that reads it)
+src/pipeline.py  rules + embeddings + Claude for uploaded files (no classifier)
+src/mapping.py   Claude column mapping and value cleaning for uploaded files
+src/crosswalk.py reviewer decisions, reused as the first rule
+src/make_sample.py writes samples/second_company/
 src/external/    fetch script and two zero-shot tests on real data
 app.py           Streamlit app; reads out/ only
 out/             committed snapshot of results the app reads

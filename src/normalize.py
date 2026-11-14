@@ -81,12 +81,13 @@ class Inputs:
     xref: pd.DataFrame       # supplier part number -> internal part number, where the company has one
 
 
-def load_inputs(data_dir: str | Path = "data") -> Inputs:
-    d = Path(data_dir)
-    read = lambda name: pd.read_csv(d / name, dtype=str, keep_default_na=False)
+FX_DEFAULT = {"USD": 1.0, "EUR": 1.08}
 
-    fx = read("fx_rates.csv").set_index("currency")["usd_per_unit"].astype(float)
-    p = read("purchases.csv")
+
+def prepare(purchases: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame, xref: pd.DataFrame | None = None, fx: dict | None = None) -> Inputs:
+    """Add the normalized columns to tables that already use the canonical column names."""
+    fx = fx or FX_DEFAULT
+    p = purchases.copy()
     p["qty"] = p["qty"].astype(float)
     p["unit_price"] = p["unit_price"].astype(float)
     p["pn_key"] = p["supplier_part_number"].map(norm_pn)
@@ -94,24 +95,31 @@ def load_inputs(data_dir: str | Path = "data") -> Inputs:
     p["supplier_key"] = p["supplier_key"].map(canonical_suppliers(p["supplier_key"]))
     p["desc_norm"] = p["item_description"].map(norm_desc)
     p["units_per_uom"] = p["uom"].map(units_per_uom)
-    p["spend_usd"] = p["qty"] * p["unit_price"] * p["currency"].map(fx)
+    p["spend_usd"] = p["qty"] * p["unit_price"] * p["currency"].map(lambda c: fx.get(c, 1.0))
     p["base_qty"] = p["qty"] * p["units_per_uom"]
     p["unit_price_usd"] = p["spend_usd"] / p["base_qty"]  # per base unit, comparable across suppliers
 
-    boms = read("boms.csv")
+    boms = boms.copy()
     boms["qty_per_unit"] = boms["qty_per_unit"].astype(float)
     boms["std_cost"] = boms["std_cost"].astype(float)
     parts = boms.drop_duplicates("part_number")[["part_number", "revision", "description"]].reset_index(drop=True)
     parts["pn_key"] = parts["part_number"].map(norm_pn)
     parts["desc_norm"] = parts["description"].map(norm_desc)
 
-    builds = read("builds.csv")
+    builds = builds.copy()
     builds["units_built"] = builds["units_built"].astype(int)
 
-    xref = read("supplier_xref.csv")
+    xref = pd.DataFrame(columns=["supplier", "supplier_part_number", "part_number"]) if xref is None else xref.copy()
     xref["spn_key"] = xref["supplier_part_number"].map(norm_pn)
     xref["supplier_key"] = xref["supplier"].map(norm_supplier)
     return Inputs(p, boms, parts, builds, xref)
+
+
+def load_inputs(data_dir: str | Path = "data") -> Inputs:
+    d = Path(data_dir)
+    read = lambda name: pd.read_csv(d / name, dtype=str, keep_default_na=False)
+    fx = read("fx_rates.csv").set_index("currency")["usd_per_unit"].astype(float).to_dict()
+    return prepare(read("purchases.csv"), read("boms.csv"), read("builds.csv"), read("supplier_xref.csv"), fx)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .normalize import Inputs, load_inputs, norm_desc, numbers_in
+from .normalize import Inputs, load_inputs, norm_desc, norm_pn, numbers_in
 
 MATERIALITY_USD = 25_000     # a Claude-accepted line above this goes to a person anyway
 PRICE_GAP_MIN = 0.05         # ignore supplier price differences smaller than this
@@ -23,7 +23,10 @@ LEAD_LOW = 0.5               # low end of every lead's range: half the gap close
 
 
 def load_lines(inp: Inputs, decisions_path: str | Path = "out/decisions.csv") -> pd.DataFrame:
-    dec = pd.read_csv(decisions_path, dtype={"po_id": str}, keep_default_na=False)
+    return build_lines(inp, pd.read_csv(decisions_path, dtype={"po_id": str}, keep_default_na=False))
+
+
+def build_lines(inp: Inputs, dec: pd.DataFrame) -> pd.DataFrame:
     cols = ["po_id", "po_date", "plant", "supplier", "supplier_key", "supplier_part_number", "item_description", "uom", "po_type",
             "base_qty", "unit_price_usd", "spend_usd"]
     lines = inp.purchases[cols].merge(dec[["po_id", "decision", "source", "part", "prob", "llm_part", "llm_conf", "llm_reason"]], on="po_id", validate="1:1")
@@ -40,6 +43,20 @@ def apply_materiality(lines: pd.DataFrame, threshold: float = MATERIALITY_USD) -
     out = lines.copy()
     big = (out["decision"] == "accept") & (out["source"] == "llm") & (out["spend_usd"] > threshold)
     out.loc[big, ["decision", "source"]] = ["review", "llm_material"]
+    return out
+
+
+def apply_crosswalk(lines: pd.DataFrame, crosswalk: dict) -> pd.DataFrame:
+    """Reviewer decisions, keyed by item text, override the matcher on every line with that text."""
+    out = lines.copy()
+    if not crosswalk:
+        return out
+    key = out["supplier_part_number"].map(norm_pn) + "|" + out["item_description"].map(norm_desc)
+    for k, (decision, part) in crosswalk.items():
+        row = key == k
+        if decision == "approve":
+            out.loc[row, "part"] = part
+        out.loc[row, ["decision", "source"]] = [{"approve": "accept", "no_match": "no_match", "reject": "rejected"}[decision], "crosswalk"]
     return out
 
 
@@ -102,7 +119,7 @@ def allocate(lines: pd.DataFrame, boms: pd.DataFrame, builds: pd.DataFrame) -> t
     rows["allocated_usd"] = rows["spend"] * weight / pd.Series(weight).groupby([rows["part_number"], rows["quarter"]]).transform("sum").to_numpy()
     alloc = rows[["product_id", "quarter", "part_number", "allocated_usd"]]
 
-    std = boms.assign(c=boms["qty_per_unit"] * boms["std_cost"]).groupby("product_id")["c"].sum()
+    std = boms.assign(c=boms["qty_per_unit"] * boms["std_cost"]).groupby("product_id")["c"].sum(min_count=1)
     products = pd.DataFrame({
         "units_built": builds.groupby("product_id")["units_built"].sum(),
         "std_cost_per_unit": std,
