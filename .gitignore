@@ -10,3 +10,4 @@ models/
 # embedding caches are large and rebuildable; Claude responses are committed so reruns need no Anthropic key
 cache/*
 !cache/llm/
+data/external/

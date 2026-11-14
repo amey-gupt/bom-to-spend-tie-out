@@ -62,6 +62,50 @@ Product cost is an estimate: matched production spend is split across products b
 
 Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. To rebuild `out/` from scratch, step 3 needs `OPENAI_API_KEY` for the embeddings (in the environment or in `.env.local`); the embedding cache is not committed. Claude's responses are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
 
+## External tests (real data, zero-shot)
+
+Nothing is retrained for these: the classifier and all cutoffs come from the synthetic tuning split. The downloaded data is not committed.
+
+```
+python3 -m src.external.fetch                 # about 400 MB download, 2.6 GB on disk, into data/external/
+uv run python -m src.external.abt_buy         # needs OPENAI_API_KEY and ANTHROPIC_API_KEY
+uv run python -m src.external.kitspace_jlc
+```
+
+**A. Abt-Buy product matching**, fixed test split from the University of Mannheim benchmark page (710 pairs, 109 matches):
+
+| Method | Precision | Recall | F1 |
+|---|---|---|---|
+| Rules only | 0.97 | 0.68 | 0.80 |
+| Rules + embeddings | 0.95 | 0.81 | 0.87 |
+| Rules + embeddings + Claude | 0.98 | 0.91 | 0.94 |
+| SVM (published on the page) | 0.96 | 0.71 | 0.81 |
+| Random Forest (published on the page) | 0.95 | 0.77 | 0.85 |
+
+The benchmark's validation split was used only to check the model-code rule and to set two similarity cutoffs. Claude judged 229 pairs ($1.04).
+
+**B. Real electronic parts.** 250 BOM parts from 14 open-hardware Kitspace BOMs (24 were fetched; 14 have both a description and an MPN). 208 of their 354 MPNs are in the JLCPCB catalog (4.3M parts), and each becomes a purchase line with the LCSC number, catalog description and price. Truth is MPN equality. 500 State of California purchase-order lines are added as true no-match cases.
+
+| Condition | Stage | Right | Same-spec alternate | Wrong | In review | Called no match | Precision | Recall | No-match lines right |
+|---|---|---|---|---|---|---|---|---|---|
+| MPN visible | Rules + classifier | 145 | 0 | 0 | 63 | 0 | 1.00 | 0.70 | 4.4% |
+| MPN visible | + Claude | 163 | 0 | 1 | 5 | 39 | 0.99 | 0.78 | 99.6% |
+| MPN hidden | Rules + classifier | 1 | 0 | 0 | 204 | 3 | 1.00 | 0.00 | 0.0% |
+| MPN hidden | + Claude | 59 | 0 | 2 | 18 | 129 | 0.97 | 0.28 | 99.4% |
+
+What this shows: the classifier, trained on synthetic drill parts, does not transfer and sends nearly every real line to review; rules and Claude carry the test. With the MPN hidden, recall is low because a BOM line like "Red LED 5mm" does not identify one catalog part, and the tool declines instead of guessing. Two or three no-match lines were wrongly accepted, all by the classifier.
+
+Data sources and their terms, as checked on 2026-11-14:
+
+| Source | What is used | License or terms found |
+|---|---|---|
+| [Mannheim Benchmark Matching Tasks](http://data.dws.informatik.uni-mannheim.de/benchmarkmatchingtasks/index.html) | Abt-Buy records and fixed splits | No license is stated on the page. The data originates from the Leipzig database group's benchmark. |
+| Kitspace `1-click-bom.tsv` files on GitHub | BOM lines from 24 repositories (listed in `src/external/fetch.py`) | Varies by repository. Among those GitHub reported: MIT, GPL-2.0, GPL-3.0; several have no detected license, and 12 lookups failed. |
+| JLCPCB parts catalog via [yaqwsx/jlcparts](https://github.com/yaqwsx/jlcparts) | Catalog rows for the matched MPNs | The mirror's code is MIT. The catalog content is JLCPCB's and carries no open license that I found. |
+| [California Purchase Order Data 2012-2015](https://data.ca.gov/dataset/purchase-order-data) | 500 sampled lines | The dataset's license field on data.ca.gov is empty. |
+
+Because several of these have no clear license, none of the downloaded data, and none of Claude's cached answers about it, is committed. Only aggregate results are.
+
 ## Generate the data
 
 ```
@@ -101,6 +145,7 @@ src/score.py     pair features, calibrated classifier, accept / review / no matc
 src/adjudicate.py Claude on the review band: part or "none", confidence, one-sentence reason
 src/allocate.py  buckets, materiality rule, allocation to products, leads
 src/evaluate.py  trains and scores against data/truth/ (the only module that reads it)
+src/external/    fetch script and two zero-shot tests on real data
 app.py           Streamlit app; reads out/ only
 out/             committed snapshot of results the app reads
 data/            generated CSVs

@@ -1,0 +1,60 @@
+{
+  "dataset": "Abt-Buy, Mannheim Benchmark Matching Tasks, fixed test split",
+  "test_pairs": 710,
+  "test_matches": 109,
+  "validation_use": {
+    "rule": {
+      "precision": 0.9764705882352941,
+      "recall": 0.7545454545454545,
+      "f1": 0.8512820512820513,
+      "predicted": 170,
+      "positives": 220
+    },
+    "embedding_cutoff": 0.8300000000000005,
+    "claude_floor": 0.6700000000000004
+  },
+  "results": {
+    "Rules only": {
+      "precision": 0.9736842105263158,
+      "recall": 0.6788990825688074,
+      "f1": 0.7999999999999999,
+      "predicted": 76,
+      "positives": 109
+    },
+    "Rules + embeddings": {
+      "precision": 0.946236559139785,
+      "recall": 0.8073394495412844,
+      "f1": 0.8712871287128714,
+      "predicted": 93,
+      "positives": 109
+    },
+    "Rules + embeddings + Claude": {
+      "precision": 0.9801980198019802,
+      "recall": 0.908256880733945,
+      "f1": 0.9428571428571428,
+      "predicted": 101,
+      "positives": 109
+    }
+  },
+  "published": {
+    "SVM (benchmark page)": {
+      "precision": 0.96,
+      "recall": 0.71,
+      "f1": 0.81
+    },
+    "Random Forest (benchmark page)": {
+      "precision": 0.95,
+      "recall": 0.77,
+      "f1": 0.85
+    }
+  },
+  "claude": {
+    "pairs_sent": 229,
+    "model": "claude-opus-5-5",
+    "calls": 229,
+    "failed_calls": 0,
+    "input_tokens": 170927,
+    "output_tokens": 17736,
+    "cost_usd": 1.0384
+  }
+}

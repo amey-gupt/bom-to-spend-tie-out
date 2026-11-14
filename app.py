@@ -344,9 +344,40 @@ with tab_eval:
                                for k, v in s4["leads"].items()]), hide_index=True, width="stretch")
     st.caption(f"Measured at the default {usd(s4['materiality_usd'])} materiality threshold, before any reviewer action.")
 
+    st.subheader("External tests: real data, nothing retrained")
+    st.caption("Zero-shot: the classifier and every cutoff come from the synthetic tuning split. The downloaded data is not in the repository; "
+               "`python3 -m src.external.fetch` gets it.")
+    abt, ext = evals.get("eval_external_abt_buy"), evals.get("eval_external_parts")
+    if abt:
+        st.markdown(f"**A. Abt-Buy product matching** (University of Mannheim benchmark, fixed test split: {abt['test_pairs']} pairs, "
+                    f"{abt['test_matches']} true matches)")
+        st.dataframe(pd.DataFrame([{"Method": k, "Precision": f"{v['precision']:.2f}", "Recall": f"{v['recall']:.2f}", "F1": f"{v['f1']:.2f}"}
+                                   for k, v in {**abt["results"], **abt["published"]}.items()]), hide_index=True, width="stretch")
+        st.caption(f"The benchmark's validation split was used only to check the model-code rule and set two similarity cutoffs. "
+                   f"Claude judged {abt['claude']['pairs_sent']} pairs for ${abt['claude']['cost_usd']:.2f}. The last two rows are the baselines published on the benchmark page.")
+    if ext:
+        st.markdown(f"**B. Real electronic parts** ({ext['bom_parts']} BOM parts from {ext['bom_files']} open-hardware Kitspace BOMs; "
+                    f"{ext['mpns_found_in_catalog']} of their manufacturer part numbers found in the JLCPCB catalog of {ext['catalog_size']:,} parts; "
+                    f"{ext['no_match_lines']} State of California purchase-order lines as true no-match cases)")
+        table = []
+        for cond, c in ext["conditions"].items():
+            for stage_name, m in (("Rules + classifier", c["classifier_stage"]), ("Rules + classifier + Claude", c["with_claude"])):
+                table.append({"Condition": cond, "Stage": stage_name, "Right": m["correct"], "Same-spec alternate": m["wrong_same_spec_alternate"],
+                              "Wrong": m["wrong_other"], "In review": m["in_review"], "Called no match": m["called_no_match"],
+                              "Precision": f"{m['precision']:.2f}", "Recall": f"{m['recall']:.2f}",
+                              "No-match lines right": f"{m['no_match_accuracy']:.1%}", "No-match wrongly accepted": m["no_match_wrongly_accepted"]})
+        st.dataframe(pd.DataFrame(table), hide_index=True, width="stretch")
+        st.markdown("""
+- **The classifier does not transfer.** Trained on synthetic drill parts, it sends almost every real electronics line to review. Rules and Claude carry this test. A real deployment needs the client's own confirmed matches to train on.
+- **With the part number in the text, the rule that looks for it does most of the work**, and precision stays at 0.99.
+- **With the part number hidden, recall is low (0.28) and precision holds (0.97).** A hobbyist BOM line such as "Red LED 5mm" does not carry enough to pick one catalog part, and the tool declines instead of guessing.
+- **Real no-match lines are rejected correctly more than 99% of the time** after Claude. The two or three accepted in error were accepted by the classifier, not by Claude.
+""")
+
     st.subheader("Limits")
     st.markdown("""
 - **The data is synthetic.** Accuracy is measured on noise this project generated. Real exports are messier in ways the generator does not model, so treat these numbers as a ceiling, not a forecast.
+- **The classifier is specific to the data it was trained on.** On real electronics parts it abstained on almost everything (see the external tests above).
 - **One product family.** Four drill models and 276 parts. A real manufacturer has thousands of parts and many near-identical ones.
 - **Allocation is an estimate.** Spend is split by BOM quantity and build volume. It ignores inventory, scrap and timing between buying and building.
 - **Buckets lean on the PO type.** Where it is blank, the bucket is inferred from the match and the plant. A blank, unmatched spare is counted as unassigned.

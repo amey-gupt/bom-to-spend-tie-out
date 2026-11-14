@@ -1,0 +1,113 @@
+{
+  "bom_files": 14,
+  "bom_positions": 262,
+  "bom_parts": 250,
+  "bom_mpns": 354,
+  "mpns_found_in_catalog": 208,
+  "catalog_size": 4276372,
+  "no_match_lines": 500,
+  "zero_shot": "classifier and cutoffs from the synthetic tuning split (accept at p >= 0.863, Claude pick at >= 0.72)",
+  "conditions": {
+    "MPN visible in the purchase text": {
+      "rules": {
+        "": 563,
+        "pn_in_text": 145
+      },
+      "classifier_stage": {
+        "catalog_lines": 208,
+        "accepted": 145,
+        "correct": 145,
+        "wrong": 0,
+        "wrong_same_spec_alternate": 0,
+        "wrong_other": 0,
+        "in_review": 63,
+        "called_no_match": 0,
+        "precision": 1.0,
+        "recall": 0.6971153846153846,
+        "precision_counting_alternates": 1.0,
+        "no_match_lines": 500,
+        "no_match_correct": 22,
+        "no_match_in_review": 476,
+        "no_match_wrongly_accepted": 2,
+        "no_match_accuracy": 0.044
+      },
+      "with_claude": {
+        "catalog_lines": 208,
+        "accepted": 164,
+        "correct": 163,
+        "wrong": 1,
+        "wrong_same_spec_alternate": 0,
+        "wrong_other": 1,
+        "in_review": 5,
+        "called_no_match": 39,
+        "precision": 0.9939024390243902,
+        "recall": 0.7836538461538461,
+        "precision_counting_alternates": 0.9939024390243902,
+        "no_match_lines": 500,
+        "no_match_correct": 498,
+        "no_match_in_review": 0,
+        "no_match_wrongly_accepted": 2,
+        "no_match_accuracy": 0.996
+      },
+      "claude": {
+        "lines_sent": 539,
+        "model": "claude-opus-5-5",
+        "calls": 525,
+        "failed_calls": 0,
+        "input_tokens": 697184,
+        "output_tokens": 49964,
+        "cost_usd": 3.788
+      }
+    },
+    "MPN hidden": {
+      "rules": {
+        "": 708
+      },
+      "classifier_stage": {
+        "catalog_lines": 208,
+        "accepted": 1,
+        "correct": 1,
+        "wrong": 0,
+        "wrong_same_spec_alternate": 0,
+        "wrong_other": 0,
+        "in_review": 204,
+        "called_no_match": 3,
+        "precision": 1.0,
+        "recall": 0.004807692307692308,
+        "precision_counting_alternates": 1.0,
+        "no_match_lines": 500,
+        "no_match_correct": 0,
+        "no_match_in_review": 497,
+        "no_match_wrongly_accepted": 3,
+        "no_match_accuracy": 0.0
+      },
+      "with_claude": {
+        "catalog_lines": 208,
+        "accepted": 61,
+        "correct": 59,
+        "wrong": 2,
+        "wrong_same_spec_alternate": 0,
+        "wrong_other": 2,
+        "in_review": 18,
+        "called_no_match": 129,
+        "precision": 0.9672131147540983,
+        "recall": 0.28365384615384615,
+        "precision_counting_alternates": 0.9672131147540983,
+        "no_match_lines": 500,
+        "no_match_correct": 497,
+        "no_match_in_review": 0,
+        "no_match_wrongly_accepted": 3,
+        "no_match_accuracy": 0.994
+      },
+      "claude": {
+        "lines_sent": 701,
+        "model": "claude-opus-5-5",
+        "calls": 687,
+        "failed_calls": 0,
+        "input_tokens": 918254,
+        "output_tokens": 72463,
+        "cost_usd": 5.1223
+      }
+    }
+  }
+}

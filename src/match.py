@@ -14,12 +14,13 @@ from __future__ import annotations
 import hashlib
 import os
 import pickle
+import re
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 
-from .normalize import Inputs, load_inputs
+from .normalize import Inputs, load_inputs, norm_pn
 
 BACKENDS = {"local": "sentence-transformers/all-MiniLM-L6-v2", "openai": "text-embedding-3-small"}
 CACHE_DIR = Path("cache")
@@ -39,19 +40,24 @@ def rule_match(inp: Inputs) -> pd.DataFrame:
     pn_exact     normalized part number equals a BOM part's
     xref         crosswalk maps the supplier's part number to a BOM part
     xref_offbom  crosswalk maps it to an internal part that is on no supplied BOM: a settled 'no match'
+    pn_in_text   exactly one BOM part number is written out inside the item description
     """
     p = inp.purchases
     by_key = inp.parts.drop_duplicates("pn_key", keep=False).set_index("pn_key")["part_number"]
     xref = inp.xref.drop_duplicates("spn_key", keep=False).set_index("spn_key")["part_number"]
     on_bom = set(inp.parts["part_number"])
 
+    long_keys = {k for k in by_key.index if len(k) >= 6}
     part, method = [], []
-    for key in p["pn_key"]:
+    for key, text in zip(p["pn_key"], p["item_description"]):
+        in_text = long_keys & {norm_pn(tok) for tok in re.split(r"[\s,;()]+", text)} if long_keys else set()
         if key and key in by_key.index:
             part.append(by_key[key]); method.append("pn_exact")
         elif key and key in xref.index:
             target = xref[key]
             part.append(target if target in on_bom else ""); method.append("xref" if target in on_bom else "xref_offbom")
+        elif len(in_text) == 1:
+            part.append(by_key[in_text.pop()]); method.append("pn_in_text")
         else:
             part.append(""); method.append("")
     return pd.DataFrame({"rule_part": part, "rule_method": method}, index=p.index)

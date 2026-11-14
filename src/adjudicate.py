@@ -53,7 +53,7 @@ def build_prompts(inp: Inputs, rules: pd.DataFrame, pairs: pd.DataFrame, lines) 
     p, parts = inp.purchases, inp.parts.set_index("part_number")
     settled = p[rules["rule_part"] != ""].assign(part=rules["rule_part"])
     ref_price = settled.groupby("part")["unit_price_usd"].median()
-    suppliers = settled.groupby("part")["supplier"].agg(lambda s: s.value_counts().index[0])
+    suppliers = settled.groupby("part")["supplier"].agg(lambda s: next(iter(s.value_counts().index), ""))
     usage = inp.boms.groupby("part_number").apply(
         lambda g: f"{g['assembly_id'].iloc[0]} assembly of {', '.join(g['product_id'])}", include_groups=False)
     cands = pairs[pairs["line"].isin(lines)].sort_values(["line", "emb_rank"]).groupby("line")["cand"].agg(list)
@@ -79,16 +79,16 @@ def build_prompts(inp: Inputs, rules: pd.DataFrame, pairs: pd.DataFrame, lines) 
     return pd.DataFrame(rows, columns=["line", "prompt", "cands"]).set_index("line")
 
 
-def _ask(client: anthropic.Anthropic, prompt: str, model: str) -> dict | None:
+def _ask(client: anthropic.Anthropic, prompt: str, model: str, system: str = SYSTEM, schema=Verdict, cache: Path = CACHE) -> dict | None:
     """One cached call. The cache entry keeps the verdict and the token usage that produced it."""
-    path = CACHE / f"{hashlib.sha256((model + SYSTEM + prompt).encode()).hexdigest()}.json"
+    path = cache / f"{hashlib.sha256((model + system + prompt).encode()).hexdigest()}.json"
     if path.exists():
         hit = json.loads(path.read_text())
         if "input_tokens" in hit:
             return hit
     try:
-        resp = client.messages.parse(model=model, max_tokens=4000, system=SYSTEM, output_config={"effort": "low"},
-                                     messages=[{"role": "user", "content": prompt}], output_format=Verdict)
+        resp = client.messages.parse(model=model, max_tokens=4000, system=system, output_config={"effort": "low"},
+                                     messages=[{"role": "user", "content": prompt}], output_format=schema)
     except anthropic.RateLimitError:
         return None  # the SDK already retried; leave uncached so a rerun picks it up
     except anthropic.APIStatusError as e:
@@ -104,21 +104,26 @@ def _ask(client: anthropic.Anthropic, prompt: str, model: str) -> dict | None:
     return entry
 
 
-def adjudicate(prompts: pd.DataFrame, model: str = MODEL, workers: int = 8) -> tuple[pd.DataFrame, dict]:
-    """Returns (verdicts, usage). Verdicts hold llm_part ('' for none), llm_conf and llm_reason per line; lines whose
-    call failed get llm_conf NaN and stay in review. Usage is tokens and list-price cost over the distinct calls,
-    including calls answered from the cache (what it cost to produce them)."""
+def ask_many(prompts: list[str], model: str = MODEL, system: str = SYSTEM, schema=Verdict, cache: Path = CACHE, workers: int = 8) -> tuple[dict, dict]:
+    """Ask each distinct prompt once. Returns ({prompt: answer or None}, usage)."""
     load_env()
-    CACHE.mkdir(parents=True, exist_ok=True)
+    cache.mkdir(parents=True, exist_ok=True)
     client = anthropic.Anthropic(max_retries=4)
-    unique = prompts["prompt"].drop_duplicates().tolist()
+    unique = list(dict.fromkeys(prompts))
     with ThreadPoolExecutor(workers) as pool:
-        answers = dict(zip(unique, pool.map(lambda q: _ask(client, q, model), unique)))
+        answers = dict(zip(unique, pool.map(lambda q: _ask(client, q, model, system, schema, cache), unique)))
     done = [a for a in answers.values() if a is not None]
     tokens_in, tokens_out = sum(a["input_tokens"] for a in done), sum(a["output_tokens"] for a in done)
     price_in, price_out = PRICE_PER_MTOK[model]
-    usage = dict(model=model, calls=len(done), failed_calls=len(unique) - len(done), input_tokens=tokens_in, output_tokens=tokens_out,
-                 cost_usd=round((tokens_in * price_in + tokens_out * price_out) / 1e6, 4))
+    return answers, dict(model=model, calls=len(done), failed_calls=len(unique) - len(done), input_tokens=tokens_in, output_tokens=tokens_out,
+                         cost_usd=round((tokens_in * price_in + tokens_out * price_out) / 1e6, 4))
+
+
+def adjudicate(prompts: pd.DataFrame, model: str = MODEL, workers: int = 8, cache: Path = CACHE) -> tuple[pd.DataFrame, dict]:
+    """Returns (verdicts, usage). Verdicts hold llm_part ('' for none), llm_conf and llm_reason per line; lines whose
+    call failed get llm_conf NaN and stay in review. Usage is tokens and list-price cost over the distinct calls,
+    including calls answered from the cache (what it cost to produce them)."""
+    answers, usage = ask_many(prompts["prompt"].tolist(), model, cache=cache, workers=workers)
     rows = []
     for line, prompt, cands in prompts.itertuples():
         v = answers[prompt]
