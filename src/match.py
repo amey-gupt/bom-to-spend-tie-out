@@ -12,6 +12,7 @@ Stages
 from __future__ import annotations
 
 import hashlib
+import os
 import pickle
 from pathlib import Path
 
@@ -20,7 +21,7 @@ import pandas as pd
 
 from .normalize import Inputs, load_inputs
 
-MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+BACKENDS = {"local": "sentence-transformers/all-MiniLM-L6-v2", "openai": "text-embedding-3-small"}
 CACHE_DIR = Path("cache")
 TOP_K = 5
 DEFAULT_THRESHOLD = 0.80  # evaluate.py picks the working threshold on the tuning split
@@ -58,24 +59,45 @@ def rule_match(inp: Inputs) -> pd.DataFrame:
 
 # ----------------------------------------------------------------- embeddings
 
-def embed(texts: list[str], model_name: str = MODEL) -> np.ndarray:
-    """Unit-length embeddings, cached on disk per (model, text) so nothing is computed twice."""
+def load_env():
+    """API keys come from the environment, or from .env.local / .env (both gitignored)."""
+    for name in (".env.local", ".env"):
+        if Path(name).exists():
+            for line in Path(name).read_text().splitlines():
+                if "=" in line and not line.lstrip().startswith("#"):
+                    key, value = line.split("=", 1)
+                    os.environ.setdefault(key.strip(), value.strip().strip('"\''))
+
+
+def _encode(texts: list[str], backend: str) -> np.ndarray:
+    if backend == "local":
+        from sentence_transformers import SentenceTransformer  # imported late: slow to load, not needed on a warm cache
+        return SentenceTransformer(BACKENDS[backend]).encode(texts, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
+    from openai import OpenAI
+    load_env()
+    client, rows = OpenAI(), []
+    for i in range(0, len(texts), 500):
+        rows += [d.embedding for d in client.embeddings.create(model=BACKENDS[backend], input=texts[i:i + 500]).data]
+    vectors = np.asarray(rows)
+    return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
+
+
+def embed(texts: list[str], backend: str = "local") -> np.ndarray:
+    """Unit-length embeddings, cached on disk per (model, text) so nothing is computed or paid for twice."""
     CACHE_DIR.mkdir(exist_ok=True)
-    path = CACHE_DIR / f"embeddings_{hashlib.sha1(model_name.encode()).hexdigest()[:10]}.pkl"
+    path = CACHE_DIR / f"embeddings_{hashlib.sha1(BACKENDS[backend].encode()).hexdigest()[:10]}.pkl"
     cache = pickle.loads(path.read_bytes()) if path.exists() else {}
     missing = sorted({t for t in texts if t not in cache})
     if missing:
-        from sentence_transformers import SentenceTransformer  # imported late: slow to load, not needed on a warm cache
-        vectors = SentenceTransformer(model_name).encode(missing, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
-        cache.update(zip(missing, vectors.astype(np.float32)))
+        cache.update(zip(missing, _encode(missing, backend).astype(np.float32)))
         path.write_bytes(pickle.dumps(cache))
     return np.stack([cache[t] for t in texts])
 
 
-def embedding_candidates(inp: Inputs, k: int = TOP_K) -> tuple[np.ndarray, np.ndarray]:
+def embedding_candidates(inp: Inputs, k: int = TOP_K, backend: str = "local") -> tuple[np.ndarray, np.ndarray]:
     """For every purchase line, the k most similar BOM parts by description: (part numbers, cosine similarities)."""
-    part_vecs = embed(inp.parts["desc_norm"].tolist())
-    line_vecs = embed(inp.purchases["desc_norm"].tolist())
+    part_vecs = embed(inp.parts["desc_norm"].tolist(), backend)
+    line_vecs = embed(inp.purchases["desc_norm"].tolist(), backend)
     sims = line_vecs @ part_vecs.T
     top = np.argsort(-sims, axis=1)[:, :k]
     return inp.parts["part_number"].to_numpy()[top], np.take_along_axis(sims, top, axis=1)

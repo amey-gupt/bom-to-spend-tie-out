@@ -1,0 +1,200 @@
+"""Rerank embedding candidates with a calibrated classifier and sort lines into three outcomes.
+
+Reads data/*.csv only (through normalize.py). Labels are passed in by the caller: in the
+evaluation they come from the planted truth, in production from reviewer-confirmed matches.
+
+    python3 -m src.score            # applies the saved model, writes out/decisions.csv
+
+Outcomes per purchase line
+  accept    rules settled it, or the best candidate's calibrated probability clears the accept threshold
+  no_match  crosswalk says the part is on no supplied BOM, or no candidate reaches the reject threshold
+  review    everything in between; this band goes to the LLM and then to a person
+"""
+from __future__ import annotations
+
+import pickle
+import re
+from dataclasses import dataclass
+from difflib import SequenceMatcher
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import HistGradientBoostingClassifier
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.isotonic import IsotonicRegression
+from sklearn.model_selection import GroupKFold
+
+from . import match
+from .normalize import Inputs, load_inputs, numbers_in
+
+MODEL_DIR = Path("models")
+PN_FEATURES = ["pn_sim", "pn_prefix_match", "pn_looks_internal", "has_pn"]
+FEATURES = ["emb_sim", "emb_rank", "emb_lead", "tfidf_sim", "tfidf_lead", "num_jaccard", "num_line_in_cand", "num_cand_in_line",
+            "n_line_nums", "desc_len", "log_price_ratio", "sup_seen_part", "sup_share_prefix", *PN_FEATURES]
+ACCEPT_PRECISION = 0.99   # auto-accept threshold is set to reach this on the tuning split
+REJECT_MISS_RATE = 0.01   # at most this share of 'no match' calls may hide a true candidate, on the tuning split
+
+
+def _lead(values: np.ndarray) -> np.ndarray:
+    """Each candidate's score minus the best score among the line's other candidates."""
+    order = np.sort(values, axis=1)
+    best, second = order[:, -1:], order[:, -2:-1]
+    return values - np.where(values == best, second, best)
+
+
+def build_pairs(inp: Inputs, rules: pd.DataFrame, cand_parts: np.ndarray, cand_sims: np.ndarray) -> pd.DataFrame:
+    """One row per (purchase line, candidate part) with the features the classifier sees."""
+    p, parts = inp.purchases, inp.parts.set_index("part_number")
+    n, k = cand_parts.shape
+    line = np.repeat(np.arange(n), k)
+    cand = cand_parts.ravel()
+    part_pos = parts.index.get_indexer(cand)
+
+    # character n-gram TF-IDF: robust to abbreviations, truncation and typos where word embeddings are not
+    tfidf = TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 4), sublinear_tf=True).fit(pd.concat([parts["desc_norm"], p["desc_norm"]]))
+    line_m, part_m = tfidf.transform(p["desc_norm"]), tfidf.transform(parts["desc_norm"])
+    tfidf_sim = np.asarray(line_m[line].multiply(part_m[part_pos]).sum(axis=1)).ravel().reshape(n, k)
+
+    # numbers and units
+    line_nums = p["desc_norm"].map(numbers_in).to_numpy()[line]
+    cand_nums = parts["desc_norm"].map(numbers_in).to_numpy()[part_pos]
+    inter = np.array([len(a & b) for a, b in zip(line_nums, cand_nums)])
+    n_line = np.array([len(a) for a in line_nums])
+    n_cand = np.array([len(b) for b in cand_nums])
+
+    # what the rule-matched lines already tell us about each part: its price and who supplies it
+    settled = p[rules["rule_part"] != ""].assign(part=rules["rule_part"])
+    ref_price = settled.groupby("part")["unit_price_usd"].median()
+    part_suppliers = settled.groupby("part")["supplier_key"].agg(set).to_dict()
+    prefix = settled["part"].str.split("-").str[0]
+    prefix_share = (settled.groupby([prefix, "supplier_key"]).size() / settled.groupby(prefix).size()).to_dict()
+    sup = p["supplier_key"].to_numpy()[line]
+    cand_prefix = np.array([c.split("-")[0] for c in cand])
+
+    # part-number strings
+    line_pn = p["pn_key"].to_numpy()[line]
+    cand_pn = parts["pn_key"].to_numpy()[part_pos]
+    bom_prefixes = set(parts.index.str.split("-").str[0])
+    line_prefix = np.array([m.group(1) if (m := re.match(r"^([A-Z]{3})\d", x)) else "" for x in line_pn])
+
+    return pd.DataFrame({
+        "line": line, "cand": cand,
+        "emb_sim": cand_sims.ravel(), "emb_rank": np.tile(np.arange(k), n), "emb_lead": _lead(cand_sims).ravel(),
+        "tfidf_sim": tfidf_sim.ravel(), "tfidf_lead": _lead(tfidf_sim).ravel(),
+        "num_jaccard": inter / np.maximum(n_line + n_cand - inter, 1),
+        "num_line_in_cand": inter / np.maximum(n_line, 1), "num_cand_in_line": inter / np.maximum(n_cand, 1),
+        "n_line_nums": n_line, "desc_len": p["desc_norm"].str.len().to_numpy()[line],
+        "log_price_ratio": np.abs(np.log(p["unit_price_usd"].to_numpy()[line] / ref_price.reindex(cand).to_numpy())),  # NaN when no reference
+        "sup_seen_part": [float(s in part_suppliers.get(c, ())) for s, c in zip(sup, cand)],
+        "sup_share_prefix": [prefix_share.get((pre, s), 0.0) for pre, s in zip(cand_prefix, sup)],
+        "pn_sim": [SequenceMatcher(None, a, b).ratio() if a else 0.0 for a, b in zip(line_pn, cand_pn)],
+        "pn_prefix_match": (line_prefix == cand_prefix).astype(float),
+        "pn_looks_internal": np.isin(line_prefix, list(bom_prefixes)).astype(float),
+        "has_pn": (line_pn != "").astype(float),
+    })
+
+
+def without_pn(pairs: pd.DataFrame) -> pd.DataFrame:
+    """The same pairs as if the part-number field had been left blank. Lets lines that the rules
+    already settled teach the classifier about descriptions, prices and suppliers."""
+    out = pairs.copy()
+    out[PN_FEATURES] = 0.0
+    return out
+
+
+@dataclass
+class Scorer:
+    clf: HistGradientBoostingClassifier
+    calibrator: IsotonicRegression
+    accept_at: float
+    reject_below: float
+    backend: str
+    llm_accept_conf: float = 1.01  # set by evaluate.py once the LLM band has been scored on the tuning split
+    llm_reject_conf: float = 1.01
+
+    def proba(self, pairs: pd.DataFrame) -> np.ndarray:
+        return self.calibrator.predict(self.clf.predict_proba(pairs[FEATURES])[:, 1])
+
+    def save(self):
+        MODEL_DIR.mkdir(exist_ok=True)
+        (MODEL_DIR / f"scorer_{self.backend}.pkl").write_bytes(pickle.dumps(self))
+
+    @staticmethod
+    def load(backend: str = "local") -> "Scorer":
+        return pickle.loads((MODEL_DIR / f"scorer_{backend}.pkl").read_bytes())
+
+
+def _new_clf():
+    return HistGradientBoostingClassifier(max_depth=3, max_iter=150, learning_rate=0.06, l2_regularization=1.0, random_state=0)
+
+
+def best_per_line(pairs: pd.DataFrame, prob: np.ndarray) -> pd.DataFrame:
+    scored = pairs[["line", "cand"]].assign(prob=prob)
+    return scored.loc[scored.groupby("line")["prob"].idxmax()].set_index("line")
+
+
+def fit(pairs: pd.DataFrame, label: np.ndarray, group: np.ndarray, decides: np.ndarray, backend: str) -> tuple[Scorer, dict]:
+    """Train on labeled pairs. Calibration and both thresholds use out-of-fold predictions only,
+    so they are not flattered by the model having seen the same rows.
+
+    group    rows sharing a group stay in one fold; the evaluation groups by noise style, so every
+             out-of-fold prediction is for a style that fold's model never saw
+    decides  True for rows of lines the classifier would really decide (not settled by rules)
+    """
+    X = pairs[FEATURES]
+    oof = np.zeros(len(pairs))
+    for train, test in GroupKFold(n_splits=min(5, len(np.unique(group)))).split(X, label, group):
+        oof[test] = _new_clf().fit(X.iloc[train], label[train]).predict_proba(X.iloc[test])[:, 1]
+    calibrator = IsotonicRegression(y_min=0, y_max=1, out_of_bounds="clip").fit(oof, label)
+    prob = calibrator.predict(oof)
+
+    real = pairs[decides].assign(label=label[decides])
+    best = best_per_line(real, prob[decides])
+    best["correct"] = real.set_index(["line", "cand"])["label"].reindex(list(zip(best.index, best["cand"]))).to_numpy()
+    best["has_true_cand"] = real.groupby("line")["label"].max()
+
+    grid = np.unique(np.round(best["prob"], 4))
+    accept_at = next((t for t in grid if best.loc[best["prob"] >= t, "correct"].mean() >= ACCEPT_PRECISION), 1.01)
+    reject_below = max((t for t in grid if best.loc[best["prob"] < t, "has_true_cand"].mean() <= REJECT_MISS_RATE), default=0.0)
+    reject_below = min(reject_below, accept_at)
+
+    accepted = best["prob"] >= accept_at
+    info = dict(train_pairs=len(pairs), deciding_lines=len(best), accept_at=float(accept_at), reject_below=float(reject_below),
+                oof_accept_share=float(accepted.mean()), oof_accept_precision=float(best.loc[accepted, "correct"].mean()),
+                oof_review_share=float(((best["prob"] < accept_at) & (best["prob"] >= reject_below)).mean()))
+    return Scorer(_new_clf().fit(X, label), calibrator, float(accept_at), float(reject_below), backend), info
+
+
+def decide(rules: pd.DataFrame, pairs: pd.DataFrame, scorer: Scorer) -> pd.DataFrame:
+    """Per purchase line: decision, where it came from, the part (best candidate even when not accepted), probability."""
+    best = best_per_line(pairs, scorer.proba(pairs))
+    out = pd.DataFrame({"decision": "review", "source": "classifier", "part": best["cand"], "prob": best["prob"]}, index=rules.index)
+    out.loc[out["prob"] >= scorer.accept_at, "decision"] = "accept"
+    out.loc[out["prob"] < scorer.reject_below, "decision"] = "no_match"
+    hit = rules["rule_part"] != ""
+    out.loc[hit, ["decision", "part", "prob"]] = np.column_stack([np.full(hit.sum(), "accept"), rules.loc[hit, "rule_part"], np.ones(hit.sum())])
+    off = rules["rule_method"] == "xref_offbom"
+    out.loc[off, ["decision", "prob"]] = ["no_match", 0.0]
+    out.loc[hit | off, "source"] = "rule_" + rules.loc[hit | off, "rule_method"]
+    out["prob"] = out["prob"].astype(float)
+    return out
+
+
+def run(backend: str = "local") -> pd.DataFrame:
+    inp = load_inputs()
+    rules = match.rule_match(inp)
+    cand_parts, cand_sims = match.embedding_candidates(inp, backend=backend)
+    out = decide(rules, build_pairs(inp, rules, cand_parts, cand_sims), Scorer.load(backend))
+    out.insert(0, "po_id", inp.purchases["po_id"])
+    out["spend_usd"] = inp.purchases["spend_usd"].round(2)
+    return out
+
+
+if __name__ == "__main__":
+    out = run()
+    Path("out").mkdir(exist_ok=True)
+    out.to_csv("out/decisions.csv", index=False)
+    summary = out.groupby("decision").agg(lines=("po_id", "size"), spend_usd=("spend_usd", "sum"))
+    print(summary.assign(share_of_spend=(summary["spend_usd"] / summary["spend_usd"].sum()).map("{:.1%}".format)).to_string())
+    print("wrote out/decisions.csv (classifier stage only; run src.evaluate step3 for the LLM band)")

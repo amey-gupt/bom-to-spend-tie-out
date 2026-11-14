@@ -2,7 +2,10 @@
 
 The only module that reads data/truth/.
 
-    python3 -m src.evaluate         # prints the comparison and writes out/eval_step2.json
+    python3 -m src.evaluate step2 [--backend local|openai]   # naive vs rules vs rules + embeddings
+    python3 -m src.evaluate step3 [--no-llm]                  # classifier, three outcomes, Claude on the review band
+
+step3 also trains the classifier (labels come from the truth, tuning split only) and saves it to models/.
 
 Definitions (per purchase line; a duplicate part number counts as the same part)
   precision        correct matches / lines the method matched
@@ -19,7 +22,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from . import match
+from . import adjudicate, match, score as scoring
 from .normalize import load_inputs
 
 
@@ -61,14 +64,14 @@ def pick_threshold(rules, cand_parts, cand_sims, truth, purchases, canon, tune) 
     return best
 
 
-def main(data_dir: str | Path = "data"):
+def step2(data_dir: str | Path = "data", backend: str = "local"):
     inp = load_inputs(data_dir)
     p = inp.purchases
     truth, canon = load_truth(data_dir)
     assert (truth["po_id"] == p["po_id"]).all()
 
     rules = match.rule_match(inp)
-    cand_parts, cand_sims = match.embedding_candidates(inp)
+    cand_parts, cand_sims = match.embedding_candidates(inp, backend=backend)
     tune, held = (truth["split"] == "tune").to_numpy(), (truth["split"] == "heldout").to_numpy()
     threshold = pick_threshold(rules, cand_parts, cand_sims, truth, p, canon, tune)
 
@@ -111,9 +114,131 @@ def main(data_dir: str | Path = "data"):
         print(f"  {r['style']:<26}{r['lines']:>6} lines  precision {r['precision']:.1%}  recall {r['recall']:.1%}")
 
     Path("out").mkdir(exist_ok=True)
-    Path("out/eval_step2.json").write_text(json.dumps(report, indent=2, default=float))
-    print("\nwrote out/eval_step2.json")
+    Path(f"out/eval_step2_{backend}.json").write_text(json.dumps(report, indent=2, default=float))
+    print(f"\nwrote out/eval_step2_{backend}.json")
+    return report
+
+
+# ---------------------------------------------------------------------- step 3
+
+def outcome_metrics(dec: pd.DataFrame, truth: pd.DataFrame, purchases: pd.DataFrame, canon: dict, mask: np.ndarray) -> dict:
+    same = lambda s: s.map(lambda x: canon.get(x, x))
+    d, spend, po_type = dec[mask], purchases["spend_usd"][mask], purchases["po_type"][mask]
+    true = same(truth["true_part_number"][mask])
+    accept, review, none = d["decision"] == "accept", d["decision"] == "review", d["decision"] == "no_match"
+    right = accept & (same(d["part"]) == true)
+    by_model = accept & ~d["source"].str.startswith("rule_")  # accepted by the classifier or the LLM, not by a rule
+    total = spend.sum()
+    return dict(
+        lines=int(mask.sum()), spend=float(total),
+        accept_lines=int(accept.sum()), accept_share=float(accept.mean()), accept_spend_share=float(spend[accept].sum() / total),
+        accept_precision=float(right.sum() / max(accept.sum(), 1)),
+        model_accept_lines=int(by_model.sum()), model_accept_precision=float((right & by_model).sum() / max(by_model.sum(), 1)),
+        recall=float(right.sum() / max((true != "").sum(), 1)),
+        review_lines=int(review.sum()), review_spend=float(spend[review].sum()), review_spend_share=float(spend[review].sum() / total),
+        no_match_lines=int(none.sum()), no_match_accuracy=float((none & (true == "")).sum() / max(none.sum(), 1)),
+        no_match_missed_spend=float(spend[none & (true != "")].sum()),
+        tie_out=float(spend[accept | po_type.isin(["service", "warranty"])].sum() / total),
+        true_tie_out=float(spend[truth["true_bucket"][mask] != "unassigned"].sum() / total),
+        wrong_match_spend=float(spend[accept & ~right].sum()),
+    )
+
+
+def print_outcomes(title: str, m: dict):
+    print(f"\n{title}")
+    print(f"  auto-accept   {m['accept_lines']:>5} lines ({m['accept_share']:.1%} of lines, {m['accept_spend_share']:.1%} of spend), precision {m['accept_precision']:.2%}"
+          f"  [accepted by model, not rules: {m['model_accept_lines']} lines at {m['model_accept_precision']:.2%}]")
+    print(f"  review queue  {m['review_lines']:>5} lines, ${m['review_spend']:,.0f} ({m['review_spend_share']:.1%} of spend)")
+    print(f"  no match      {m['no_match_lines']:>5} lines, {m['no_match_accuracy']:.1%} truly have no BOM part (${m['no_match_missed_spend']:,.0f} wrongly dropped)")
+    print(f"  recall {m['recall']:.1%} | tie-out {m['tie_out']:.1%} vs true {m['true_tie_out']:.1%} | wrong-match ${m['wrong_match_spend']:,.0f}")
+
+
+def _llm_threshold(conf: pd.Series, right: pd.Series, target: float) -> float:
+    """Lowest confidence cutoff whose answers are right at the target rate on the tuning split; 1.01 = never auto-resolve."""
+    for c in np.arange(0.50, 1.0, 0.01):
+        keep = conf >= c
+        if keep.sum() >= 20 and right[keep].mean() >= target:
+            return float(round(c, 2))
+    return 1.01
+
+
+def step3(data_dir: str | Path = "data", backends=("local", "openai"), use_llm: bool = True):
+    inp = load_inputs(data_dir)
+    p = inp.purchases
+    truth, canon = load_truth(data_dir)
+    same = np.vectorize(lambda x: canon.get(x, x))
+    true_part = same(truth["true_part_number"].to_numpy())
+    tune, held = (truth["split"] == "tune").to_numpy(), (truth["split"] == "heldout").to_numpy()
+    rules = match.rule_match(inp)
+    open_ = (rules["rule_method"] == "").to_numpy()
+    # Cross-validation folds leave one description style out at a time, so calibration and thresholds are set
+    # on styles the fold's model never saw. That is the situation the held-out split tests.
+    style = pd.factorize(truth["desc_style"])[0]
+    report, runs = {"backends": {}}, {}
+
+    for backend in backends:
+        cand_parts, cand_sims = match.embedding_candidates(inp, backend=backend)
+        pairs = scoring.build_pairs(inp, rules, cand_parts, cand_sims)
+        label = (same(pairs["cand"].to_numpy()) == true_part[pairs["line"]]).astype(int)
+        line_tune, line_open = tune[pairs["line"]], open_[pairs["line"]]
+        # Training rows, tuning split only: lines the rules left open, plus rule-settled lines with the part number hidden.
+        a, b = pairs[line_tune & line_open], scoring.without_pn(pairs[line_tune & ~line_open])
+        train = pd.concat([a, b], ignore_index=True)
+        y = np.concatenate([label[line_tune & line_open], label[line_tune & ~line_open]])
+        scorer, info = scoring.fit(train, y, style[train["line"]], np.arange(len(train)) < len(a), backend)
+        dec = scoring.decide(rules, pairs, scorer)
+        hits = same(cand_parts[held & open_ & (true_part != "")]) == true_part[held & open_ & (true_part != "")][:, None]
+        report["backends"][backend] = dict(fit=info, recall_at_1=float(hits[:, 0].mean()), recall_at_5=float(hits.any(axis=1).mean()),
+                                           heldout=outcome_metrics(dec, truth, p, canon, held), tune=outcome_metrics(dec, truth, p, canon, tune))
+        runs[backend] = (scorer, pairs, dec)
+        print(f"\n=== embedding backend: {backend} ({match.BACKENDS[backend]}) ===")
+        print(f"held-out lines the rules left open: true part is the top candidate for {hits[:, 0].mean():.1%}, in the top 5 for {hits.any(axis=1).mean():.1%}")
+        print(f"classifier trained on {info['train_pairs']} tune pairs; accept at p >= {info['accept_at']:.3f}, no match below {info['reject_below']:.3f} "
+              f"(out-of-fold on tune: {info['oof_accept_share']:.1%} of open lines accepted at {info['oof_accept_precision']:.2%} precision)")
+        print_outcomes("HELD-OUT, rules + classifier", report["backends"][backend]["heldout"])
+
+    # The LLM stage runs once, on the backend that auto-accepts more of the tuning split.
+    best = max(backends, key=lambda b: report["backends"][b]["fit"]["oof_accept_share"])
+    scorer, pairs, dec = runs[best]
+    report["chosen_backend"] = best
+    if use_llm:
+        band = dec.index[dec["decision"] == "review"]
+        prompts = adjudicate.build_prompts(inp, rules, pairs, band)
+        print(f"\n=== Claude on the review band ({best} backend): {len(band)} lines, {prompts['prompt'].nunique()} distinct items ===")
+        verdicts = adjudicate.adjudicate(prompts)
+        answered = verdicts["llm_conf"].notna()
+        v_right = pd.Series(same(verdicts["llm_part"].to_numpy()) == true_part[verdicts.index], index=verdicts.index)
+        in_tune = pd.Series(tune[verdicts.index], index=verdicts.index) & answered
+        picks, nones = in_tune & (verdicts["llm_part"] != ""), in_tune & (verdicts["llm_part"] == "")
+        scorer.llm_accept_conf = _llm_threshold(verdicts["llm_conf"][picks], v_right[picks], scoring.ACCEPT_PRECISION)
+        scorer.llm_reject_conf = _llm_threshold(verdicts["llm_conf"][nones], v_right[nones], 1 - scoring.REJECT_MISS_RATE)
+        in_held = pd.Series(held[verdicts.index], index=verdicts.index) & answered
+        dec = adjudicate.apply(dec, verdicts, scorer.llm_accept_conf, scorer.llm_reject_conf)
+        report["llm"] = dict(model=adjudicate.MODEL, band_lines=len(band), distinct_items=int(prompts["prompt"].nunique()),
+                             unanswered_lines=int((~answered).sum()), accept_conf=scorer.llm_accept_conf, reject_conf=scorer.llm_reject_conf,
+                             heldout_band_lines=int(in_held.sum()), heldout_answer_accuracy=float(v_right[in_held].mean()),
+                             tune_answer_accuracy=float(v_right[in_tune].mean()),
+                             heldout=outcome_metrics(dec, truth, p, canon, held), tune=outcome_metrics(dec, truth, p, canon, tune))
+        print(f"Claude's answer is right on {v_right[in_held].mean():.1%} of {in_held.sum()} held-out band lines ({v_right[in_tune].mean():.1%} on tune); "
+              f"{(~answered).sum()} lines unanswered")
+        print(f"confidence cutoffs set on tune: accept a pick at >= {scorer.llm_accept_conf}, accept 'none' at >= {scorer.llm_reject_conf} (1.01 = never)")
+        print_outcomes("HELD-OUT, rules + classifier + Claude", report["llm"]["heldout"])
+        print_outcomes("TUNE, rules + classifier + Claude", report["llm"]["tune"])
+
+    scorer.save()
+    Path("out").mkdir(exist_ok=True)
+    dec.insert(0, "po_id", p["po_id"])
+    dec.to_csv("out/decisions.csv", index=False)
+    Path("out/eval_step3.json").write_text(json.dumps(report, indent=2, default=float))
+    print(f"\nsaved models/scorer_{best}.pkl, out/decisions.csv, out/eval_step3.json")
+    return report
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("step", choices=["step2", "step3"])
+    ap.add_argument("--backend", choices=list(match.BACKENDS), default="local")
+    ap.add_argument("--no-llm", action="store_true")
+    args = ap.parse_args()
+    step2(backend=args.backend) if args.step == "step2" else step3(use_llm=not args.no_llm)

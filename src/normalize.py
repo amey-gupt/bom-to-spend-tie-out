@@ -40,6 +40,27 @@ def norm_desc(raw: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
+_NUM = re.compile(r"(\d+(?:\.\d+)?)(KW|MAH)?")
+
+
+def numbers_in(desc_norm: str) -> frozenset:
+    """Numeric attributes in a normalized description, units reconciled (0.1KW -> 100, 2000MAH -> 2)."""
+    out = set()
+    for value, unit in _NUM.findall(desc_norm):
+        v = float(value) * (1000 if unit == "KW" else 0.001 if unit == "MAH" else 1)
+        out.add(f"{round(v, 4):g}")
+    return frozenset(out)
+
+
+def canonical_suppliers(keys) -> dict:
+    """Map each supplier key to the longest key it is a prefix of, so truncated vendor names fold into the full one."""
+    uniq = sorted(set(keys), key=len, reverse=True)
+    out = {}
+    for k in uniq:
+        out[k] = next((full for full in uniq if len(k) >= 8 and full.startswith(k)), k)
+    return out
+
+
 def units_per_uom(raw: str) -> int:
     """Base units (each) in one purchase unit. 'BX100' -> 100, 'C' -> 100, 'M' -> 1000, 'PCS' -> 1."""
     s = str(raw).upper().strip()
@@ -70,6 +91,7 @@ def load_inputs(data_dir: str | Path = "data") -> Inputs:
     p["unit_price"] = p["unit_price"].astype(float)
     p["pn_key"] = p["supplier_part_number"].map(norm_pn)
     p["supplier_key"] = p["supplier"].map(norm_supplier)
+    p["supplier_key"] = p["supplier_key"].map(canonical_suppliers(p["supplier_key"]))
     p["desc_norm"] = p["item_description"].map(norm_desc)
     p["units_per_uom"] = p["uom"].map(units_per_uom)
     p["spend_usd"] = p["qty"] * p["unit_price"] * p["currency"].map(fx)

@@ -6,17 +6,28 @@ Links a manufacturer's bills of materials (BOMs) to its purchasing records using
 
 ## Status
 
-Steps 1 and 2 of 6 are done: the data generator, and the rules + embedding matcher with its evaluation. Scoring with a review queue, allocation and the app are not built yet.
+Steps 1 to 3 of 6 are done: the data generator, the rules + embedding matcher, and the calibrated classifier with three outcomes and Claude on the review band. Allocation, buckets, leads and the app are not built yet.
 
-## Results so far (held-out noise styles, 1,669 lines)
+## Results so far (held-out noise styles, 1,669 lines, $9.8M, true tie-out rate 98.7%)
 
-| Method | Precision | Recall | Dollar-weighted accuracy | Tie-out rate (true: 98.7%) |
-|---|---|---|---|---|
-| Naive exact part number | 100.0% | 21.8% | 27.6% | 28.2% |
-| Rules only | 100.0% | 40.0% | 34.2% | 34.4% |
-| Rules + embeddings | 95.2% | 86.9% | 85.7% | 85.4% |
+| Stage | Tied-out spend | Precision of accepted matches | Recall | Review queue | Wrong-match dollars |
+|---|---|---|---|---|---|
+| Naive exact part number | 28.2% | 100.0% | 21.8% | n/a | $0 |
+| Rules only | 34.4% | 100.0% | 40.0% | n/a | $0 |
+| Rules + embeddings, fixed threshold | 85.4% | 95.2% | 86.9% | n/a | $86,119 |
+| Rules + classifier | 77.7% | 100.0% | 87.0% | 287 lines, $2.23M | $0 |
+| Rules + classifier + Claude | 98.1% | 100.0% | 99.2% | 12 lines, $37K | $0 |
 
-The embedding similarity threshold (0.66) was chosen on the tuning split only. Reproduce with `uv run python -m src.evaluate`.
+How the numbers are kept honest:
+
+- The classifier is trained on the tuning split only. Its accept threshold is set for at least 99% precision using leave-one-noise-style-out cross-validation, so the threshold is chosen on styles the model had not seen.
+- Claude sees only the review band (647 lines, 451 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
+- On the tuning split the full pipeline is not perfect: 99.95% precision and $18,953 of wrong-match spend.
+- All of this is measured on synthetic noise. Real exports will be messier in ways the generator does not model.
+
+Embedding backends on the same held-out lines (rules + classifier, before Claude): OpenAI `text-embedding-3-small` puts the true part first for 95.6% of open lines and auto-accepts 79.3% of lines; local `all-MiniLM-L6-v2` gets 89.9% and 74.5%. Both reach 100% precision on accepted matches.
+
+Reproduce with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3`. Step 3 needs `OPENAI_API_KEY` and `ANTHROPIC_API_KEY` in the environment or in `.env.local` on the first run; every API response is cached under `cache/`.
 
 ## Generate the data
 
@@ -53,6 +64,8 @@ src/noise.py     noise layer (independent of the backbone)
 src/generate.py  backbone, purchase lines, ground truth
 src/normalize.py load exports; normalize part numbers, units, currency, text
 src/match.py     naive baseline, rules, embedding candidates (top 5)
-src/evaluate.py  scores against data/truth/ (the only module that reads it)
+src/score.py     pair features, calibrated classifier, accept / review / no match
+src/adjudicate.py Claude on the review band: part or "none", confidence, one-sentence reason
+src/evaluate.py  trains and scores against data/truth/ (the only module that reads it)
 data/            generated CSVs
 ```
