@@ -17,6 +17,7 @@ I directed the design, experiments and decisions, and used Claude Code to write 
 - **Reports the tie-out rate:** the share of spend that ties to a product, split into production, spares, warranty and unassigned.
 - **Estimates what each product really cost in parts,** next to its BOM standard cost.
 - **Surfaces savings leads as dollar ranges:** the same part at two supplier prices, spares bought at a premium, duplicate part numbers, and parts bought beyond what the builds required.
+- **Exports the leads, product costs and saved decisions as CSV.**
 
 ## Results
 
