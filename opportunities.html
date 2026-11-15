@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Savings leads</title>
+<style>
+/* Both fonts are served by the app from static/, so the page needs no network. */
+@font-face { font-family: "Bricolage Grotesque"; src: url("app/static/bricolage-grotesque-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("app/static/inter-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+:root {
+  --bg: #EDF0F4; --surface: #FFFFFF; --ink: #0F1B2D; --muted: #5B6778; --line: #D9DEE6;
+  --money: #087F43; --money-soft: #DDF3E7; --money-on-dark: #63E2A4;
+  --buyer: #2457D6; --buyer-soft: #E4ECFF;
+  --engineer: #7A3FD1; --engineer-soft: #EFE6FF;
+  --service: #9A5200; --service-soft: #FFEFD6;
+  --display: "Bricolage Grotesque", "Inter", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.4; overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible { outline: 3px solid var(--buyer); outline-offset: 2px; }
+.app { height: 100%; display: flex; flex-direction: column; gap: 12px; padding: 4px; }
+
+/* hero */
+.hero { background: var(--ink); color: #fff; border-radius: 22px; padding: 22px 28px; display: grid; grid-template-columns: 1fr minmax(380px, 460px); gap: 36px; align-items: center; }
+.hero-label { font-size: 15px; color: #B7C2D3; }
+.hero-num { font-family: var(--display); font-weight: 700; font-size: clamp(48px, 6.2vw, 84px); line-height: 1; letter-spacing: -0.02em; margin: 6px 0 14px; color: var(--money-on-dark); font-variant-numeric: tabular-nums; }
+.hero-num .to { font-size: 0.34em; font-weight: 500; color: #B7C2D3; margin: 0 0.5em; letter-spacing: 0; }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; }
+.pill { font-size: 13.5px; padding: 5px 12px; border-radius: 999px; background: #1E2D45; color: #DCE4F0; }
+.pill.done { background: var(--money-on-dark); color: #062b18; font-weight: 600; }
+.fix-title { font-family: var(--display); font-weight: 700; font-size: 19px; margin-bottom: 8px; }
+.prod { width: 100%; display: grid; grid-template-columns: 74px 1fr auto; gap: 12px; align-items: center; background: transparent; border: 1.5px solid transparent; border-radius: 12px; padding: 7px 10px; text-align: left; color: #fff; }
+.prod:hover { background: #18263C; }
+.prod[aria-pressed="true"] { border-color: var(--money-on-dark); background: #18263C; }
+.prod-name { font-weight: 600; }
+.prod-track { height: 12px; border-radius: 6px; background: #22324C; overflow: hidden; }
+.prod-fill { height: 100%; border-radius: 6px; background: var(--money-on-dark); transform-origin: left; animation: grow .7s cubic-bezier(.2,.8,.2,1) both; }
+.prod-amt { font-size: 13.5px; color: #DCE4F0; font-variant-numeric: tabular-nums; white-space: nowrap; }
+@keyframes grow { from { transform: scaleX(0); } }
+
+/* filter row */
+.filters { display: flex; align-items: center; gap: 8px; padding: 0 6px; }
+.chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-weight: 500; font-size: 14px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.chip .n { color: var(--muted); margin-left: 6px; font-weight: 400; }
+.chip[aria-pressed="true"] .n { color: #B7C2D3; }
+.lbl { font-size: 13.5px; color: var(--muted); margin-right: 2px; }
+.tied { margin-left: auto; font-size: 13.5px; color: var(--muted); }
+.tied b { color: var(--ink); font-weight: 600; }
+
+/* cards */
+.cards { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; padding: 2px 6px 12px; align-content: start; }
+.card { background: var(--surface); border: 1.5px solid var(--line); border-radius: 18px; padding: 16px 18px; text-align: left; display: flex; flex-direction: column; gap: 10px; transition: border-color .12s, transform .12s; }
+.card:hover { border-color: var(--ink); transform: translateY(-2px); }
+.card.validated { border-color: var(--money); background: linear-gradient(0deg, #F4FBF7, #F4FBF7); }
+.card.rejected { opacity: .45; }
+.card-top { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.who { font-weight: 600; font-size: 12.5px; padding: 3px 10px; border-radius: 999px; }
+.who.Buyer { color: var(--buyer); background: var(--buyer-soft); }
+.who.Engineer { color: var(--engineer); background: var(--engineer-soft); }
+.who.Service { color: var(--service); background: var(--service-soft); }
+.tick { margin-left: auto; font-weight: 600; color: var(--money); }
+.card h3 { font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.2; letter-spacing: -0.01em; }
+.cmp { display: grid; gap: 5px; }
+.cmp-row { display: grid; grid-template-columns: 96px 1fr 76px; gap: 8px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.cmp-row span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cmp-bar { height: 8px; border-radius: 4px; background: #C9D1DC; }
+.cmp-row.hi .cmp-bar { background: #E2703A; }
+.cmp-row b { color: var(--ink); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+.amt { font-family: var(--display); font-weight: 700; font-size: 24px; color: var(--money); margin-top: auto; font-variant-numeric: tabular-nums; }
+.empty { grid-column: 1 / -1; padding: 40px; text-align: center; color: var(--muted); }
+
+/* drawer */
+.scrim { position: fixed; inset: 0; background: rgba(15,27,45,.35); opacity: 0; pointer-events: none; transition: opacity .18s; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; right: 0; bottom: 0; width: min(560px, 100%); background: var(--surface); border-radius: 22px 0 0 22px; padding: 24px 26px; overflow-y: auto; transform: translateX(102%); transition: transform .22s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; gap: 16px; }
+.drawer.open { transform: none; }
+.drawer h2 { font-family: var(--display); font-weight: 700; font-size: 26px; line-height: 1.15; letter-spacing: -0.01em; }
+.drawer .amt { font-size: 34px; margin: 0; }
+.drawer h4 { font-size: 13.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.drawer .cmp-row { grid-template-columns: 170px 1fr 86px; font-size: 14px; }
+.drawer .cmp-bar { height: 12px; border-radius: 6px; }
+.checks { padding-left: 18px; display: grid; gap: 3px; }
+.split { display: flex; gap: 6px; flex-wrap: wrap; }
+.split span { background: var(--bg); border-radius: 999px; padding: 4px 11px; font-size: 13px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; color: var(--muted); font-weight: 500; padding: 6px 8px; border-bottom: 1.5px solid var(--line); }
+td { padding: 7px 8px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+td.r, th.r { text-align: right; }
+td.src { color: var(--muted); font-size: 12px; }
+td.nw { white-space: nowrap; }
+.actions { display: flex; gap: 10px; position: sticky; bottom: -24px; background: var(--surface); padding: 12px 0 4px; margin-top: auto; }
+.btn { flex: 1; border-radius: 14px; padding: 13px; font-weight: 600; border: 1.5px solid var(--line); background: var(--surface); }
+.btn.primary { background: var(--money); border-color: var(--money); color: #fff; }
+.close { position: absolute; top: 16px; right: 18px; border: 0; background: var(--bg); width: 34px; height: 34px; border-radius: 50%; font-size: 18px; line-height: 1; }
+.note { font-size: 12.5px; color: var(--muted); }
+@media (max-width: 900px) { .hero { grid-template-columns: 1fr; } body { overflow: auto; } .app { height: auto; } .cards { overflow: visible; } }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="hero">
+    <div>
+      <div class="hero-label" id="heroLabel"></div>
+      <div class="hero-num"><span id="lo"></span><span class="to">to</span><span id="hi"></span></div>
+      <div class="pills" id="pills"></div>
+    </div>
+    <div>
+      <div class="fix-title">Fix first</div>
+      <div id="products"></div>
+    </div>
+  </header>
+  <div class="filters" id="filters"></div>
+  <main class="cards" id="cards"></main>
+</div>
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true"></aside>
+
+<script>
+const DATA = /*DATA*/null/*END*/;
+
+const state = { owner: "All", product: null, status: {} };
+const $ = (id) => document.getElementById(id);
+const money = (v) => v >= 1e6 ? "$" + (v / 1e6).toFixed(1) + "M" : v >= 1e3 ? "$" + Math.round(v / 1e3) + "K" : "$" + Math.round(v);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+// Leads flagged in_total: false (similar parts, which engineering must confirm) are listed but never counted in the totals.
+const live = () => DATA.leads.filter((l) => state.status[l.id] !== "rejected" && l.in_total !== false);
+const sum = (ls, k) => ls.reduce((a, l) => a + l[k], 0);
+
+function countUp(el, to) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = money(to); el.dataset.v = to; return; }
+  const from = +(el.dataset.v ?? 0), t0 = performance.now();
+  const step = (t) => { const p = Math.min(1, (t - t0) / 500), e = 1 - Math.pow(1 - p, 3); el.textContent = money(from + (to - from) * e); if (p < 1) requestAnimationFrame(step); else el.dataset.v = to; };
+  requestAnimationFrame(step);
+}
+
+function renderHero() {
+  const ls = live(), val = DATA.leads.filter((l) => state.status[l.id] === "validated");
+  $("heroLabel").textContent = "Savings leads found in " + money(DATA.spend_total) + " of spend";
+  countUp($("lo"), sum(ls, "low")); countUp($("hi"), sum(ls, "high"));
+  const share = (v) => (100 * v / DATA.spend_total).toFixed(1) + "%";
+  $("pills").innerHTML =
+    `<span class="pill">${ls.length} leads</span><span class="pill">${share(sum(ls, "low"))} to ${share(sum(ls, "high"))} of spend</span>` +
+    (val.length ? `<span class="pill done">${money(sum(val, "low"))} to ${money(sum(val, "high"))} validated</span>` : `<span class="pill">None validated yet</span>`);
+}
+
+function renderProducts() {
+  const rows = DATA.products.map((p) => {
+    const ls = live().filter((l) => l.products.some((x) => x.id === p.id));
+    const part = (k) => ls.reduce((a, l) => a + l[k] * l.products.find((x) => x.id === p.id).share, 0);
+    return { id: p.id, low: part("low"), high: part("high") };
+  }).sort((a, b) => b.high - a.high);
+  const top = Math.max(...rows.map((r) => r.high), 1);
+  $("products").innerHTML = rows.map((r) =>
+    `<button class="prod" data-id="${esc(r.id)}" aria-pressed="${state.product === r.id}">
+       <span class="prod-name">${esc(r.id)}</span>
+       <span class="prod-track"><span class="prod-fill" style="display:block;width:${(100 * r.high / top).toFixed(1)}%"></span></span>
+       <span class="prod-amt">${money(r.low)} to ${money(r.high)}</span>
+     </button>`).join("");
+  document.querySelectorAll(".prod").forEach((b) => b.onclick = () => { state.product = state.product === b.dataset.id ? null : b.dataset.id; renderProducts(); renderFilters(); renderCards(); });
+}
+
+function shown() {
+  return DATA.leads.filter((l) => (state.owner === "All" || l.owner === state.owner) && (!state.product || l.products.some((x) => x.id === state.product)))
+    .sort((a, b) => b.high - a.high);
+}
+
+function renderFilters() {
+  const base = DATA.leads.filter((l) => !state.product || l.products.some((x) => x.id === state.product));
+  const owners = ["All", "Buyer", "Engineer", "Service"];
+  $("filters").innerHTML = `<span class="lbl">Who acts on it</span>` + owners.map((o) =>
+    `<button class="chip" data-o="${o}" aria-pressed="${state.owner === o}">${o === "All" ? "Everyone" : o}<span class="n">${o === "All" ? base.length : base.filter((l) => l.owner === o).length} leads</span></button>`).join("") +
+    `<span class="tied"><b>${(100 * DATA.tied_share).toFixed(1)}%</b> of spend tied to a product. <b>${DATA.waiting_lines}</b> lines need a person.</span>`;
+  document.querySelectorAll(".chip").forEach((b) => b.onclick = () => { state.owner = b.dataset.o; renderFilters(); renderCards(); });
+}
+
+function compare(l) {
+  const top = Math.max(...l.compare.map((c) => c.value), 1e-9), hi = Math.max(...l.compare.map((c) => c.value));
+  return `<div class="cmp">` + l.compare.map((c) =>
+    `<div class="cmp-row${c.value === hi && l.compare.length > 1 ? " hi" : ""}"><span title="${esc(c.label)}">${esc(c.label)}</span>
+       <span class="cmp-bar" style="width:${Math.max(4, 100 * c.value / top).toFixed(1)}%"></span><b>${esc(c.text)}</b></div>`).join("") + `</div>`;
+}
+
+function renderCards() {
+  const ls = shown();
+  $("cards").innerHTML = ls.length ? ls.map((l) => {
+    const st = state.status[l.id] || "";
+    return `<button class="card ${st}" data-id="${esc(l.id)}">
+      <span class="card-top"><span class="who ${l.owner}">${l.owner}</span><span>${esc(l.kind)}</span>${st === "validated" ? '<span class="tick">Validated</span>' : st === "rejected" ? '<span class="tick" style="color:var(--muted)">Rejected</span>' : ""}</span>
+      <h3>${esc(l.action)}</h3>
+      ${compare(l)}
+      <span class="amt">${money(l.low)} to ${money(l.high)}</span>
+    </button>`;
+  }).join("") : `<div class="empty">No leads match. Clear a filter to see them all.</div>`;
+  document.querySelectorAll(".card").forEach((c) => c.onclick = () => openLead(c.dataset.id));
+}
+
+function openLead(id) {
+  const l = DATA.leads.find((x) => x.id === id), d = $("drawer");
+  d.innerHTML = `
+    <button class="close" aria-label="Close">×</button>
+    <span class="card-top"><span class="who ${l.owner}">${l.owner}</span><span>${esc(l.kind)}</span><span>${esc(l.part)}</span></span>
+    <h2>${esc(l.action)}</h2>
+    <div class="amt">${money(l.low)} to ${money(l.high)}</div>
+    <div><h4>What the data shows</h4>${compare(l)}</div>
+    <div><h4>Check before acting</h4><ul class="checks">${l.checks.map((c) => `<li>${esc(c)}</li>`).join("")}</ul></div>
+    <div><h4>Products that use it</h4><div class="split">${l.products.map((p) => `<span>${esc(p.id)} ${Math.round(100 * p.share)}%</span>`).join("")}</div></div>
+    ${l.lines.length ? `<div><h4>Purchase lines behind it</h4><table><tr><th>Date</th><th>Supplier</th><th class="r">Price</th><th class="r">Spend</th><th>Source</th></tr>
+      ${l.lines.map((r) => `<tr><td class="nw">${esc(r.date)}</td><td>${esc(r.supplier)}</td><td class="r">$${(+r.price).toFixed(4)}</td><td class="r">${money(r.spend)}</td><td class="src">${esc(r.source || "")}</td></tr>`).join("")}</table>
+      <p class="note" style="margin-top:6px">${l.line_count} lines in all.</p></div>` : ""}
+    <p class="note">A lead, not a booked saving. The low end assumes half the gap closes.</p>
+    <div class="actions"><button class="btn" data-s="rejected">Reject</button><button class="btn primary" data-s="validated">Mark validated</button></div>`;
+  d.querySelector(".close").onclick = closeLead;
+  d.querySelectorAll(".btn").forEach((b) => b.onclick = () => {
+    state.status[id] = state.status[id] === b.dataset.s ? "" : b.dataset.s;
+    closeLead(); renderHero(); renderProducts(); renderCards();
+  });
+  d.classList.add("open"); d.setAttribute("aria-hidden", "false"); $("scrim").classList.add("open");
+}
+function closeLead() { $("drawer").classList.remove("open"); $("drawer").setAttribute("aria-hidden", "true"); $("scrim").classList.remove("open"); }
+$("scrim").onclick = closeLead;
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeLead(); });
+
+renderHero(); renderProducts(); renderFilters(); renderCards();
+</script>
+</body>
+</html>

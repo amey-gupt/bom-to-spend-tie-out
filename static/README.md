@@ -1,1 +1,1 @@
-`inter-latin-wght-normal.woff2` is the Inter variable font (Latin subset), by Rasmus Andersson, under the SIL Open Font License 1.1. Downloaded from the Fontsource CDN.
+`inter-latin-wght-normal.woff2` is the Inter variable font (Latin subset), by Rasmus Andersson. `bricolage-grotesque-latin-wght-normal.woff2` is Bricolage Grotesque (Latin subset), by Mathieu Triay. Both are under the SIL Open Font License 1.1 and were downloaded from the Fontsource CDN.

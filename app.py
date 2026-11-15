@@ -16,9 +16,12 @@ from pathlib import Path
 
 import sys
 
+import re
+
 import altair as alt
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 
 
 @st.cache_resource
@@ -56,10 +59,15 @@ HOSTED_MAX_LINES, HOSTED_MAX_CALLS, HOSTED_MAX_RUNS = 2_000, 150, 3
 HOSTED_DAILY_RUNS = int(settings.secret("DAILY_RUN_LIMIT", "40"))  # across all visitors: bounds API spend when there is no access code
 adjudicate.PERSIST = match.PERSIST = not HOSTED
 BUCKETS = ["production", "spares", "warranty", "unassigned"]
-BLUE, ORANGE, AQUA, YELLOW, VIOLET, GRAY = "#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#6250d6", "#9a9890"
+# One set of tokens for the whole app, taken from the Opportunities page.
+BG, SURFACE_C, INK, MUTED, LINE = "#EDF0F4", "#FFFFFF", "#0F1B2D", "#5B6778", "#D9DEE6"
+MONEY, MONEY_ON_DARK = "#087F43", "#63E2A4"
+BLUE, VIOLET, YELLOW, ORANGE, GRAY = "#2457D6", "#7A3FD1", "#9A5200", "#E2703A", "#9AA5B4"  # buyer, engineer, service, wrong, neutral
+AQUA = MONEY
+OPPORTUNITIES_HEIGHT = 560  # a floor; the stylesheet stretches the page to the window
 BUCKET_COLORS = [BLUE, AQUA, YELLOW, GRAY]  # unassigned is neutral: it is the absence of a tie
 SERIES = [BLUE, AQUA, YELLOW, VIOLET]       # orange is kept for warnings and wrong matches only
-SURFACE = "#ffffff"
+SURFACE = SURFACE_C
 HOW = {
     "rule_pn_exact": "Rule: part number", "rule_xref": "Rule: supplier cross-reference", "rule_xref_offbom": "Rule: cross-reference to a part on no BOM",
     "rule_pn_in_text": "Rule: part number in the description", "rule_crosswalk": "Saved decision", "rule_crosswalk_none": "Saved decision",
@@ -73,28 +81,58 @@ PAGE = 12  # rows per table page: tables are sized to their content so the mouse
 
 st.set_page_config(page_title="BOM-to-Spend Tie-Out", layout="wide", initial_sidebar_state="collapsed")
 FONT = "Inter, sans-serif"
-LIGHT_BLUE, INK, MUTED, CARD_BORDER = "#b7d3f6", "#0b0b0b", "#52514e", "#e7e6e1"
+LIGHT_BLUE = "#B9CBF5"
 st.markdown("""<style>
-.block-container {padding-top: 1rem; padding-bottom: 3rem;}
-header[data-testid="stHeader"] {background: transparent; height: 2.2rem;}
-h3 {margin-top: 2.4rem !important; padding-bottom: .5rem !important;}
-[role="tabpanel"] h3:first-of-type {margin-top: .6rem !important;}
-.app-title {font-size: 1.15rem; font-weight: 650; line-height: 1.3; margin-bottom: .15rem;}
-.kpi-label {font-size: .78rem; color: #52514e; line-height: 1.2;}
-.kpi-value {font-size: 1.5rem; font-weight: 650; line-height: 1.25; color: #0b0b0b; font-variant-numeric: tabular-nums;}
-.kpi-note {font-size: .76rem; color: #52514e; line-height: 1.2;}
-/* one card surface for everything that holds content */
-.card, .pair, [data-testid="stVegaLiteChart"], [data-testid="stExpander"] details, [data-testid="stTable"],
-[class*="st-key-card_"] {background: #ffffff; border: 1px solid #e7e6e1; border-radius: 12px;}
+.block-container {padding-top: .6rem; padding-bottom: 1rem;}
+header[data-testid="stHeader"] {background: transparent; height: 2rem;}
+h1, h2, h3, h4 {font-family: "Bricolage Grotesque", Inter, sans-serif !important; letter-spacing: -0.01em;}
+h3 {margin-top: 1.6rem !important; padding-bottom: .4rem !important;}
+.topbar {display: flex; align-items: center; gap: .7rem; margin: 0 0 -.4rem 0;}
+.app-title {font-family: "Bricolage Grotesque", Inter, sans-serif; font-size: 1.1rem; font-weight: 700;}
+.badge {font-size: .76rem; font-weight: 600; padding: .12rem .6rem; border-radius: 999px; background: #E4ECFF; color: #2457D6;}
+.badge.warn {background: #FFEFD6; color: #9A5200;}
+/* the dark band that opens every tab */
+.hero-band {background: #0F1B2D; color: #fff; border-radius: 22px; padding: 1.1rem 1.6rem 1.2rem; margin-bottom: .4rem;}
+.hero-line {font-size: .95rem; color: #B7C2D3;}
+.hero-big {font-family: "Bricolage Grotesque", Inter, sans-serif; font-weight: 700; font-size: clamp(2.6rem, 5vw, 4.4rem); line-height: 1.05;
+           letter-spacing: -0.02em; color: #63E2A4; margin: .15rem 0 .55rem; font-variant-numeric: tabular-nums;}
+.hero-big.text {font-size: clamp(1.9rem, 3.4vw, 2.9rem);}
+.hero-pills span {display: inline-block; font-size: .84rem; padding: .28rem .75rem; border-radius: 999px; background: #1E2D45; color: #DCE4F0; margin-right: .45rem;}
+.kpi-label {font-size: .78rem; color: #5B6778; line-height: 1.2;}
+.kpi-value {font-family: "Bricolage Grotesque", Inter, sans-serif; font-size: 1.5rem; font-weight: 700; line-height: 1.25; color: #087F43; font-variant-numeric: tabular-nums;}
+.kpi-note {font-size: .76rem; color: #5B6778; line-height: 1.2;}
+/* one card surface: white, 1.5px border, 18px radius, on the grey page */
+.card, .pair, [data-testid="stVegaLiteChart"], [data-testid="stDataFrame"], [data-testid="stExpander"] details, [data-testid="stTable"],
+[class*="st-key-card_"] {background: #FFFFFF; border: 1.5px solid #D9DEE6 !important; border-radius: 18px !important;}
 .card {padding: .45rem .8rem; min-height: 4.6rem;}
-[data-testid="stVegaLiteChart"] {padding: .9rem .9rem .4rem .9rem;}
+[data-testid="stVegaLiteChart"] {padding: .5rem 0 .2rem 0; overflow: hidden;}
+[class*="st-key-card_"] .card {border: 0 !important; padding: 0; min-height: 0; margin-bottom: .5rem;}
+[data-testid="stDataFrame"] {padding: .35rem; overflow: hidden;}
 [data-testid="stTable"] {padding: .2rem .4rem; overflow: hidden;}
 [class*="st-key-card_"] {padding: .9rem 1rem;}
 .pair {padding: .55rem .8rem; margin-bottom: .5rem; font-size: .95rem;}
-.pair .who {font-size: .74rem; color: #52514e;}
-.tag {display: inline-block; font-size: .74rem; padding: .05rem .45rem; border-radius: 999px; background: #eef3fb; color: #1c5cab; margin-right: .3rem;}
-kbd {font-size: .72rem; padding: .05rem .35rem; border: 1px solid #cfcec8; border-radius: 4px; background: #fff;}
+.pair .who {font-size: .74rem; color: #5B6778;}
+.tag {display: inline-block; font-size: .74rem; font-weight: 600; padding: .1rem .55rem; border-radius: 999px; background: #E4ECFF; color: #2457D6; margin-right: .3rem;}
+kbd {font-size: .72rem; padding: .05rem .35rem; border: 1.5px solid #D9DEE6; border-radius: 4px; background: #fff;}
+/* buttons are pills; the primary one is green (the theme's primary colour) */
+.stButton button, .stDownloadButton button {border-radius: 999px !important; border-width: 1.5px !important; font-weight: 600;}
+/* the Opportunities page fills the window below the tabs, so the browser page itself does not scroll */
+[data-testid="stIFrame"], iframe[data-testid="stIFrame"], [data-testid="stCustomComponentV1"] {height: calc(100vh - 118px) !important; min-height: 480px; border-radius: 22px;}
 </style>""", unsafe_allow_html=True)
+
+
+def note(text: str):
+    """A caption of at most 12 words. Anything longer becomes a short label with the full text in its tooltip."""
+    if len(text.split()) <= 12:
+        st.caption(text)
+    else:
+        st.caption("How to read this", help=text)
+
+
+def show_chart(chart, **kwargs):
+    """Charts sit on a white card, so they draw on white, not on the page's grey."""
+    padded = chart.properties(padding={"left": 16, "right": 22, "top": 8, "bottom": 8})
+    return st.altair_chart(padded.configure(background=SURFACE_C).configure_view(strokeWidth=0), **kwargs)
 
 
 def usd(x: float) -> str:
@@ -274,7 +312,7 @@ with st.sidebar:
     quarters = sorted(base["quarter"].unique())
     q_from, q_to = (st.select_slider("Date range", options=quarters, value=(quarters[0], quarters[-1]), key=f"quarters_{dataset}")
                     if len(quarters) > 1 else (quarters[0], quarters[0]))
-    st.caption("The date range narrows every tab to those quarters.")
+    note("The date range narrows every tab to those quarters.")
 
 xw = saved_load()
 rules = tuple(sorted((k, d, part) for k, (d, part) in crosswalk.as_rules(xw).items()))
@@ -302,157 +340,132 @@ top_n = int((gain.cumsum() < 0.8 * gain.sum()).sum()) + 1 if gain.sum() > 0 else
 reach = tied + gain.head(top_n).sum() / total
 
 # ------------------------------------------------------------------- header
-h_title, h_note = st.columns([2.2, 3])
-with h_title:
-    st.markdown('<div class="app-title">BOM-to-Spend Tie-Out</div>', unsafe_allow_html=True)
-    if is_sample or uploaded.get("demo_sample"):
-        st.badge("Synthetic data", icon=":material/science:", color="orange", help=SYNTHETIC_NOTICE)
-    else:
-        st.badge("Your files", icon=":material/upload_file:", color="blue", help=", ".join(uploaded["files"]))
+synthetic = is_sample or uploaded.get("demo_sample")
+st.markdown(
+    '<div class="topbar"><span class="app-title">BOM-to-Spend Tie-Out</span>'
+    + (f'<span class="badge warn" title="{html.escape(SYNTHETIC_NOTICE)}">Synthetic data</span>' if synthetic
+       else f'<span class="badge" title="{html.escape(", ".join(uploaded["files"]))}">Your files</span>') + "</div>", unsafe_allow_html=True)
 
 LEAD_NAMES = {"supplier_price_gap": "Same part, different supplier prices", "spares_premium": "Spares bought at a premium",
               "duplicate_part": "Duplicate internal part numbers", "over_purchase": "Bought more than the builds required",
               "similar_parts": "Similar parts to consolidate"}
 names = LEAD_NAMES
+LEAD_KIND = {"supplier_price_gap": "Two supplier prices", "spares_premium": "Spares premium", "duplicate_part": "Duplicate part",
+             "over_purchase": "Over-bought", "similar_parts": "Similar parts"}
+LEAD_CHECKS = {
+    "supplier_price_gap": ["Volume commitments and contract terms", "Order quantity, freight and currency", "Capacity and quality at the cheaper supplier"],
+    "spares_premium": ["Order quantity and freight on small service orders", "Same revision as the production part", "Service-level terms with the supplier"],
+    "duplicate_part": ["Engineering confirms the two parts are interchangeable", "Stock on hand of each number", "Which number suppliers quote against"],
+    "over_purchase": ["Scrap above the BOM allowance", "Stock built up for later builds", "Parts issued to service"],
+    "similar_parts": ["Engineering must confirm", "Fit, form and function of both parts", "Volume commitments, order quantity and timing"],
+}
+
+
+def plain_noun(description: str) -> list[str]:
+    """The part's name as words: lower case, except acronyms (PCBA, MOSFET, LED), which stay in capitals."""
+    return [w if (w.isupper() and sum(c.isalpha() for c in w) >= 2) else w.lower() for w in str(description).split(",")[0].split()]
 
 
 def lead_action(r) -> str:
-    """What someone would actually do about the lead, in one sentence."""
-    what = f"{r['description']} ({r['part_number']})"
-    return {
-        "supplier_price_gap": f"Ask {r['related']} to match the lower price on {what}.",
-        "spares_premium": f"Buy spares of {what} at the production price.",
-        "duplicate_part": f"Merge {r['related']} into {r['part_number']}: one part under two numbers ({r['description']}).",
-        "over_purchase": f"Find out why {what} was bought above what the builds required.",
-        "similar_parts": f"Ask engineering whether {r['part_number']} can replace {r['related']} ({r['description']}).",
-    }[r["lead_type"]]
+    """What someone would do about the lead, in 6 to 10 words. Leading qualifiers are dropped from long part names."""
+    if r["lead_type"] == "duplicate_part":
+        return f"Merge duplicate part numbers {r['part_number']} and {r['related']}"
+    if r["lead_type"] == "similar_parts":
+        return f"Ask engineering if {r['part_number']} can replace {r['related']}"
+    make = {"supplier_price_gap": "Move the {} to the cheaper supplier", "spares_premium": "Buy spares of the {} at the production price",
+            "over_purchase": "Find out why the {} is over-bought"}[r["lead_type"]]
+    words = plain_noun(r["description"])
+    while len(make.format(" ".join(words)).split()) > 10 and len(words) > 1:
+        words = words[1:]
+    return make.format(" ".join(words))
 
 
-# Leads with the status the user has set. "Similar parts" are ideas for engineering, kept out of the headline numbers.
+# Leads, each split across products by where the part's allocated spend went. "Similar parts" are ideas for engineering
+# and are kept out of every total.
 L = leads.copy()
-L["key"] = L["lead_type"] + "|" + L["part_number"].astype(str) + "|" + L["related"].fillna("").astype(str)
-L["status"] = [st.session_state.get(f"status_{k}") or "new" for k in L["key"]]
 L["action"] = L.apply(lead_action, axis=1) if len(L) else ""
-# Split each lead across products by where the part's allocated spend went (allocation weights); two-part leads use both parts.
 part_weights = alloc.groupby(["part_number", "product_id"])["allocated_usd"].sum()
-lead_parts = [[r.part_number] + ([r.related] if r.lead_type in ("duplicate_part", "similar_parts") else []) for r in L.itertuples()]
 shares = []
-for parts_ in lead_parts:
+for r in L.itertuples():
+    parts_ = [r.part_number] + ([r.related] if r.lead_type in ("duplicate_part", "similar_parts") else [])
     w = part_weights[part_weights.index.get_level_values(0).isin(parts_)].groupby("product_id").sum()
-    shares.append((w / w.sum()).to_dict() if w.sum() > 0 else {"Not tied to a product": 1.0})
+    shares.append((w / w.sum()).to_dict() if w.sum() > 0 else {})
 L["shares"] = shares
-firm = L[(L["lead_type"] != "similar_parts") & (L["status"] != "rejected")]
-ideas = L[(L["lead_type"] == "similar_parts") & (L["status"] != "rejected")]
-validated = L[L["status"] == "validated"]
+firm = L[L["lead_type"] != "similar_parts"]
+by_product = {}
+for r in firm.itertuples():
+    for product_id, share in r.shares.items():
+        entry = by_product.setdefault(product_id, [0.0, 0.0, 0])
+        entry[0] += r.low_usd * share
+        entry[1] += r.high_usd * share
+        entry[2] += 1
 
-tab_labels = ["Opportunities", "Products", f"Review ({len(queue)})", "Evidence", "Your data"]
-if st.session_state.pop("goto_tab", None) == "review":
-    st.session_state["main_tabs"] = tab_labels[2]  # the tabs keep their selection under this key, so setting it switches tab
-tab_opps, tab_cost, tab_review, tab_evidence, tab_data = st.tabs(tab_labels, key="main_tabs", on_change="rerun")
+
+def hero(big: str, line: str, pills: list[str], text: bool = False):
+    """The dark band that opens every tab: one big figure, one line, up to three pills."""
+    st.markdown(f'<div class="hero-band"><div class="hero-line">{html.escape(line)}</div>'
+                f'<div class="hero-big{" text" if text else ""}">{html.escape(big)}</div>'
+                f'<div class="hero-pills">{"".join(f"<span>{html.escape(p)}</span>" for p in pills[:3])}</div></div>', unsafe_allow_html=True)
+
+
+def opportunities_data() -> dict:
+    """Everything the Opportunities page reads, built from the same lines, leads and shares as the rest of the app."""
+    ok = lines[(lines["decision"] == "accept") & lines["qty_bom"].notna()]
+    display = lines.groupby("supplier_key")["supplier"].agg(lambda s: max(s, key=len))  # the fullest spelling of each supplier's name
+    price_of = lambda frame: frame["spend_usd"].sum() / frame["qty_bom"].sum() if frame["qty_bom"].sum() else None
+    row = lambda label, value, text=None: {"label": label, "value": round(float(value), 4), "text": text or f"${value:,.2f}"}
+    out = []
+    for i, r in enumerate(L.itertuples()):
+        pair = [r.part_number] + ([r.related] if r.lead_type in ("duplicate_part", "similar_parts") else [])
+        buckets = ["production", "spares"] if r.lead_type == "spares_premium" else ["production"]
+        under = ok[ok["part"].isin(pair) & ok["bucket"].isin(buckets)]
+        prod = under[under["bucket"] == "production"]
+        compare = []
+        if r.lead_type == "supplier_price_gap":
+            by_sup = prod.groupby("supplier_key").apply(price_of, include_groups=False).dropna().sort_values()
+            compare = [row(display[k], v) for k, v in by_sup.items()]
+        elif r.lead_type == "spares_premium":
+            spares = under[under["bucket"] == "spares"]
+            compare = [row(label, price_of(f)) for label, f in (("Production", prod), ("Spares", spares)) if price_of(f)]
+        elif r.lead_type in ("duplicate_part", "similar_parts"):
+            compare = [row(part, price_of(prod[prod["part"] == part])) for part in pair if price_of(prod[prod["part"] == part])]
+        elif r.lead_type == "over_purchase":
+            found = re.search(r"bought ([\d,]+) (\S+) against ([\d,]+)", r.detail)
+            if found:
+                compare = [row(label, float(found.group(n).replace(",", "")), f"{found.group(n)} {found.group(2)}") for label, n in (("Bought", 1), ("Needed", 3))]
+        checks = list(LEAD_CHECKS[r.lead_type])
+        note = similar_notes.get("|".join(sorted(map(str, pair)))) if r.lead_type == "similar_parts" else None
+        if note:
+            checks.append(f"What differs (A is {note['a']}, B is {note['b']}): {note['note']}")
+        top = (under[under["bucket"] == "spares"] if r.lead_type == "spares_premium" else under).sort_values("spend_usd", ascending=False).head(6)
+        out.append({
+            "id": f"L{i}", "type": r.lead_type, "kind": LEAD_KIND[r.lead_type], "owner": r.owner, "part": r.part_number, "action": r.action,
+            "low": float(r.low_usd), "high": float(r.high_usd), "in_total": r.lead_type != "similar_parts", "compare": compare, "checks": checks,
+            "products": [{"id": k, "share": round(float(v), 4)} for k, v in sorted(r.shares.items(), key=lambda kv: -kv[1])],
+            "line_count": int(len(under)),
+            "lines": [{"date": x.po_date, "supplier": x.supplier, "price": round(float(x.unit_price_usd), 4), "spend": round(float(x.spend_usd), 2),
+                       "source": f"{x.source_file}, row {x.source_row}"} for x in top.itertuples()]})
+    return {"spend_total": float(total), "tied_share": float(tied), "waiting_lines": int(len(queue)),
+            "products": [{"id": pid} for pid in products["product_id"]], "leads": out}
+
+
+tab_labels = ["Opportunities", f"Review ({len(queue)})", "Products", "Evidence", "Your data"]
+tab_opps, tab_review, tab_cost, tab_evidence, tab_data = st.tabs(tab_labels, key="main_tabs", on_change="rerun")
 
 # ------------------------------------------------------------ opportunities
 with tab_opps:
-    low, high = firm["low_usd"].sum(), firm["high_usd"].sum()
-    k1, k2, k3, k4 = st.columns(4)
-    k1.markdown(kpi("Savings leads, combined range", f"{short(low)} to {short(high)}", f"{usd(low)} to {usd(high)}: half of each gap closed, up to all of it",
-                    "Leads, not booked savings."), unsafe_allow_html=True)
-    k2.markdown(kpi("Leads", f"{len(firm)}", f"{len(firm)} leads across {firm['lead_type'].nunique()} types, rejected ones left out",
-                    f"{firm['lead_type'].nunique()} types"), unsafe_allow_html=True)
-    k3.markdown(kpi("Share of spend", f"{low / total:.1%} to {high / total:.1%}", f"{usd(low)} to {usd(high)} of {usd(total)}", f"of {short(total)}"), unsafe_allow_html=True)
-    k4.markdown(kpi("Validated by you", f"{short(validated['low_usd'].sum())} to {short(validated['high_usd'].sum())}",
-                    f"{usd(validated['low_usd'].sum())} to {usd(validated['high_usd'].sum())}", f"{len(validated)} leads marked validated"), unsafe_allow_html=True)
-    n1, n2 = st.columns([5, 1])
-    n1.markdown(f"<span style='font-size:.85rem;color:{MUTED}'>{pct(tied)} of spend is tied to a product and {len(queue)} lines are waiting for a "
-                f"decision. Reviewing the {top_n} largest would reach {pct(reach)}."
-                + (f" Not in the headline: {len(ideas)} similar-part ideas worth {short(ideas['low_usd'].sum())} to {short(ideas['high_usd'].sum())} "
-                   "that engineering must confirm." if len(ideas) else "") + "</span>", unsafe_allow_html=True)
-    if n2.button("Open Review", width="stretch"):
-        st.session_state["goto_tab"] = "review"
-        st.rerun()
-
-    st.subheader("Start here: where the leads are, by product")
-    by_product = {}
-    for r in firm.itertuples():
-        for product_id, share in r.shares.items():
-            entry = by_product.setdefault(product_id, [0.0, 0.0, 0])
-            entry[0] += r.low_usd * share
-            entry[1] += r.high_usd * share
-            entry[2] += 1
-    bp = pd.DataFrame([dict(product=k, low=v[0], high=v[1], n=v[2], zero=0.0) for k, v in by_product.items()]).sort_values("high", ascending=False) \
-        if by_product else pd.DataFrame(columns=["product", "low", "high", "n", "zero"])
-    picked_product = None
-    if len(bp):
-        bp["label"] = [f"{short(a)} to {short(b)}  ({int(n)} leads)" for a, b, n in zip(bp["low"], bp["high"], bp["n"])]
-        pick = alt.selection_point(name="pick", fields=["product"], on="click", clear="dblclick")
-        y_axis = alt.Y("product:N", sort=None, title=None, scale=alt.Scale(paddingInner=0.4, paddingOuter=0.2))
-        tips = [alt.Tooltip("product:N", title="Product"), alt.Tooltip("low:Q", title="Low: half the gap closed", format="$,.0f"),
-                alt.Tooltip("high:Q", title="High: all of it", format="$,.0f"), alt.Tooltip("n:Q", title="Leads touching it")]
-        solid = alt.Chart(bp).mark_bar(color=BLUE).encode(
-            y=y_axis, x=alt.X("zero:Q", axis=alt.Axis(format="$~s", title="Lead range. Dark: half the gap closed. Light: up to all of it."), scale=alt.Scale(domainMin=0)),
-            x2="low:Q", tooltip=tips, opacity=alt.condition(pick, alt.value(1.0), alt.value(0.35))).add_params(pick)
-        lighter = alt.Chart(bp).mark_bar(color=LIGHT_BLUE, cornerRadiusEnd=4).encode(y=y_axis, x="low:Q", x2="high:Q", tooltip=tips)
-        bar_labels = alt.Chart(bp).mark_text(align="left", dx=6, color=INK).encode(y=y_axis, x="high:Q", text="label:N")
-        event = st.altair_chart((lighter + solid + bar_labels).properties(height=alt.Step(34)), width="stretch", on_select="rerun", selection_mode="pick",
-                                key=f"lead_products_{dataset}")
-        chosen_rows = (event.selection.get("pick") or []) if event and "selection" in event else []
-        picked_product = chosen_rows[0].get("product") if chosen_rows else None
-    st.caption("Each lead is split across the products that use the part, in proportion to the spend allocated to them. "
-               + (f"Showing leads that touch **{picked_product}**; double-click the chart to clear." if picked_product else "Click a bar to filter the lists below to that product."))
-
-    def touches(frame: pd.DataFrame) -> pd.DataFrame:
-        return frame[frame["shares"].map(lambda s: picked_product in s)] if picked_product else frame
-
-    st.subheader("Top five leads" + (f" touching {picked_product}" if picked_product else ""))
-    for r in touches(firm).head(5).itertuples():
-        with st.container(key=f"card_lead_{r.key}"):
-            c1, c2, c3 = st.columns([6, 2, 1.2])
-            c1.markdown(f"**{r.action}**")
-            c1.caption(f"{LEAD_NAMES[r.lead_type]}. {r.detail}")
-            c2.markdown(kpi("Range", f"{short(r.low_usd)} to {short(r.high_usd)}", f"{usd(r.low_usd)} to {usd(r.high_usd)}",
-                            "validated" if r.status == "validated" else ""), unsafe_allow_html=True)
-            c3.markdown(kpi("Owner", r.owner, "Who would act on it"), unsafe_allow_html=True)
-
-    st.subheader("All leads")
-    present = [k for k in LEAD_NAMES if (L["lead_type"] == k).any()]
-    chosen = st.pills("Lead type", present, selection_mode="multi", default=present, format_func=LEAD_NAMES.get, key=f"lead_types_{dataset}") or []
-    shown = touches(L[L["lead_type"].isin(chosen)]).reset_index(drop=True)
-    if shown.empty:
-        st.info("No leads for this selection.")
-    else:
-        picked_lead = table(pd.DataFrame({
-            "Status": shown["status"], "Type": shown["lead_type"].map(LEAD_NAMES), "Owner": shown["owner"], "Part": shown["part_number"],
-            "Description": shown["description"], "Range": shown["low_usd"].map(usd) + " to " + shown["high_usd"].map(usd),
-            "What the data shows": shown["detail"]}), key=f"leads_{'_'.join(chosen)}_{picked_product}", select=True, page_size=8)
-        st.download_button("Download leads (CSV)", shown.drop(columns=["shares", "key"]).to_csv(index=False), "leads.csv", "text/csv")
-        lead = shown.iloc[picked_lead if picked_lead is not None else 0]
-        with st.container(key="card_lead_detail"):
-            d1, d2 = st.columns([3, 2])
-            with d1:
-                st.markdown(f"**{lead['action']}**")
-                st.markdown(f"{LEAD_NAMES[lead['lead_type']]} · owner: {lead['owner']} · range {usd(lead['low_usd'])} to {usd(lead['high_usd'])}"
-                            + (" · **engineering must confirm**" if lead["lead_type"] == "similar_parts" else ""))
-                st.markdown(f"**What the data shows:** {lead['detail']}")
-                note = similar_notes.get("|".join(sorted([str(lead["part_number"]), str(lead["related"])]))) if lead["lead_type"] == "similar_parts" else None
-                if note:
-                    st.info(f"**What differs (Claude; A is {note['a']}, B is {note['b']}):** {note['note']}")
-                st.markdown(f"**Check before acting:** {lead['check']}")
-            with d2:
-                st.segmented_control("Status", ["new", "validated", "rejected"], default=lead["status"], key=f"status_{lead['key']}",
-                                     help="Validated leads are totalled separately in the headline. Rejected leads leave it. Kept for this session.")
-                st.caption("Split across products: " + ", ".join(f"{k} {v:.0%}" for k, v in sorted(lead["shares"].items(), key=lambda kv: -kv[1])))
-        parts_in = [lead["part_number"]] + ([lead["related"]] if lead["lead_type"] in ("duplicate_part", "similar_parts") else [])
-        buckets_in = ["production", "spares"] if lead["lead_type"] == "spares_premium" else ["production"]
-        under = lines[(lines["decision"] == "accept") & lines["part"].isin(parts_in) & lines["bucket"].isin(buckets_in)].sort_values("po_date")
-        st.markdown(f"**Purchase lines behind it** ({len(under)} lines, {usd(under['spend_usd'].sum())}). Select a row in the table above to change the lead.")
-        table(pd.DataFrame({
-            "Source": under["source_file"].astype(str) + ", row " + under["source_row"].astype(str), "Date": under["po_date"], "Plant": under["plant"],
-            "Supplier": under["supplier"], "Part": under["part"], "Bucket": under["bucket"], "Quantity (BOM unit)": under["qty_bom"].map("{:,.0f}".format),
-            "Price per unit": under["unit_price_usd"].map("${:.4f}".format), "Spend": under["spend_usd"].map(usd),
-            "Text on the PO": under["item_description"], "Matched by": under["source"].map(HOW)}),
-            key=f"under_{lead['key']}", page_size=8)
+    page = Path("opportunities.html").read_text().replace("/*DATA*/null/*END*/", json.dumps(opportunities_data()).replace("</", "<\\/"))
+    components.html(page, height=OPPORTUNITIES_HEIGHT, scrolling=False)
 
 # ----------------------------------------------------------------- products
 with tab_cost:
+    if by_product:
+        best_id, (best_low, best_high, best_n) = max(by_product.items(), key=lambda kv: kv[1][1])
+        gap = products.set_index("product_id")["actual_vs_std"].get(best_id)
+        hero(best_id, "The product with the largest lead range", [f"{short(best_low)} to {short(best_high)} in leads", f"{best_n} leads touch it"]
+             + ([f"Estimated actual {gap:+.1%} vs standard"] if pd.notna(gap) else []))
+    else:
+        hero("No leads yet", "Products", [])
     st.subheader("Parts cost per unit: standard versus estimated actual")
     cost = products.melt("product_id", ["std_cost_per_unit", "actual_cost_per_unit_est"], var_name="series", value_name="cost").dropna(subset=["cost"])
     cost["series"] = cost["series"].map({"std_cost_per_unit": "BOM standard", "actual_cost_per_unit_est": "Estimated actual"})
@@ -463,8 +476,8 @@ with tab_cost:
         tooltip=[alt.Tooltip("product_id:N", title="Product"), alt.Tooltip("series:N", title="Measure"), alt.Tooltip("cost:Q", title="Per unit", format="$.2f")])
     cost_labels = alt.Chart(cost).mark_text(align="left", dx=5, color="#0b0b0b").encode(
         y=alt.Y("product_id:N"), yOffset=alt.YOffset("series:N", sort=["BOM standard", "Estimated actual"]), x="cost:Q", text=alt.Text("cost:Q", format="$.2f"))
-    st.altair_chart((cost_bars + cost_labels).properties(height=alt.Step(20)), width="stretch")
-    st.caption("Estimated: matched production spend is split across the products that use each part, by gross BOM quantity x units built in the "
+    show_chart((cost_bars + cost_labels).properties(height=alt.Step(20)), width="stretch")
+    note("Estimated: matched production spend is split across the products that use each part, by gross BOM quantity x units built in the "
                "purchase's quarter. Purchases show what was bought, not what was consumed. Lines waiting for a decision are not included yet.")
     st.dataframe(pd.DataFrame({
         "Product": products["product_id"], "Units built": products["units_built"].map("{:,}".format),
@@ -515,10 +528,10 @@ with tab_cost:
         clicked = clicked.get("chart_event") if isinstance(clicked, dict) else clicked
         if clicked in top_parts and clicked != st.session_state.get("net_last_click"):
             st.session_state["net_last_click"], st.session_state[net_key] = clicked, clicked
-        st.caption("Solid lines: a product uses the part. Dashed lines: the part is bought from the supplier. Node size is spend. "
+        note("Solid lines: a product uses the part. Dashed lines: the part is bought from the supplier. Node size is spend. "
                    "Click a part, or pick one below. Drag to rearrange, scroll to zoom.")
     elif top_parts:
-        st.altair_chart(
+        show_chart(
             alt.Chart(part_spend.head(n_parts).rename_axis("part").reset_index(name="spend")).mark_bar(color=BLUE, cornerRadiusEnd=3).encode(
                 y=alt.Y("part:N", sort=None, title=None), x=alt.X("spend:Q", axis=alt.Axis(format="$~s", title="Matched spend")),
                 tooltip=[alt.Tooltip("part:N", title="Part"), alt.Tooltip("spend:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(16)),
@@ -527,7 +540,7 @@ with tab_cost:
         if st.session_state.get(net_key) not in top_parts:
             st.session_state[net_key] = top_parts[0]
         chosen_part = st.selectbox("Part", top_parts, key=net_key)
-        st.caption(part_desc.get(chosen_part, ""))
+        note(part_desc.get(chosen_part, ""))
         n1, n2 = st.columns(2)
         with n1:
             st.markdown(f"**Products using `{chosen_part}`**")
@@ -547,7 +560,7 @@ with tab_cost:
     if changes:
         day_max = max(day_max, date.fromisoformat(changes[-1][0]))
         st.subheader("Engineering changes")
-        st.caption("Click one to open that product's BOM as it stood on the day the change took effect.")
+        note("Click one to open that product's BOM as it stood on the day the change took effect.")
         for i, (day_text, prod_id, what) in enumerate(changes):
             if st.button(f"{day_text}   {prod_id}: {what}", key=f"ec_{i}", icon=":material/history:"):
                 st.session_state[product_key], st.session_state[asof_key] = prod_id, date.fromisoformat(day_text)
@@ -568,7 +581,7 @@ with tab_cost:
     drivers = use.reindex(use["diff"].abs().sort_values(ascending=False).index).head(12).reset_index()
     drivers["direction"] = drivers["diff"].map(lambda d: "Above standard" if d > 0 else "Below standard")
     drivers["label"] = drivers["part_number"] + "  " + drivers["description"]
-    st.altair_chart(
+    show_chart(
         alt.Chart(drivers).mark_bar(height=16, cornerRadiusEnd=3).encode(
             y=alt.Y("label:N", sort=None, title=None, axis=alt.Axis(labelLimit=380)),
             x=alt.X("diff:Q", axis=alt.Axis(format="$.2f", title="Estimated actual minus standard, per unit built")),
@@ -586,7 +599,7 @@ with tab_cost:
         "Note": drivers["actual_per_unit"].map(lambda v: "no matched production spend yet" if v == 0 else "")}), hide_index=True, width="stretch", height="content")
 
     st.subheader("The BOM in effect on a date")
-    st.caption("Allocation, standard cost and the bought-versus-required lead use the BOM rows in effect in each build month.")
+    note("Allocation, standard cost and the bought-versus-required lead use the BOM rows in effect in each build month.")
     st.session_state.setdefault(asof_key, day_max)
     if not day_min <= st.session_state[asof_key] <= day_max:
         st.session_state[asof_key] = day_max
@@ -604,7 +617,7 @@ with tab_cost:
         key=f"bom_{product}_{day}")
     gone = full_bom[~active & (full_bom["effective_to"] != "") & (full_bom["effective_to"] < day)]
     later = full_bom[~active & (full_bom["effective_from"] > day)]
-    st.caption(f"{len(now)} rows in effect on {day}; {int((change != '').sum())} of them carry an engineering change. "
+    note(f"{len(now)} rows in effect on {day}; {int((change != '').sum())} of them carry an engineering change. "
                + ("No longer in effect: " + "; ".join(f"{x.part_number} x{x.qty_per_unit:g} (until {x.effective_to})" for x in gone.itertuples()) + ". " if len(gone) else "")
                + ("Not yet in effect: " + "; ".join(f"{x.part_number} x{x.qty_per_unit:g} (from {x.effective_from})" for x in later.itertuples()) + "." if len(later) else ""))
 
@@ -618,7 +631,7 @@ with tab_cost:
         st.info("This needs a standard cost on the BOM and at least one quarter with units built.")
     else:
         product_ids = sorted(aq["product_id"].unique())
-        st.altair_chart(
+        show_chart(
             alt.Chart(aq).mark_line(strokeWidth=2, point=alt.OverlayMarkDef(size=60)).encode(
                 x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)),
                 y=alt.Y("vs_std:Q", axis=alt.Axis(format="+%", title="Estimated actual vs standard")),
@@ -626,10 +639,10 @@ with tab_cost:
                 tooltip=[alt.Tooltip("product_id:N", title="Product"), alt.Tooltip("quarter:N", title="Quarter"),
                          alt.Tooltip("vs_std:Q", title="Actual vs standard", format="+.1%"), alt.Tooltip("units_built:Q", title="Units built", format=",")],
             ).properties(height=260), width="stretch")
-        st.caption("An estimate. Parts are bought ahead of the builds that use them, so a single quarter can swing; lines still in review are not included.")
+        note("An estimate. Parts are bought ahead of the builds that use them, so a single quarter can swing; lines still in review are not included.")
 
     st.subheader("Estimated inventory: bought minus built")
-    st.caption("An estimate, not a stock count: cumulative production purchases minus the gross BOM requirement (scrap included, multi-level BOMs "
+    note("An estimate, not a stock count: cumulative production purchases minus the gross BOM requirement (scrap included, multi-level BOMs "
                "flattened) x units built, in the BOM's unit of measure, over the selected date range. "
                "It ignores opening stock, scrap and parts issued to service.")
     need_q = requirements(bom, builds, q_from, q_to).groupby(["part_number", "quarter"])["need"].sum()
@@ -655,7 +668,7 @@ with tab_cost:
         cum = pd.DataFrame({"Bought": bought_q.xs(part_pick).reindex(qs).fillna(0.0).cumsum() if part_pick in bought_q.index.get_level_values(0) else 0.0,
                             "Needed for builds": need_q.xs(part_pick).reindex(qs).fillna(0.0).cumsum() if part_pick in need_q.index.get_level_values(0) else 0.0},
                            index=pd.Index(qs, name="quarter")).reset_index().melt("quarter", var_name="series", value_name="units")
-        st.altair_chart(
+        show_chart(
             alt.Chart(cum).mark_line(strokeWidth=2, point=alt.OverlayMarkDef(size=60)).encode(
                 x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)), y=alt.Y("units:Q", axis=alt.Axis(format=",", title="Cumulative units")),
                 color=alt.Color("series:N", scale=alt.Scale(domain=["Bought", "Needed for builds"], range=SERIES[:2]), legend=alt.Legend(title=None, orient="top")),
@@ -664,6 +677,8 @@ with tab_cost:
 
 # ------------------------------------------------------------------- review
 with tab_review:
+    hero(f"{len(queue)} lines", "Waiting for a decision", [f"{short(queue['spend_usd'].sum())} waiting", f"Top {top_n} decisions reach {pct(reach)} tied",
+                                                           f"{pct(tied)} tied now"])
     if queue.empty:
         st.success("Nothing is waiting for review.")
     else:
@@ -692,7 +707,7 @@ with tab_review:
             if picked is not None and picked != pos:
                 st.session_state["review_pos"] = picked
                 st.rerun()
-            st.caption("Lines with identical text are one item: one decision settles all of them.")
+            note("Lines with identical text are one item: one decision settles all of them.")
 
         g = groups.iloc[pos]
         r = q[q["po_id"] == g["first"]].iloc[0]
@@ -733,7 +748,7 @@ with tab_review:
                         f"&nbsp;·&nbsp; **Quantity** {r['qty']:,.2f} {r['uom']} &nbsp;·&nbsp; **Price per unit** ${r['unit_price_usd']:.4f}"
                         + (f"  \nLargest of {g['lines']} lines with this text." if g["lines"] > 1 else ""))
             st.markdown("Keyboard: <kbd>A</kbd> approve &nbsp; <kbd>X</kbd> reject &nbsp; <kbd>N</kbd> not a BOM part", unsafe_allow_html=True)
-            st.caption("Approve ties these lines to the suggested part. Reject removes the suggestion and leaves them untied for a manual lookup. "
+            note("Approve ties these lines to the suggested part. Reject removes the suggestion and leaves them untied for a manual lookup. "
                        "Not a BOM part closes them as correctly unmatched.")
 
     st.divider()
@@ -761,34 +776,37 @@ with tab_evidence:
         st.info("Uploaded files have no ground truth. Everything below was measured on the built-in sample and on external data.")
     s3, s4 = evals["eval_step3"], evals["eval_step4"]
     llm = s3["llm"][MAIN_MODEL]
+    hero(pct(llm["heldout"]["tie_out"]), "Of spend tied, on styles the matcher never saw", [
+        f"{usd(llm['heldout']['wrong_match_spend'])} matched wrongly", f"True rate {pct(llm['heldout']['true_tie_out'])}",
+        f"{llm['heldout']['lines']:,} held-out lines"])
 
     abt_card, xw_card = evals.get("eval_external_abt_buy"), evals.get("eval_crosswalk")
     held = llm["heldout"]
     card1, card2, card3 = st.columns(3)
-    with card1.container(border=True):
+    with card1.container(key="card_ev1"):
         st.markdown("**Held-out accuracy**")
         st.markdown(kpi("Precision of accepted matches", f"{held['accept_precision']:.1%}", f"{held['accept_lines']:,} accepted lines; {usd(held['wrong_match_spend'])} matched wrongly"),
                     unsafe_allow_html=True)
         st.markdown(kpi("Tie-out", f"{held['tie_out']:.1%}", f"on {held['lines']:,} held-out lines, {usd(held['spend'])}", f"true rate {held['true_tie_out']:.1%}"),
                     unsafe_allow_html=True)
-        st.caption("Lines written in styles the matcher was never tuned on. Synthetic data.")
-    with card2.container(border=True):
+        note("Lines written in styles the matcher was never tuned on. Synthetic data.")
+    with card2.container(key="card_ev2"):
         st.markdown("**Outside benchmark: Abt-Buy**")
         if abt_card:
             ours = abt_card["results"]["Rules + embeddings + Claude"]["f1"]
             published = ", ".join(f"{v['f1']:.2f}" for v in abt_card["published"].values())
             st.markdown(kpi("F1, nothing retrained", f"{ours:.2f}", f"{abt_card['test_pairs']} test pairs, {abt_card['test_matches']} true matches",
                             f"published baselines {published}"), unsafe_allow_html=True)
-        st.caption("Real product listings from two shops, fixed test split from the University of Mannheim benchmark page.")
-    with card3.container(border=True):
+        note("Real product listings from two shops, fixed test split from the University of Mannheim benchmark page.")
+    with card3.container(key="card_ev3"):
         st.markdown("**Review work over six quarters**")
         if xw_card:
             arm_with, arm_without = (pd.DataFrame(rows_x) for rows_x in xw_card["arms"].values())
             st.markdown(kpi("Lines left for a person", f"{int(arm_with['review_lines'].sum())} vs {int(arm_without['review_lines'].sum())}",
                             f"{usd(arm_with['review_spend'].sum())} vs {usd(arm_without['review_spend'].sum())} of spend left for review",
                             "with saved decisions vs without"), unsafe_allow_html=True)
-        st.caption("A simulated reviewer clears each quarter's queue. Item text repeats by construction in this data.")
-    st.caption("Details are in the sections below.")
+        note("A simulated reviewer clears each quarter's queue. Item text repeats by construction in this data.")
+    note("Details are in the sections below.")
 
     if is_sample:
         st.subheader("From a spreadsheet lookup to the full pipeline")
@@ -819,8 +837,8 @@ with tab_evidence:
         labels = alt.Chart(stages).mark_text(align="left", dx=6, color="#0b0b0b").encode(y=alt.Y("stage:N", sort=None), x="tie_out:Q", text="label:N")
         truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
         rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
-        st.altair_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
-        st.caption(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}. Measured on {full['lines']:,} held-out purchase lines "
+        show_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
+        note(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}. Measured on {full['lines']:,} held-out purchase lines "
                    f"({short(full['spend'])}) written in styles never used to tune the matcher. Stage 4 ties less than stage 3 because it refuses "
                    "to guess: uncertain lines wait for review instead.")
         st.table(pd.DataFrame({
@@ -840,8 +858,8 @@ with tab_evidence:
         if stats.get("not_sent"):
             st.warning(f"Limit reached: {stats['call_limit']} Claude calls per run. {stats['not_sent']:,} smaller lines were not sent and are waiting in Review.")
         for note in uploaded["notes"]:
-            st.caption(note)
-        st.caption("Your own files have no answer key, so accuracy cannot be reported here. The Evidence tab shows how the same steps score "
+            note(note)
+        note("Your own files have no answer key, so accuracy cannot be reported here. The Evidence tab shows how the same steps score "
                    "on the built-in sample and on outside data.")
 
     st.subheader("Where the spend ties")
@@ -871,22 +889,22 @@ with tab_evidence:
                             + [{"name": r_name[b], "itemStyle": {"color": c}} for b, c in zip(names_b, BUCKET_COLORS) if right_total.get(b, 0.0) > 0],
                     "links": [{"source": l_name[r.decided], "target": r_name[r.bucket_name], "value": float(round(r.spend_usd, 2))} for r in flow.itertuples()],
                 }]}, height="330px", key="flow")
-        st.caption("Left: how each line was decided. Right: the bucket its spend landed in. Widths are dollars; the chart updates after every review decision.")
+        note("Left: how each line was decided. Right: the bucket its spend landed in. Widths are dollars; the chart updates after every review decision.")
     else:
-        st.altair_chart(
+        show_chart(
             alt.Chart(flow).mark_bar(height=22, stroke=SURFACE, strokeWidth=2).encode(
                 y=alt.Y("decided:N", sort=left_order, title=None), x=alt.X("spend_usd:Q", axis=alt.Axis(format="$~s", title="Spend")),
                 color=alt.Color("bucket_name:N", scale=alt.Scale(domain=names_b, range=BUCKET_COLORS), legend=alt.Legend(title=None, orient="top")),
                 tooltip=[alt.Tooltip("decided:N", title="Decided by"), alt.Tooltip("bucket_name:N", title="Bucket"),
                          alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(30)), width="stretch")
     inferred = lines[lines["bucket_inferred"]]
-    st.caption(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
+    note(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
                f"match and the plant: {len(inferred):,} lines ({short(inferred['spend_usd'].sum())}).")
 
     st.subheader("Tie-out by quarter")
     tq = lines.assign(un=lines["spend_usd"].where(lines["bucket"] == "unassigned", 0.0)).groupby("quarter")[["un", "spend_usd"]].sum().reset_index()
     tq["tie_out"] = 1 - tq["un"] / tq["spend_usd"]
-    st.altair_chart(
+    show_chart(
         alt.Chart(tq).mark_line(color=SERIES[0], strokeWidth=2, point=alt.OverlayMarkDef(size=70, color=SERIES[0])).encode(
             x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)),
             y=alt.Y("tie_out:Q", axis=alt.Axis(format="%", title="Spend tied out"), scale=alt.Scale(zero=False)),
@@ -895,7 +913,7 @@ with tab_evidence:
 
 
     with st.expander("Held-out versus tuning split", expanded=False):
-        st.caption("The matcher was tuned on the tuning split only. The held-out split is written in noise styles it never saw: plant-specific "
+        note("The matcher was tuned on the tuning split only. The held-out split is written in noise styles it never saw: plant-specific "
                    "codes, part-number typos, supplier catalog wording, description typos and Spanish.")
         rows = {"Purchase lines": lambda m: f"{m['lines']:,}", "Spend": lambda m: usd(m["spend"]),
                 "Auto-accepted, share of lines": lambda m: pct(m["accept_share"]), "Precision of accepted matches": lambda m: f"{m['accept_precision']:.2%}",
@@ -930,14 +948,14 @@ with tab_evidence:
                 "Held-out review queue afterwards": f"{m['heldout']['review_lines']} lines, {usd(m['heldout']['review_spend'])}",
                 "Held-out tie-out afterwards": pct(m["heldout"]["tie_out"])}
         st.table(pd.DataFrame(models))
-        st.caption("Only the uncertain middle band goes to Claude, so cost scales with how messy the data is, not with its size. "
+        note("Only the uncertain middle band goes to Claude, so cost scales with how messy the data is, not with its size. "
                    "The small model is much cheaper, but its picks did not reach 99% precision on the tuning split, so none were auto-accepted.")
 
     with st.expander("Savings leads against the planted findings", expanded=False):
         st.dataframe(pd.DataFrame([{"Lead type": names[k], "Found": v["found"], "Planted": v["planted"], "Precision": f"{v['precision']:.0%}",
                                     "Recall": f"{v['recall']:.0%}", "Range": f"{usd(v['low_usd'])} to {usd(v['high_usd'])}"}
                                    for k, v in s4["leads"].items()]), hide_index=True, width="stretch", height="content")
-        st.caption(f"Measured at the default {usd(s4['materiality_usd'])} materiality threshold, before any reviewer action.")
+        note(f"Measured at the default {usd(s4['materiality_usd'])} materiality threshold, before any reviewer action.")
         sim = s4.get("similar_parts")
         if sim:
             st.warning(f"**Similar parts to consolidate is unmeasured.** Nothing was planted for it, so there is no precision or recall. "
@@ -945,7 +963,7 @@ with tab_evidence:
                        "they are kept out of the headline range.")
 
     with st.expander("External tests: real data, nothing retrained", expanded=False):
-        st.caption("Zero-shot: the classifier and every cutoff come from the synthetic tuning split. The downloaded data is not in the repository; "
+        note("Zero-shot: the classifier and every cutoff come from the synthetic tuning split. The downloaded data is not in the repository; "
                    "`python3 -m src.external.fetch` gets it.")
         abt, ext = evals.get("eval_external_abt_buy"), evals.get("eval_external_parts")
         if abt:
@@ -953,7 +971,7 @@ with tab_evidence:
                         f"{abt['test_matches']} true matches)")
             st.dataframe(pd.DataFrame([{"Method": k, "Precision": f"{v['precision']:.2f}", "Recall": f"{v['recall']:.2f}", "F1": f"{v['f1']:.2f}"}
                                        for k, v in {**abt["results"], **abt["published"]}.items()]), hide_index=True, width="stretch", height="content")
-            st.caption(f"The benchmark's validation split was used only to check the model-code rule and set two similarity cutoffs. "
+            note(f"The benchmark's validation split was used only to check the model-code rule and set two similarity cutoffs. "
                        f"Claude judged {abt['claude']['pairs_sent']} pairs for ${abt['claude']['cost_usd']:.2f}. The last two rows are the baselines published on the benchmark page.")
         if ext:
             st.markdown(f"**B. Real electronic parts** ({ext['bom_parts']} BOM parts from {ext['bom_files']} open-hardware Kitspace BOMs; "
@@ -977,7 +995,7 @@ with tab_evidence:
     with st.expander("Sign-off by item (added after seeing held-out results)", expanded=False):
         im = s3.get("item_materiality")
         if im and im.get("before", {}).get("heldout"):
-            st.caption(f"When the lines sharing one item text add up to more than {usd(im['threshold_usd'])}, the classifier may not close the item as "
+            note(f"When the lines sharing one item text add up to more than {usd(im['threshold_usd'])}, the classifier may not close the item as "
                        "\"no match\" on its own: it goes to Claude, and to a person if Claude is not confident either way. "
                        "This rule was added after seeing held-out results, so the \"after\" column is not a clean held-out measurement.")
             rows_im = {"Precision of accepted matches": lambda m: f"{m['accept_precision']:.2%}", "Recall": lambda m: pct(m["recall"]),
@@ -986,18 +1004,18 @@ with tab_evidence:
                        "Spend with a BOM part dropped as no match": lambda m: usd(m["no_match_missed_spend"]), "Wrong-match dollars": lambda m: usd(m["wrong_match_spend"])}
             st.table(pd.DataFrame({"Held-out, before": {k: f(im["before"]["heldout"]) for k, f in rows_im.items()},
                                    "Held-out, after": {k: f(im["after"]["heldout"]) for k, f in rows_im.items()}}))
-            st.caption(f"{im['held_from_classifier_no_match']} lines across both splits were kept open by this rule. "
+            note(f"{im['held_from_classifier_no_match']} lines across both splits were kept open by this rule. "
                        f"Lines sent to Claude rose from {im['before']['band_lines']} to {im['after']['band_lines']}.")
 
     with st.expander("Experiment: do saved decisions cut review work over time?", expanded=False):
         xe = evals.get("eval_crosswalk")
         if xe:
-            st.caption("Purchases are processed one quarter at a time. Each quarter the pipeline runs with the decisions saved so far, then a simulated "
+            note("Purchases are processed one quarter at a time. Each quarter the pipeline runs with the decisions saved so far, then a simulated "
                        "reviewer clears that quarter's review queue from the truth and the decisions are saved. The comparison is the same run with nothing saved.")
             plain = {"With the crosswalk": "With saved decisions", "No crosswalk": "Without saved decisions"}
             xr = pd.concat([pd.DataFrame(rows_x).assign(arm=plain.get(arm, arm)) for arm, rows_x in xe["arms"].items()])
             arms = [plain.get(a, a) for a in xe["arms"]]
-            st.altair_chart(
+            show_chart(
                 alt.Chart(xr).mark_line(strokeWidth=2, point=alt.OverlayMarkDef(size=70)).encode(
                     x=alt.X("quarter:N", title=None, axis=alt.Axis(labelAngle=0)), y=alt.Y("review_lines:Q", title="Lines left for review"),
                     color=alt.Color("arm:N", scale=alt.Scale(domain=arms, range=SERIES[:2]), legend=alt.Legend(title=None, orient="top")),
@@ -1018,7 +1036,7 @@ with tab_evidence:
     """)
 
     with st.expander("Experiment: training the model without confirmed labels", expanded=False):
-        st.caption("Can the classifier be trained on a dataset's own rule-matched lines, with no confirmed labels? Positives are the lines a rule "
+        note("Can the classifier be trained on a dataset's own rule-matched lines, with no confirmed labels? Positives are the lines a rule "
                    "matched; negatives are their other nearest candidates. Part-number features are hidden and the matched number is stripped from the text.")
         sa, sb = evals.get("eval_selftrain"), evals.get("eval_external_selftrain")
         if sa:
@@ -1043,7 +1061,7 @@ with tab_evidence:
                                   "Precision": f"{m['precision']:.2f}", "Recall": f"{m['recall']:.2f}", "Review queue": f"{m['review_queue_lines']} lines",
                                   "No-match lines wrongly accepted": m["no_match_wrongly_accepted"]})
             st.dataframe(pd.DataFrame(table), hide_index=True, width="stretch", height="content")
-            st.caption("The catalog has prices but no quantities, so wrong-match dollars cannot be computed for the real-parts test.")
+            note("The catalog has prices but no quantities, so wrong-match dollars cannot be computed for the real-parts test.")
         if sa or sb:
             st.markdown("""
     - **It does not replace confirmed labels.** On the synthetic data the self-trained classifier accepts more lines, but its precision falls from 100% to about 96.5% and it produces wrong-match dollars where the truth-trained one has none. Rule-matched lines always have a true part, so the model never sees a line that should be left unmatched.
@@ -1051,7 +1069,7 @@ with tab_evidence:
     - **Conclusion:** self-training is not a shortcut. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
     """)
 
-    with st.expander("Limits", expanded=True):
+    with st.expander("Limits", expanded=False):
         st.markdown("""
     - **The data is synthetic.** Accuracy is measured on noise this project generated. Real exports are messier in ways the generator does not model, so treat these numbers as a ceiling, not a forecast.
     - **The classifier is specific to the data it was trained on.** On real electronics parts it abstained on almost everything (see the external tests above).
@@ -1074,8 +1092,8 @@ with tab_evidence:
 
 # ---------------------------------------------------------------- your data
 with tab_data:
-    st.subheader("Run it on your own exports")
-    st.caption("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up for "
+    hero("Run it on your own exports", "CSV or Excel, any column names", ["1 Upload", "2 Confirm columns", "3 Run"], text=True)
+    note("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up for "
                "the app. It sends the headers and 20 sample rows of each file to Claude for the mapping, then purchase descriptions and BOM parts to "
                "the embedding model and Claude for matching.")
     code = settings.secret("ACCESS_CODE") if HOSTED else ""  # optional: with no code set, the tab is open to everyone
@@ -1099,7 +1117,7 @@ with tab_data:
                 up[kind] = (name, (SAMPLE_DIR / name).read_bytes())
             st.session_state.pop("up_map", None)
             st.rerun()
-        st.caption(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each."
+        note(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each."
                    + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
                       f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions are visible only in your own session, are not written to disk, "
                   "and are gone when you reload the page." if HOSTED else ""))
@@ -1156,7 +1174,7 @@ with tab_data:
                             with grid[i % 4]:
                                 pick_col = st.selectbox(f"{row.canonical} ({'required' if row.required else 'optional'})", ["(none)"] + list(raw[kind].columns),
                                                         key=f"map_{kind}_{row.canonical}", help=row.meaning)
-                                st.caption(f"Claude: {row.confidence:.0%} sure. {row.note}" if row.source else f"Claude found no column. {row.note}")
+                                note(f"Claude: {row.confidence:.0%} sure. {row.note}" if row.source else f"Claude found no column. {row.note}")
                                 chosen_map[kind][row.canonical] = None if pick_col == "(none)" else pick_col
                                 if row.required and pick_col == "(none)":
                                     problems.append(f"{KIND_LABEL[kind]}: {row.canonical} is required")
