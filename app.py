@@ -939,14 +939,18 @@ with tab_evidence:
                      hide_index=True, width="stretch", height="content")
         if stats.get("not_sent"):
             st.warning(f"Limit reached: {stats['call_limit']} Claude calls per run. {stats['not_sent']:,} smaller lines were not sent and are waiting in Review.")
-        for note in uploaded["notes"]:
-            note(note)
+        for cleaning_note in uploaded["notes"]:  # not named "note": that would replace the note() helper for the rest of the page
+            note(cleaning_note)
         note("Your own files have no answer key, so accuracy cannot be reported here. The Evidence tab shows how the same steps score "
                    "on the built-in sample and on outside data.")
 
     st.subheader("Where the spend ties")
     for col, b in zip(st.columns(4), BUCKETS):
         col.markdown(kpi(b.capitalize(), pct(by_bucket[b] / total), usd(by_bucket[b]), short(by_bucket[b])), unsafe_allow_html=True)
+    # This note explains the four buckets, so it sits under them, not under the flow chart further down.
+    inferred = lines[lines["bucket_inferred"]]
+    note(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
+               f"match and the plant: {len(inferred):,} lines ({short(inferred['spend_usd'].sum())}).")
     names_b = [b.capitalize() for b in BUCKETS]
     st.subheader("How the spend got there")
     decided = lines["source"].map(lambda v: "Saved decisions" if v in ("crosswalk", "rule_crosswalk") else "Rules" if v.startswith("rule_")
@@ -979,9 +983,6 @@ with tab_evidence:
                 color=alt.Color("bucket_name:N", scale=alt.Scale(domain=names_b, range=BUCKET_COLORS), legend=alt.Legend(title=None, orient="top")),
                 tooltip=[alt.Tooltip("decided:N", title="Decided by"), alt.Tooltip("bucket_name:N", title="Bucket"),
                          alt.Tooltip("spend_usd:Q", title="Spend", format="$,.0f")]).properties(height=alt.Step(30)), width="stretch")
-    inferred = lines[lines["bucket_inferred"]]
-    note(f"Unassigned includes the {len(queue)} lines waiting for a decision. Where the order type was blank, the bucket was inferred from the "
-               f"match and the plant: {len(inferred):,} lines ({short(inferred['spend_usd'].sum())}).")
 
     st.subheader("Tie-out by quarter")
     tq = lines.assign(un=lines["spend_usd"].where(lines["bucket"] == "unassigned", 0.0)).groupby("quarter")[["un", "spend_usd"]].sum().reset_index()
