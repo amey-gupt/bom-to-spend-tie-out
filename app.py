@@ -384,14 +384,18 @@ def plain_noun(description: str) -> list[str]:
 
 
 def lead_action(r) -> str:
-    """What someone would do about the lead, in 6 to 10 words. Leading qualifiers are dropped from long part names."""
+    """What to check before acting on the lead, in 6 to 10 words. Leading qualifiers are dropped from long part names."""
     if r["lead_type"] == "duplicate_part":
-        return f"Merge duplicate part numbers {r['part_number']} and {r['related']}"
+        return f"Confirm {r['part_number']} and {r['related']} are interchangeable, then merge"
     if r["lead_type"] == "similar_parts":
         return f"Ask engineering if {r['part_number']} can replace {r['related']}"
-    make = {"supplier_price_gap": "Move the {} to the cheaper supplier", "spares_premium": "Buy spares of the {} at the production price",
+    make = {"supplier_price_gap": "Check terms, then move the {} to the cheaper supplier", "spares_premium": "Check if spares of the {} qualify for production pricing",
             "over_purchase": "Find out why the {} is over-bought"}[r["lead_type"]]
     words = plain_noun(r["description"])
+    if len(words) > 1 and words[-1] in ("left", "right", "upper", "lower"):  # "housing shell left" reads as "left housing shell"
+        words = [words[-1]] + words[:-1]
+    if len(make.format(" ".join(words)).split()) > 10:  # the article goes first, then leading qualifiers
+        make = make.replace("the {}", "{}")
     while len(make.format(" ".join(words)).split()) > 10 and len(words) > 1:
         words = words[1:]
     return make.format(" ".join(words))
@@ -463,7 +467,8 @@ def opportunities_data() -> dict:
             "lines": [{"date": x.po_date, "supplier": x.supplier, "price": round(float(x.unit_price_usd), 4), "spend": round(float(x.spend_usd), 2),
                        "source": f"{x.source_file}, row {x.source_row}"} for x in top.itertuples()]})
     return {"spend_total": float(total), "tied_share": float(tied), "waiting_lines": int(len(queue)),
-            "products": [{"id": pid} for pid in products["product_id"]], "leads": out}
+            "synthetic": bool(is_sample),
+            "products": [{"id": r.product_id, "vs_std": None if pd.isna(r.actual_vs_std) else float(r.actual_vs_std)} for r in products.itertuples()], "leads": out}
 
 
 tab_labels = ["Opportunities", f"Review ({len(queue)})", "Products", "Evidence", "Your data"]

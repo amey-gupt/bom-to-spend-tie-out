@@ -33,12 +33,13 @@ button:focus-visible { outline: 3px solid var(--buyer); outline-offset: 2px; }
 .pill { font-size: 13.5px; padding: 5px 12px; border-radius: 999px; background: #1E2D45; color: #DCE4F0; }
 .pill.done { background: var(--money-on-dark); color: #062b18; font-weight: 600; }
 .fix-title { font-family: var(--display); font-weight: 700; font-size: 19px; margin-bottom: 8px; }
-.prod { width: 100%; display: grid; grid-template-columns: 74px 1fr auto; gap: 12px; align-items: center; background: transparent; border: 1.5px solid transparent; border-radius: 12px; padding: 7px 10px; text-align: left; color: #fff; }
+.prod { width: 100%; display: grid; grid-template-columns: 74px 1fr auto auto; gap: 12px; align-items: center; background: transparent; border: 1.5px solid transparent; border-radius: 12px; padding: 7px 10px; text-align: left; color: #fff; }
 .prod:hover { background: #18263C; }
 .prod[aria-pressed="true"] { border-color: var(--money-on-dark); background: #18263C; }
 .prod-name { font-weight: 600; }
 .prod-track { height: 12px; border-radius: 6px; background: #22324C; overflow: hidden; }
 .prod-fill { height: 100%; border-radius: 6px; background: var(--money-on-dark); transform-origin: left; animation: grow .7s cubic-bezier(.2,.8,.2,1) both; }
+.prod-vs { font-size: 13px; color: #9FB0C8; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 118px; text-align: right; }
 .prod-amt { font-size: 13.5px; color: #DCE4F0; font-variant-numeric: tabular-nums; white-space: nowrap; }
 @keyframes grow { from { transform: scaleX(0); } }
 
@@ -141,7 +142,7 @@ function countUp(el, to) {
 
 function renderHero() {
   const ls = live(), val = DATA.leads.filter((l) => state.status[l.id] === "validated");
-  $("heroLabel").textContent = "Savings leads found in " + money(DATA.spend_total) + " of spend";
+  $("heroLabel").textContent = "Candidate savings leads in " + money(DATA.spend_total) + (DATA.synthetic ? " of synthetic spend" : " of spend");
   countUp($("lo"), sum(ls, "low")); countUp($("hi"), sum(ls, "high"));
   const share = (v) => (100 * v / DATA.spend_total).toFixed(1) + "%";
   $("pills").innerHTML =
@@ -153,7 +154,7 @@ function renderProducts() {
   const rows = DATA.products.map((p) => {
     const ls = live().filter((l) => l.products.some((x) => x.id === p.id));
     const part = (k) => ls.reduce((a, l) => a + l[k] * l.products.find((x) => x.id === p.id).share, 0);
-    return { id: p.id, low: part("low"), high: part("high") };
+    return { id: p.id, low: part("low"), high: part("high"), vs: p.vs_std };
   }).sort((a, b) => b.high - a.high);
   const top = Math.max(...rows.map((r) => r.high), 1);
   $("products").innerHTML = rows.map((r) =>
@@ -161,6 +162,7 @@ function renderProducts() {
        <span class="prod-name">${esc(r.id)}</span>
        <span class="prod-track"><span class="prod-fill" style="display:block;width:${(100 * r.high / top).toFixed(1)}%"></span></span>
        <span class="prod-amt">${money(r.low)} to ${money(r.high)}</span>
+       <span class="prod-vs">${r.vs == null ? "" : (r.vs >= 0 ? "+" : "\u2212") + Math.abs(100 * r.vs).toFixed(1) + "% vs standard"}</span>
      </button>`).join("");
   document.querySelectorAll(".prod").forEach((b) => b.onclick = () => { state.product = state.product === b.dataset.id ? null : b.dataset.id; renderProducts(); renderFilters(); renderCards(); });
 }
