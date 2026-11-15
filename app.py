@@ -813,7 +813,7 @@ with tab_evidence:
     s3, s4 = evals["eval_step3"], evals["eval_step4"]
     llm = s3["llm"][MAIN_MODEL]
     hero(pct(llm["heldout"]["tie_out"]), "Of spend tied, on styles the matcher never saw", [
-        f"{usd(llm['heldout']['wrong_match_spend'])} matched wrongly", f"True rate {pct(llm['heldout']['true_tie_out'])}",
+        f"{round(llm['heldout']['accept_lines'] * (1 - llm['heldout']['accept_precision']))} wrong matches in this test", f"True rate {pct(llm['heldout']['true_tie_out'])}",
         f"{llm['heldout']['lines']:,} held-out lines"])
 
     abt_card, xw_card = evals.get("eval_external_abt_buy"), evals.get("eval_crosswalk")

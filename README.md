@@ -103,7 +103,7 @@ uv run streamlit run app.py
 
 Then open http://localhost:8501. The app reads the committed results in `out/`, so the built-in sample and "Try the second sample" need no API keys.
 
-To match your own files, set `ANTHROPIC_API_KEY` (and `OPENAI_API_KEY` for embeddings) in the environment or in `.env.local`, which is gitignored. Keys never go in the repo.
+To match your own files, copy `.env.example` to `.env.local` and fill in the keys: `ANTHROPIC_API_KEY` for Claude and `OPENAI_API_KEY` for embeddings. `.env.local` is gitignored; keys never go in the repo.
 
 To rebuild the results:
 
