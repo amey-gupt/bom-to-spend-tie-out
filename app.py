@@ -126,6 +126,16 @@ button[kind="primary"] kbd {color: #FFFFFF !important; background: rgba(255,255,
 [data-testid="stIFrame"], [data-testid="stElementContainer"]:has(> [data-testid="stIFrame"]) {height: calc(100vh - 132px) !important; min-height: 420px; border-radius: 22px;}
 [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stExpandSidebarButton"] {display: none !important;}
 [data-testid="stPopover"] button {border-radius: 999px !important; border-width: 1.5px !important; padding: .1rem .9rem; min-height: 2rem;}
+/* Phones. Nothing below applies above 640 px, so the desktop layout is untouched. */
+@media (max-width: 640px) {
+  /* All five tabs fit a 390 px screen without the scroll arrow. */
+  [data-testid="stTabs"] [role="tablist"] {gap: 5px !important;}
+  [data-testid="stTab"] p {font-size: 13px !important;}
+  /* Charts whose labels need room keep a readable width and scroll sideways inside their card. */
+  .st-key-card_flow, .st-key-wide_stages, .st-key-wide_drivers {overflow-x: auto !important;}
+  .st-key-card_flow > div {min-width: 600px;}
+  .st-key-wide_stages [data-testid="stVegaLiteChart"], .st-key-wide_drivers [data-testid="stVegaLiteChart"] {min-width: 600px;}
+}
 </style>""", unsafe_allow_html=True)
 
 
@@ -508,7 +518,8 @@ with tab_opps:
             st.select_slider("Date range", options=quarters, value=(q_from, q_to), key=period_key)
             st.caption("Narrows every tab to these quarters.")
     page = Path("opportunities.html").read_text().replace("/*DATA*/null/*END*/", json.dumps(opportunities_data()).replace("</", "<\\/"))
-    components.html(page, height=OPPORTUNITIES_HEIGHT, scrolling=False)
+    # scrolling=True lets a phone scroll the page inside its frame; on a desktop the page fits its frame and never scrolls.
+    components.html(page, height=OPPORTUNITIES_HEIGHT, scrolling=True)
 
 # ----------------------------------------------------------------- products
 with tab_cost:
@@ -570,7 +581,7 @@ with tab_cost:
         links = ([{"source": u.product_id, "target": u.part_number, "lineStyle": {"type": "solid"}} for u in uses.itertuples()]
                  + [{"source": b_.part, "target": sup_name[b_.supplier_key], "lineStyle": {"type": "dashed"}} for b_ in buys.itertuples()])
         with st.container(key="card_net"):
-            clicked = st_echarts({
+            clicked = st_echarts({"baseOption": {
                 "textStyle": {"fontFamily": FONT}, "color": [BLUE, AQUA, VIOLET],
                 "legend": {"top": 4, "data": ["Product", "Part", "Supplier"], "textStyle": {"fontFamily": FONT}},
                 "tooltip": {"valueFormatter": JsCode("function (v) { return v ? '$' + Math.round(v).toLocaleString('en-US') : ''; }")},
@@ -582,7 +593,12 @@ with tab_cost:
                     "lineStyle": {"color": "#9a9890", "opacity": 0.45, "width": 1},
                     "emphasis": {"focus": "adjacency", "label": {"show": True}, "lineStyle": {"width": 2}},
                     "data": nodes, "links": links,
-                }]}, height="560px", renderer="svg", key=f"net_{dataset}_{n_parts}",
+                }]},
+                # The products are pinned at positions laid out for a wide chart. On a phone, zoom out so the whole network shows.
+                # The rule without a query restores the normal view whenever the chart is wider than that.
+                "media": [{"query": {"maxWidth": 700}, "option": {"series": [{"zoom": 0.3, "label": {"fontSize": 9}}]}},
+                          {"option": {"series": [{"zoom": 1, "label": {"fontSize": 11}}]}}]},
+                height="560px", renderer="svg", key=f"net_{dataset}_{n_parts}",
                 events={"click": "function (params) { return params.dataType === 'node' ? params.name : null; }"})
         clicked = clicked.get("chart_event") if isinstance(clicked, dict) else clicked
         if clicked in top_parts and clicked != st.session_state.get("net_last_click"):
@@ -640,17 +656,18 @@ with tab_cost:
     drivers = use.reindex(use["diff"].abs().sort_values(ascending=False).index).head(12).reset_index()
     drivers["direction"] = drivers["diff"].map(lambda d: "Above standard" if d > 0 else "Below standard")
     drivers["label"] = drivers["part_number"] + "  " + drivers["description"]
-    show_chart(
-        alt.Chart(drivers).mark_bar(height=16, cornerRadiusEnd=3).encode(
-            y=alt.Y("label:N", sort=None, title=None, axis=alt.Axis(labelLimit=380)),
-            x=alt.X("diff:Q", axis=alt.Axis(format="$.2f", title="Estimated actual minus standard, per unit built")),
-            color=alt.Color("direction:N", scale=alt.Scale(domain=["Above standard", "Below standard"], range=[VIOLET, BLUE]),
-                            legend=alt.Legend(title=None, orient="top")),
-            tooltip=[alt.Tooltip("part_number:N", title="Part"), alt.Tooltip("description:N", title="Description"),
-                     alt.Tooltip("std_per_unit:Q", title="Standard per unit", format="$.3f"),
-                     alt.Tooltip("actual_per_unit:Q", title="Est. actual per unit", format="$.3f"),
-                     alt.Tooltip("diff:Q", title="Difference", format="+$.3f")],
-        ).properties(height=330), width="stretch")
+    with st.container(key="wide_drivers"):  # on a phone this chart keeps a readable width and scrolls sideways
+        show_chart(
+            alt.Chart(drivers).mark_bar(height=16, cornerRadiusEnd=3).encode(
+                y=alt.Y("label:N", sort=None, title=None, axis=alt.Axis(labelLimit=380)),
+                x=alt.X("diff:Q", axis=alt.Axis(format="$.2f", title="Estimated actual minus standard, per unit built")),
+                color=alt.Color("direction:N", scale=alt.Scale(domain=["Above standard", "Below standard"], range=[VIOLET, BLUE]),
+                                legend=alt.Legend(title=None, orient="top")),
+                tooltip=[alt.Tooltip("part_number:N", title="Part"), alt.Tooltip("description:N", title="Description"),
+                         alt.Tooltip("std_per_unit:Q", title="Standard per unit", format="$.3f"),
+                         alt.Tooltip("actual_per_unit:Q", title="Est. actual per unit", format="$.3f"),
+                         alt.Tooltip("diff:Q", title="Difference", format="+$.3f")],
+            ).properties(height=330), width="stretch")
     st.dataframe(pd.DataFrame({
         "Part": drivers["part_number"], "Description": drivers["description"], "Assembly": drivers["assembly"],
         "Gross qty per unit": drivers["qty"].map("{:.3g}".format), "Standard per unit": drivers["std_per_unit"].map("${:.3f}".format),
@@ -901,7 +918,8 @@ with tab_evidence:
         labels = alt.Chart(stages).mark_text(align="left", dx=6, color="#0b0b0b").encode(y=alt.Y("stage:N", sort=None), x="tie_out:Q", text="label:N")
         truth_df = pd.DataFrame({"x": [true_rate], "label": [f"true rate {true_rate:.1%}"]})
         rule = alt.Chart(truth_df).mark_rule(strokeDash=[4, 4], color="#52514e").encode(x="x:Q", tooltip=alt.Tooltip("label:N", title="Planted truth"))
-        show_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
+        with st.container(key="wide_stages"):  # on a phone this chart keeps a readable width and scrolls sideways
+            show_chart((bars + labels + rule).properties(height=alt.Step(34)), width="stretch")
         note(f"Dashed line: the true tie-out rate on these lines, {true_rate:.1%}. Measured on {full['lines']:,} held-out purchase lines "
                    f"({short(full['spend'])}) written in styles never used to tune the matcher. Stage 4 ties less than stage 3 because it refuses "
                    "to guess: uncertain lines wait for review instead.")
