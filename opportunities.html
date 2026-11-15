@@ -39,6 +39,7 @@ button:focus-visible { outline: 3px solid var(--buyer); outline-offset: 2px; }
 .prod-name { font-weight: 600; }
 .prod-track { height: 12px; border-radius: 6px; background: #22324C; overflow: hidden; }
 .prod-fill { height: 100%; border-radius: 6px; background: var(--money-on-dark); transform-origin: left; animation: grow .7s cubic-bezier(.2,.8,.2,1) both; }
+.fix-note { font-size: 12.5px; color: #9FB0C8; text-align: right; padding: 4px 10px 0; }
 .prod-vs { font-size: 13px; color: #9FB0C8; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 118px; text-align: right; }
 .prod-amt { font-size: 13.5px; color: #DCE4F0; font-variant-numeric: tabular-nums; white-space: nowrap; }
 @keyframes grow { from { transform: scaleX(0); } }
@@ -154,7 +155,7 @@ function renderProducts() {
   const rows = DATA.products.map((p) => {
     const ls = live().filter((l) => l.products.some((x) => x.id === p.id));
     const part = (k) => ls.reduce((a, l) => a + l[k] * l.products.find((x) => x.id === p.id).share, 0);
-    return { id: p.id, low: part("low"), high: part("high"), vs: p.vs_std };
+    return { id: p.id, low: part("low"), high: part("high"), vs: p.vs_std, review: p.in_review };
   }).sort((a, b) => b.high - a.high);
   const top = Math.max(...rows.map((r) => r.high), 1);
   $("products").innerHTML = rows.map((r) =>
@@ -162,8 +163,8 @@ function renderProducts() {
        <span class="prod-name">${esc(r.id)}</span>
        <span class="prod-track"><span class="prod-fill" style="display:block;width:${(100 * r.high / top).toFixed(1)}%"></span></span>
        <span class="prod-amt">${money(r.low)} to ${money(r.high)}</span>
-       <span class="prod-vs">${r.vs == null ? "" : (r.vs >= 0 ? "+" : "\u2212") + Math.abs(100 * r.vs).toFixed(1) + "% vs standard"}</span>
-     </button>`).join("");
+       <span class="prod-vs">${r.review ? "in review" : r.vs == null ? "" : (r.vs >= 0 ? "+" : "\u2212") + Math.abs(100 * r.vs).toFixed(1) + "% vs standard"}</span>
+     </button>`).join("") + (DATA.review_note ? `<div class="fix-note">${esc(DATA.review_note)}</div>` : "");
   document.querySelectorAll(".prod").forEach((b) => b.onclick = () => { state.product = state.product === b.dataset.id ? null : b.dataset.id; renderProducts(); renderFilters(); renderCards(); });
 }
 

@@ -242,6 +242,19 @@ def compute(base: pd.DataFrame, bom: pd.DataFrame, builds: pd.DataFrame, materia
 
 
 @st.cache_data
+def waiting_by_product(lines: pd.DataFrame, bom: pd.DataFrame, builds: pd.DataFrame, q_from: str, q_to: str) -> pd.Series:
+    """Production spend each product would gain if every suggestion in the review queue were approved. Until then that
+    spend is in no product's cost, so cost against standard reads low."""
+    in_range = builds[quarter_of(builds["period"]).between(q_from, q_to)]
+    now = allocate.allocate(lines, bom, in_range)[1].set_index("product_id")["allocated_production_spend_est"]
+    sim = lines.copy()
+    ok = (sim["decision"] == "review") & sim["suggested_part"].isin(set(bom["part_number"]))
+    sim.loc[ok, "part"], sim.loc[ok, "decision"] = sim.loc[ok, "suggested_part"], "accept"
+    then = allocate.allocate(allocate.assign_buckets(sim), bom, in_range)[1].set_index("product_id")["allocated_production_spend_est"]
+    return (then - now).clip(lower=0.0)
+
+
+@st.cache_data
 def requirements(bom: pd.DataFrame, builds: pd.DataFrame, q_from: str, q_to: str) -> pd.DataFrame:
     """Gross requirement of every bought part per product and build month, using the BOM in effect that month."""
     return allocate.requirements(bom, builds[quarter_of(builds["period"]).between(q_from, q_to)])
@@ -343,6 +356,13 @@ if "owner" not in leads:
 if "check" not in leads:
     leads["check"] = leads["lead_type"].map(allocate.CHECK)
 start_lines = compute(base, bom, builds, float(allocate.MATERIALITY_USD), (), q_from, q_to)[0]
+# Cost against standard leaves out spend that is waiting in review. Where that is more than a tenth of a product's standard
+# cost the percentage would mislead, so the product is shown as "in review" instead.
+REVIEW_SHARE_LIMIT = 0.10
+products["waiting_usd"] = products["product_id"].map(waiting_by_product(lines, bom, builds, q_from, q_to)).fillna(0.0)
+products["cost_in_review"] = products["waiting_usd"] > REVIEW_SHARE_LIMIT * products["std_cost_per_unit"] * products["units_built"]
+review_spend = float(lines.loc[lines["decision"] == "review", "spend_usd"].sum())
+review_note = f"Excludes {short(review_spend)} waiting in review." if review_spend > 0 else ""
 ref = reference(base)
 part_desc = bom.drop_duplicates("part_number").set_index("part_number")["description"]
 total = lines["spend_usd"].sum()
@@ -468,7 +488,9 @@ def opportunities_data() -> dict:
                        "source": f"{x.source_file}, row {x.source_row}"} for x in top.itertuples()]})
     return {"spend_total": float(total), "tied_share": float(tied), "waiting_lines": int(len(queue)),
             "synthetic": bool(is_sample),
-            "products": [{"id": r.product_id, "vs_std": None if pd.isna(r.actual_vs_std) else float(r.actual_vs_std)} for r in products.itertuples()], "leads": out}
+            "review_note": review_note,
+            "products": [{"id": r.product_id, "vs_std": None if pd.isna(r.actual_vs_std) else float(r.actual_vs_std), "in_review": bool(r.cost_in_review)}
+                         for r in products.itertuples()], "leads": out}
 
 
 tab_labels = ["Opportunities", f"Review ({len(queue)})", "Products", "Evidence", "Your data"]
@@ -492,9 +514,10 @@ with tab_opps:
 with tab_cost:
     if by_product:
         best_id, (best_low, best_high, best_n) = max(by_product.items(), key=lambda kv: kv[1][1])
-        gap = products.set_index("product_id")["actual_vs_std"].get(best_id)
+        best = products.set_index("product_id").loc[best_id]
         hero(best_id, "The product with the largest lead range", [f"{short(best_low)} to {short(best_high)} in leads", f"{best_n} leads touch it"]
-             + ([f"Estimated actual {gap:+.1%} vs standard"] if pd.notna(gap) else []))
+             + (["Cost vs standard: in review"] if best["cost_in_review"] else [f"Estimated actual {best['actual_vs_std']:+.1%} vs standard"]
+                if pd.notna(best["actual_vs_std"]) else []))
     else:
         hero("No leads yet", "Products", [])
     st.subheader("Parts cost per unit: standard versus estimated actual")
@@ -508,13 +531,15 @@ with tab_cost:
     cost_labels = alt.Chart(cost).mark_text(align="left", dx=5, color="#0b0b0b").encode(
         y=alt.Y("product_id:N"), yOffset=alt.YOffset("series:N", sort=["BOM standard", "Estimated actual"]), x="cost:Q", text=alt.Text("cost:Q", format="$.2f"))
     show_chart((cost_bars + cost_labels).properties(height=alt.Step(20)), width="stretch")
+    if review_note:
+        st.caption(review_note)
     note("Estimated: matched production spend is split across the products that use each part, by gross BOM quantity x units built in the "
                "purchase's quarter. Purchases show what was bought, not what was consumed. Lines waiting for a decision are not included yet.")
     st.dataframe(pd.DataFrame({
         "Product": products["product_id"], "Units built": products["units_built"].map("{:,}".format),
         "Standard per unit": products["std_cost_per_unit"].map(lambda v: "n/a" if pd.isna(v) else f"${v:.2f}"),
         "Estimated actual per unit": products["actual_cost_per_unit_est"].map("${:.2f}".format),
-        "Actual vs standard": products["actual_vs_std"].map(lambda v: "n/a" if pd.isna(v) else f"{v:+.1%}"),
+        "Actual vs standard": ["in review" if r.cost_in_review else "n/a" if pd.isna(r.actual_vs_std) else f"{r.actual_vs_std:+.1%}" for r in products.itertuples()],
         "Allocated production spend": products["allocated_production_spend_est"].map(usd)}), hide_index=True, width="stretch", height="content")
     st.download_button("Download product cost (CSV)", products.to_csv(index=False), "product_cost.csv", "text/csv")
 
