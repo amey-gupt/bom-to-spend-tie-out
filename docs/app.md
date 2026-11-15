@@ -20,6 +20,10 @@ The queue on the left, grouped so lines with identical text are one item, and th
 
 The product with the largest lead range, then BOM standard versus estimated actual per unit, the shared-parts network, the engineering changes, the parts driving the difference, the BOM in effect on any date, the cost trend by quarter and an estimated inventory view.
 
+![The shared-parts network: products, the parts they share, and the suppliers those parts are bought from](shared-parts.png)
+
+The shared-parts network: solid lines mean a product uses the part, dashed lines mean the part is bought from that supplier, and node size is spend.
+
 ## Evidence
 
 ![Evidence tab](evidence.png)

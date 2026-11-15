@@ -53,6 +53,10 @@ flowchart LR
     ACC --> G[Allocate spend to products,<br/>bucket it, find leads]
 ```
 
+![Spend flow on the built-in sample: how each purchase line was settled, and the bucket its spend landed in](docs/spend-flow.png)
+
+*Where the synthetic sample's $29.7M went: rules and the model settle most of it, Claude a thin band, and the rest waits for a person or matches nothing.*
+
 Cheap exact rules settle the easy lines. A small classifier, trained only on the tuning split, accepts a match only above a threshold set for at least 99% precision. Claude sees only the uncertain middle band, so cost follows how messy the data is and not how large it is: 392 calls and $3.12 for the whole dataset. Whatever is still uncertain goes to a person, largest dollars first, and each decision becomes a rule for the next run.
 
 For uploaded files the classifier is skipped (see "What I tried"), so rules, embeddings and Claude do the matching.
