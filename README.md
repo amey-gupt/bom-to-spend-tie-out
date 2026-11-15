@@ -2,11 +2,11 @@
 
 Ties a manufacturer's purchase lines to its bills of materials (BOMs) from messy CSV exports, with no system integration, and turns the result into savings leads a buyer can check.
 
-![The Opportunities tab: a savings range, the products to fix first, and one card per lead](docs/opportunities.png)
-
 ![Filtering by product, opening a lead and marking it validated](docs/demo.gif)
 
 Built solo at the Kearney PERLab x Velocity AI Hackathon (Corporate Track 3, BOM Cost Linkage), November 2026.
+
+I directed the design, experiments and decisions, and used Claude Code to write the code.
 
 **The data in the app is synthetic.** The products, parts, suppliers, prices and purchase lines are generated, and the true matches are planted so accuracy can be measured. Two further tests use real data; the results table says which.
 
@@ -57,29 +57,29 @@ Cheap exact rules settle the easy lines. A small classifier, trained only on the
 
 For uploaded files the classifier is skipped (see "What I tried"), so rules, embeddings and Claude do the matching.
 
+![Approving the top item in Review with the A key: 100 lines waiting become 93 and tie-out moves from 88.6% to 91.2%](docs/review.gif)
+
 ## What I tried
 
-All on November 14, 2026, in the order it happened. Times are commit times, US Central.
-
-| When | Experiment | Result | Decision |
+| # | Experiment | Result | Decision |
 |---|---|---|---|
-| 00:38 | Synthetic drill family with planted matches; five naming styles held out from tuning | Accuracy can be measured, and not only on styles the matcher was tuned on | Kept as the test bed |
-| 01:04 | Plain part-number lookup, then rules, then rules plus embeddings with one similarity cutoff | Tie-out 27.5%, then 34.2%, then 84.1%, but the last at 95.3% precision with $86,119 tied to the wrong part | A single cutoff is not safe enough; add a classifier with an option to abstain |
-| 01:23 | Calibrated classifier with accept, review and no-match outcomes | Precision back to 100%, but 328 lines ($2.35M) left in review | Kept; send the review band to Claude |
-| 01:23 | Claude on the review band only | Tie-out 97.9% at 100% precision; review queue down to 18 lines ($55K) | Kept |
-| 01:23 | Hosted embeddings against a small local model | True part ranked first for 95.7% of open lines against 90.2% | Hosted model for results; local model stays as the no-key fallback |
-| 01:35 | **A smaller Claude model** (Haiku 5.5 in place of Opus 5.5) | **Failed.** $0.10 against $3.12, but its picks never reached 99% precision on the tuning split, so none could be auto-accepted and 274 lines ($2.25M) stayed in review | Kept the larger model; $3 is small next to the review time saved |
-| 01:35 | Send Claude-only matches above $25,000 to a person | Tie-out drops from 93.9% to 88.6%; about $1.6M waits in review | Kept. A wrong match at that size would undo a savings claim |
-| 02:14 | Zero-shot test on real product listings (Abt-Buy) | F1 0.94 against 0.81 and 0.85 for the published baselines | Kept as outside evidence |
-| 02:14 | **Model transfer:** the classifier trained on synthetic drill parts, run on real electronic parts | **Failed.** With the part number hidden it accepted 1 of 208 lines. Rules and Claude carried the test | Uploaded files skip the classifier |
-| 11:42 | Upload flow where Claude maps unknown column names | All 25 columns right on a second sample; 99.7% precision, 97.5% recall | Kept, with the mapping confirmed by the user before anything runs |
-| 11:49 | **Self-training:** train the classifier on a dataset's own rule-matched lines, with no confirmed labels | **Failed.** Synthetic: precision fell to 96.5% with $75,999 tied to the wrong part. Real parts: recall moved from 0.00 to 0.02 | Dropped. The classifier needs reviewer-confirmed matches, which the saved decisions collect |
-| 12:04 | Unit conversion, scrap and multi-level BOMs; a bought-versus-required lead | All 4 lines bought in the wrong kind of unit were caught. One of two planted over-purchases found; magnet wire was missed | Kept; the miss is reported |
-| 12:04 | **Retraining side effect:** the classifier, retrained after the BOM gained units and scrap, on the real-parts test | **Got worse.** It now calls about half the hidden-part-number lines "no match" outright, and recall after Claude fell from 0.28 to 0.16 | Reported the current number; further evidence the classifier does not transfer |
-| 12:32 | **No-match rule added after seeing held-out results:** an item worth over $25,000 cannot be closed as "no match" by the classifier alone | Spend wrongly dropped fell from $43,572 to $13,536; review grew from 11 to 18 lines | Kept, but its "after" numbers are not a clean held-out measurement and are labelled so |
-| 12:32 | Do saved decisions cut review work over six quarters? | 26 review lines against 97. Item text repeats by construction in this data, so the size of the effect is not evidence about a real company | Kept the feature; the number is not a headline |
-| 12:47 | Effective-dated BOM revisions, with two engineering changes purchasing did not follow | Two new over-purchase leads, both real gaps in the data; purchase lines and matching decisions unchanged | Kept |
-| 16:53 | Similar parts to consolidate (same family, one spec within 15%) | 19 pairs worth $316K to $633K, but unmeasured, and some are plainly not interchangeable (two bearing sizes) | Shown as "Ideas to confirm", kept out of the headline total |
+| 1 | Synthetic drill family with planted matches; five naming styles held out from tuning | Accuracy can be measured, and not only on styles the matcher was tuned on | Kept as the test bed |
+| 2 | Plain part-number lookup, then rules, then rules plus embeddings with one similarity cutoff | Tie-out 27.5%, then 34.2%, then 84.1%, but the last at 95.3% precision with $86,119 tied to the wrong part | A single cutoff is not safe enough; add a classifier with an option to abstain |
+| 3 | Calibrated classifier with accept, review and no-match outcomes | Precision back to 100%, but 328 lines ($2.35M) left in review | Kept; send the review band to Claude |
+| 4 | Claude on the review band only | Tie-out 97.9% at 100% precision; review queue down to 18 lines ($55K) | Kept |
+| 5 | Hosted embeddings against a small local model | True part ranked first for 95.7% of open lines against 90.2% | Hosted model for results; local model stays as the no-key fallback |
+| 6 | **A smaller Claude model** (Haiku 5.5 in place of Opus 5.5) | **Failed.** $0.10 against $3.12, but its picks never reached 99% precision on the tuning split, so none could be auto-accepted and 274 lines ($2.25M) stayed in review | Kept the larger model; $3 is small next to the review time saved |
+| 7 | Send Claude-only matches above $25,000 to a person | Tie-out drops from 93.9% to 88.6%; about $1.6M waits in review | Kept. A wrong match at that size would undo a savings claim |
+| 8 | Zero-shot test on real product listings (Abt-Buy) | F1 0.94 against 0.81 and 0.85 for the published baselines | Kept as outside evidence |
+| 9 | **Model transfer:** the classifier trained on synthetic drill parts, run on real electronic parts | **Failed.** With the part number hidden it accepted 1 of 208 lines. Rules and Claude carried the test | Uploaded files skip the classifier |
+| 10 | Upload flow where Claude maps unknown column names | All 25 columns right on a second sample; 99.7% precision, 97.5% recall | Kept, with the mapping confirmed by the user before anything runs |
+| 11 | **Self-training:** train the classifier on a dataset's own rule-matched lines, with no confirmed labels | **Failed.** Synthetic: precision fell to 96.5% with $75,999 tied to the wrong part. Real parts: recall moved from 0.00 to 0.02 | Dropped. The classifier needs reviewer-confirmed matches, which the saved decisions collect |
+| 12 | Unit conversion, scrap and multi-level BOMs; a bought-versus-required lead | All 4 lines bought in the wrong kind of unit were caught. One of two planted over-purchases found; magnet wire was missed | Kept; the miss is reported |
+| 13 | **Retraining side effect:** the classifier, retrained after the BOM gained units and scrap, on the real-parts test | **Got worse.** It now calls about half the hidden-part-number lines "no match" outright, and recall after Claude fell from 0.28 to 0.16 | Reported the current number; further evidence the classifier does not transfer |
+| 14 | **No-match rule added after seeing held-out results:** an item worth over $25,000 cannot be closed as "no match" by the classifier alone | Spend wrongly dropped fell from $43,572 to $13,536; review grew from 11 to 18 lines | Kept, but its "after" numbers are not a clean held-out measurement and are labelled so |
+| 15 | Do saved decisions cut review work over six quarters? | 26 review lines against 97. Item text repeats by construction in this data, so the size of the effect is not evidence about a real company | Kept the feature; the number is not a headline |
+| 16 | Effective-dated BOM revisions, with two engineering changes purchasing did not follow | Two new over-purchase leads, both real gaps in the data; purchase lines and matching decisions unchanged | Kept |
+| 17 | Similar parts to consolidate (same family, one spec within 15%) | 19 pairs worth $316K to $633K, but unmeasured, and some are plainly not interchangeable (two bearing sizes) | Shown as "Ideas to confirm", kept out of the headline total |
 
 ## Limits
 
@@ -122,3 +122,7 @@ Claude's answers are committed under `cache/llm/`, so no Anthropic key is needed
 - [docs/app.md](docs/app.md): each tab with a screenshot
 - [docs/results.md](docs/results.md): every table, experiment and data source, with licenses
 - [docs/deploy.md](docs/deploy.md): hosting on Streamlit Community Cloud, secrets and limits
+
+## License
+
+[MIT](LICENSE)
