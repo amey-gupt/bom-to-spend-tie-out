@@ -541,7 +541,10 @@ with tab_cost:
         "Estimated actual per unit": products["actual_cost_per_unit_est"].map("${:.2f}".format),
         "Actual vs standard": ["in review" if r.cost_in_review else "n/a" if pd.isna(r.actual_vs_std) else f"{r.actual_vs_std:+.1%}" for r in products.itertuples()],
         "Allocated production spend": products["allocated_production_spend_est"].map(usd)}), hide_index=True, width="stretch", height="content")
-    st.download_button("Download product cost (CSV)", products.to_csv(index=False), "product_cost.csv", "text/csv")
+    # The file says what the screen says: "in review" where the percentage is withheld.
+    cost_file = products.drop(columns="cost_in_review").rename(columns={"waiting_usd": "waiting_in_review_usd"})
+    cost_file["actual_vs_std"] = cost_file["actual_vs_std"].astype(object).mask(products["cost_in_review"], "in review")
+    st.download_button("Download product cost (CSV)", cost_file.to_csv(index=False), "product_cost.csv", "text/csv")
 
     st.subheader("Shared parts: who uses them and who sells them")
     req = requirements(bom, builds, q_from, q_to)
@@ -1272,4 +1275,5 @@ with tab_data:
                     else:
                         st.rerun()
         if uploaded:
-            st.success(f"Last run: {', '.join(uploaded['files'])}: {uploaded['stats']['lines']:,} purchase lines. Select \"Your files\" under Data in the sidebar to view it.")
+            st.success(f"Last run: {', '.join(uploaded['files'])}: {uploaded['stats']['lines']:,} purchase lines. Every tab now shows these files; "
+                       "switch back with \"Showing in every tab\" at the top of this tab.")

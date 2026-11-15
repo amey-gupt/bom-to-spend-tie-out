@@ -48,7 +48,7 @@ The flow chart and the network use ECharts through the `streamlit-echarts` compo
 
 ## Saved decisions
 
-Every approve, reject or not-a-BOM-part decision is written to `crosswalk.csv` (purchase text and part-number field to BOM part). It applies at once to every line with the same text, persists across sessions, and is the first rule on the next pipeline run. Undo, clear and download are at the bottom of the Review tab. The file is local working state and is gitignored. Leads and product cost also have download buttons.
+Every approve, reject or not-a-BOM-part decision is written to `crosswalk.csv` (purchase text and part-number field to BOM part). It applies at once to every line with the same text, persists across sessions, and is the first rule on the next pipeline run. Undo, clear and download are at the bottom of the Review tab. The file is local working state and is gitignored. There are three downloads in all: the leads currently shown ("Download leads (CSV)" in the Opportunities filter row, with each lead's status), product cost (Products), and the saved decisions (Review).
 
 ## Your own files
 

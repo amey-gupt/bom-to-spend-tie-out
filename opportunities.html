@@ -53,6 +53,8 @@ button:focus-visible { outline: 3px solid var(--buyer); outline-offset: 2px; }
 .lbl { font-size: 13.5px; color: var(--muted); margin-right: 2px; white-space: nowrap; }
 .tied { margin-left: auto; font-size: 13.5px; color: var(--muted); white-space: nowrap; }
 .tied b { color: var(--ink); font-weight: 600; }
+.dl { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 12px; font: inherit; font-weight: 500; font-size: 13.5px; color: var(--ink); white-space: nowrap; cursor: pointer; }
+.dl:hover { border-color: var(--ink); }
 
 /* cards */
 .cards { flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 12px; padding: 2px 6px 12px; align-content: start; }
@@ -181,9 +183,11 @@ function renderFilters() {
   const owners = ["All", "Buyer", "Engineer", "Service"].concat(DATA.leads.some(isIdea) ? ["Ideas"] : []);
   const label = (o) => o === "All" ? "Everyone" : o === "Ideas" ? "Ideas to confirm" : o;
   $("filters").innerHTML = `<span class="lbl">Who acts on it</span>` + owners.map((o) =>
-    `<button class="chip" data-o="${o}" aria-pressed="${state.owner === o}">${label(o)}<span class="n">${base.filter((l) => inChip(l, o)).length} ${o === "Ideas" ? "pairs" : "leads"}</span></button>`).join("") +
+    `<button class="chip" data-o="${o}" aria-pressed="${state.owner === o}">${label(o)}<span class="n" title="${o === "Ideas" ? "pairs" : "leads"}">${base.filter((l) => inChip(l, o)).length}</span></button>`).join("") +
     `<span id="period-slot"></span>` +
-    `<span class="tied"><b>${(100 * DATA.tied_share).toFixed(1)}%</b> tied. <b>${DATA.waiting_lines}</b> lines in review.</span>`;
+    `<span class="tied"><b>${(100 * DATA.tied_share).toFixed(1)}%</b> tied. <b>${DATA.waiting_lines}</b> lines in review.</span>` +
+    `<button class="dl" id="dl-leads" title="The leads shown below, with their status">Download leads (CSV)</button>`;
+  $("dl-leads").onclick = downloadLeads;
   document.querySelectorAll(".chip").forEach((b) => b.onclick = () => { state.owner = b.dataset.o; renderFilters(); renderCards(); });
 }
 
@@ -192,6 +196,17 @@ function compare(l) {
   return `<div class="cmp">` + l.compare.map((c) =>
     `<div class="cmp-row${c.value === hi && l.compare.length > 1 ? " hi" : ""}"><span title="${esc(c.label)}">${esc(c.label)}</span>
        <span class="cmp-bar" style="width:${Math.max(4, 100 * c.value / top).toFixed(1)}%"></span><b>${esc(c.text)}</b></div>`).join("") + `</div>`;
+}
+
+// The leads currently shown (the owner chip and the product filter apply), one row each, with their status.
+function downloadLeads() {
+  const cell = (v) => { const s = String(v ?? ""); return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const rows = [["lead_id", "type", "owner", "part", "action", "low_usd", "high_usd", "status", "products", "purchase_line_count"]].concat(
+    shown().map((l) => [l.id, l.type, l.owner, l.part, l.action, Math.round(l.low), Math.round(l.high), state.status[l.id] || "open",
+                        l.products.map((x) => x.id).join("; "), l.line_count]));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([rows.map((r) => r.map(cell).join(",")).join("\n") + "\n"], { type: "text/csv" }));
+  a.download = "leads.csv"; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
 function renderCards() {
