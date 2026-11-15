@@ -64,7 +64,7 @@ BG, SURFACE_C, INK, MUTED, LINE = "#EDF0F4", "#FFFFFF", "#0F1B2D", "#5B6778", "#
 MONEY, MONEY_ON_DARK = "#087F43", "#63E2A4"
 BLUE, VIOLET, YELLOW, ORANGE, GRAY = "#2457D6", "#7A3FD1", "#9A5200", "#E2703A", "#9AA5B4"  # buyer, engineer, service, wrong, neutral
 AQUA = MONEY
-OPPORTUNITIES_HEIGHT = 560  # a floor; the stylesheet stretches the page to the window
+OPPORTUNITIES_HEIGHT = 420  # the floor; the stylesheet stretches the page to fill the window below the tabs
 BUCKET_COLORS = [BLUE, AQUA, YELLOW, GRAY]  # unassigned is neutral: it is the absence of a tie
 SERIES = [BLUE, AQUA, YELLOW, VIOLET]       # orange is kept for warnings and wrong matches only
 SURFACE = SURFACE_C
@@ -114,10 +114,14 @@ h3 {margin-top: 1.6rem !important; padding-bottom: .4rem !important;}
 .pair .who {font-size: .74rem; color: #5B6778;}
 .tag {display: inline-block; font-size: .74rem; font-weight: 600; padding: .1rem .55rem; border-radius: 999px; background: #E4ECFF; color: #2457D6; margin-right: .3rem;}
 kbd {font-size: .72rem; padding: .05rem .35rem; border: 1.5px solid #D9DEE6; border-radius: 4px; background: #fff;}
+button kbd {color: #0F1B2D !important; background: #EDF0F4 !important; border-color: #D9DEE6 !important;}
+button[kind="primary"] kbd {color: #FFFFFF !important; background: rgba(255,255,255,.2) !important; border-color: rgba(255,255,255,.55) !important;}
 /* buttons are pills; the primary one is green (the theme's primary colour) */
 .stButton button, .stDownloadButton button {border-radius: 999px !important; border-width: 1.5px !important; font-weight: 600;}
 /* the Opportunities page fills the window below the tabs, so the browser page itself does not scroll */
-[data-testid="stIFrame"], iframe[data-testid="stIFrame"], [data-testid="stCustomComponentV1"] {height: calc(100vh - 118px) !important; min-height: 480px; border-radius: 22px;}
+[data-testid="stIFrame"], [data-testid="stElementContainer"]:has(> [data-testid="stIFrame"]) {height: calc(100vh - 188px) !important; min-height: 420px; border-radius: 22px;}
+[data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stExpandSidebarButton"] {display: none !important;}
+[data-testid="stPopover"] button {border-radius: 999px !important; border-width: 1.5px !important; padding: .1rem .9rem; min-height: 2rem;}
 </style>""", unsafe_allow_html=True)
 
 
@@ -163,14 +167,15 @@ def quarter_of(dates: pd.Series) -> pd.Series:
     return d.dt.year.astype(str) + "Q" + d.dt.quarter.astype(str)
 
 
-def table(df: pd.DataFrame, key: str, select: bool = False, page_size: int = PAGE):
+def table(df: pd.DataFrame, key: str, select: bool = False, page_size: int = PAGE, column_config: dict | None = None):
     """A table sized to its rows, paged when long. With select=True returns the picked row's position in df, or None."""
     pages = max(1, -(-len(df) // page_size))
     page = min(st.session_state.get(f"{key}_page", 0), pages - 1)
     view = df.iloc[page * page_size:(page + 1) * page_size]
     picked = None
     if select:
-        event = st.dataframe(view, hide_index=True, width="stretch", height="content", on_select="rerun", selection_mode="single-row", key=f"{key}_p{page}")
+        event = st.dataframe(view, hide_index=True, width="stretch", height="content", on_select="rerun", selection_mode="single-row", key=f"{key}_p{page}",
+                             column_config=column_config)
         picked = page * page_size + event.selection.rows[0] if event.selection.rows else None
     else:
         st.dataframe(view, hide_index=True, width="stretch", height="content")
@@ -296,23 +301,31 @@ if st.session_state.pop("_switch_to_uploaded", False):
     st.session_state["dataset"] = "Your files"
 uploaded = st.session_state.get("uploaded")
 
-# ------------------------------------------------------------------ sidebar
-with st.sidebar:
-    st.header("Settings")
-    options = ["Built-in sample"] + (["Your files"] if uploaded else [])
-    if st.session_state.get("dataset") not in options:
-        st.session_state["dataset"] = options[0]
-    dataset = st.radio("Data", options, key="dataset")
-    is_sample = dataset == "Built-in sample"
-    base, bom, builds = (sample_base, sample_bom, sample_builds) if is_sample else (uploaded["lines"], uploaded["bom"], uploaded["builds"])
+# ----------------------------------------------------------------- settings
+# There is no sidebar. Each control sits in the tab it belongs to (the data switch in Your data, the sign-off threshold in
+# Review, the period on Opportunities) and its value is read here from session state, before anything is computed.
+options = ["Built-in sample"] + (["Your files"] if uploaded else [])
+if st.session_state.get("dataset") not in options:
+    st.session_state["dataset"] = options[0]
+dataset = st.session_state["dataset"]
+is_sample = dataset == "Built-in sample"
+base, bom, builds = (sample_base, sample_bom, sample_builds) if is_sample else (uploaded["lines"], uploaded["bom"], uploaded["builds"])
 
-    materiality = st.select_slider("Needs sign-off above", options=list(range(0, 200_001, 5_000)), value=int(allocate.MATERIALITY_USD),
-                                   format_func=lambda v: f"${v:,}", key="signoff",
-                                   help="A match that only Claude vouched for waits for a person when the line is worth more than this.")
-    quarters = sorted(base["quarter"].unique())
-    q_from, q_to = (st.select_slider("Date range", options=quarters, value=(quarters[0], quarters[-1]), key=f"quarters_{dataset}")
-                    if len(quarters) > 1 else (quarters[0], quarters[0]))
-    note("The date range narrows every tab to those quarters.")
+SIGNOFF_STEPS = list(range(0, 200_001, 5_000))
+if st.session_state.get("signoff") not in SIGNOFF_STEPS:
+    st.session_state["signoff"] = int(allocate.MATERIALITY_USD)
+materiality = st.session_state["signoff"]
+
+quarters = sorted(base["quarter"].unique())
+period_key = f"quarters_{dataset}"      # the slider's own key; Streamlit drops it whenever the slider is not drawn
+period_kept = f"period_{dataset}"       # our copy, which survives
+def _valid_period(v):
+    return isinstance(v, (tuple, list)) and len(v) == 2 and all(q in quarters for q in v)
+if _valid_period(st.session_state.get(period_key)):
+    st.session_state[period_kept] = tuple(st.session_state[period_key])
+elif not _valid_period(st.session_state.get(period_kept)):
+    st.session_state[period_kept] = (quarters[0], quarters[-1])
+q_from, q_to = st.session_state[period_kept]
 
 xw = saved_load()
 rules = tuple(sorted((k, d, part) for k, (d, part) in crosswalk.as_rules(xw).items()))
@@ -340,7 +353,7 @@ top_n = int((gain.cumsum() < 0.8 * gain.sum()).sum()) + 1 if gain.sum() > 0 else
 reach = tied + gain.head(top_n).sum() / total
 
 # ------------------------------------------------------------------- header
-synthetic = is_sample or uploaded.get("demo_sample")
+synthetic = is_sample  # the built-in sample only; anything run through Your data is labelled "Your files"
 st.markdown(
     '<div class="topbar"><span class="app-title">BOM-to-Spend Tie-Out</span>'
     + (f'<span class="badge warn" title="{html.escape(SYNTHETIC_NOTICE)}">Synthetic data</span>' if synthetic
@@ -450,10 +463,18 @@ def opportunities_data() -> dict:
 
 
 tab_labels = ["Opportunities", f"Review ({len(queue)})", "Products", "Evidence", "Your data"]
+# The selected tab is remembered by its label, and the Review label carries a count. When the count changes (a decision, the
+# sign-off slider), carry the selection over to the new label, or the reader is thrown back to the first tab.
+if str(st.session_state.get("main_tabs", "")).startswith("Review (") and st.session_state["main_tabs"] not in tab_labels:
+    st.session_state["main_tabs"] = tab_labels[1]
 tab_opps, tab_review, tab_cost, tab_evidence, tab_data = st.tabs(tab_labels, key="main_tabs", on_change="rerun")
 
 # ------------------------------------------------------------ opportunities
 with tab_opps:
+    if len(quarters) > 1:
+        with st.expander(f"Period: {q_from} to {q_to}", expanded=False, key="period_box"):
+            st.select_slider("Date range", options=quarters, value=(q_from, q_to), key=period_key)
+            st.caption("Narrows every tab to these quarters.")
     page = Path("opportunities.html").read_text().replace("/*DATA*/null/*END*/", json.dumps(opportunities_data()).replace("</", "<\\/"))
     components.html(page, height=OPPORTUNITIES_HEIGHT, scrolling=False)
 
@@ -679,6 +700,9 @@ with tab_cost:
 with tab_review:
     hero(f"{len(queue)} lines", "Waiting for a decision", [f"{short(queue['spend_usd'].sum())} waiting", f"Top {top_n} decisions reach {pct(reach)} tied",
                                                            f"{pct(tied)} tied now"])
+    sign_col, _ = st.columns([2, 3])
+    sign_col.select_slider("Needs sign-off above", options=SIGNOFF_STEPS, format_func=lambda v: f"${v:,}", key="signoff",
+                           help="A match that only Claude vouched for waits for a person when the line is worth more than this.")
     if queue.empty:
         st.success("Nothing is waiting for review.")
     else:
@@ -697,13 +721,15 @@ with tab_review:
             tag=("tag", lambda s: ", ".join(dict.fromkeys(s))), first=("po_id", "first")).reset_index().sort_values("spend", ascending=False).reset_index(drop=True)
         pos = min(st.session_state.get("review_pos", 0), len(groups) - 1)
 
-        left, right = st.columns([5, 6], gap="large")
+        left, right = st.columns([6, 5], gap="large")
         with left:
             st.markdown(f"**{len(groups)} items** covering {len(queue)} lines, largest dollars first")
             picked = table(pd.DataFrame({
-                "Open": ["▶" if i == pos else "" for i in range(len(groups))], "Total": groups["spend"].map(short), "Lines": groups["lines"],
-                "Why": groups["tag"], "Suggested part": groups["suggested"], "Text on the PO": groups["item_description"]}),
-                key=f"queue_{len(xw)}", select=True)
+                "Total": [("▶ " if i == pos else "") + short(v) for i, v in enumerate(groups["spend"])], "Lines": groups["lines"],
+                "Text on the PO": groups["item_description"], "Suggested part": groups["suggested"], "Why": groups["tag"]}),
+                key=f"queue_{len(xw)}", select=True,
+                column_config={"Total": st.column_config.TextColumn(width=78), "Lines": st.column_config.NumberColumn(width=52),
+                               "Text on the PO": st.column_config.TextColumn(width=250), "Suggested part": st.column_config.TextColumn(width=104)})
             if picked is not None and picked != pos:
                 st.session_state["review_pos"] = picked
                 st.rerun()
@@ -716,7 +742,7 @@ with tab_review:
             st.markdown(f"Approving settles **{g['lines']} {'line' if g['lines'] == 1 else 'lines'}** ({usd(g['spend'])}) and moves tie-out by "
                         f"**{g['gain'] / total * 100:+.2f} pts**.")
             c1, c2, c3 = st.columns([1.5, 1.1, 1.3])
-            for col, label, action, kind, keyboard in ((c1, f"Approve: {sug}", "approve", "primary", "A"), (c2, "Reject suggestion", "reject", "secondary", "X"),
+            for col, label, action, kind, keyboard in ((c1, f"Approve: {sug}", "approve", "primary", "A"), (c2, "Reject", "reject", "secondary", "X"),
                                                        (c3, "Not a BOM part", "no_match", "secondary", "N")):
                 if col.button(label, type=kind, key=f"{action}_{g['first']}", width="stretch", shortcut=keyboard):
                     saved_add(r["supplier_part_number"], r["item_description"], sug, action, dataset)
@@ -1096,19 +1122,11 @@ with tab_data:
     note("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up for "
                "the app. It sends the headers and 20 sample rows of each file to Claude for the mapping, then purchase descriptions and BOM parts to "
                "the embedding model and Claude for matching.")
-    code = settings.secret("ACCESS_CODE") if HOSTED else ""  # optional: with no code set, the tab is open to everyone
+    if uploaded:
+        st.radio("Showing in every tab", options, key="dataset", horizontal=True)
+    code = settings.secret("ACCESS_CODE") if HOSTED else ""  # optional: with no code set, uploads are open to everyone
     unlocked = not code or st.session_state.get("unlocked", False)
-    if not unlocked:
-        if True:
-            st.markdown("Running your own files on this hosted copy needs an access code. The other tabs are open to everyone.")
-            entered = st.text_input("Access code", type="password", key="access_code_entry")
-            if st.button("Unlock", type="primary"):
-                if hmac.compare_digest(entered.encode(), code.encode()):
-                    st.session_state["unlocked"] = True
-                    st.rerun()
-                else:
-                    st.error("That code is not right.")
-    if unlocked:
+    with st.container():
         up = st.session_state.setdefault("up_files", {})
 
         st.markdown("#### 1. Upload")
@@ -1121,14 +1139,25 @@ with tab_data:
                    + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
                       f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions are visible only in your own session, are not written to disk, "
                   "and are gone when you reload the page." if HOSTED else ""))
-        for col, kind in zip(st.columns(3), KIND_LABEL):
-            f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
-            if f is not None and f.size > UPLOAD_LIMIT_MB * 1_000_000:
-                col.error(f"{f.name} is over the {UPLOAD_LIMIT_MB} MB limit.")
-            elif f is not None:
-                up[kind] = (f.name, f.getvalue())
-            if kind in up:
-                col.caption(f"Loaded: {up[kind][0]}")
+        if unlocked:
+            for col, kind in zip(st.columns(3), KIND_LABEL):
+                f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
+                if f is not None and f.size > UPLOAD_LIMIT_MB * 1_000_000:
+                    col.error(f"{f.name} is over the {UPLOAD_LIMIT_MB} MB limit.")
+                elif f is not None:
+                    up[kind] = (f.name, f.getvalue())
+                if kind in up:
+                    col.caption(f"Loaded: {up[kind][0]}")
+        else:  # the sample above makes no API calls and stays open; real uploads spend the owner's API budget
+            st.markdown("Uploading your own files on this hosted copy needs an access code. The sample above does not.")
+            code_col, _ = st.columns([2, 3])
+            entered = code_col.text_input("Access code", type="password", key="access_code_entry")
+            if code_col.button("Unlock"):
+                if hmac.compare_digest(entered.encode(), code.encode()):
+                    st.session_state["unlocked"] = True
+                    st.rerun()
+                else:
+                    st.error("That code is not right.")
 
         if len(up) == 3:
             raw = {kind: mapping.read_table(*up[kind]) for kind in KIND_LABEL}
@@ -1136,7 +1165,7 @@ with tab_data:
             # The committed sample reads its answers from the repository. Anything else is cached locally, or not at all on a public host.
             llm_cache = SAMPLE_CACHE if is_demo else None if HOSTED else pipeline.UPLOAD_CACHE
             runs_used = st.session_state.get("runs_used", 0)
-            blocked = []
+            blocked = [] if is_demo or unlocked else ["Running uploaded files needs the access code."]
             if HOSTED and not is_demo and len(raw["purchases"]) > HOSTED_MAX_LINES:
                 blocked.append(f"The purchase file has {len(raw['purchases']):,} lines. This hosted copy accepts at most {HOSTED_MAX_LINES:,} per run.")
             counter = daily_runs()

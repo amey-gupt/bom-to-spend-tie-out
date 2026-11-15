@@ -165,16 +165,20 @@ function renderProducts() {
   document.querySelectorAll(".prod").forEach((b) => b.onclick = () => { state.product = state.product === b.dataset.id ? null : b.dataset.id; renderProducts(); renderFilters(); renderCards(); });
 }
 
+// "Ideas" are the similar-part pairs (in_total: false). They have their own chip and are not counted under Everyone or Engineer.
+const isIdea = (l) => l.in_total === false;
+const inChip = (l, o) => o === "Ideas" ? isIdea(l) : !isIdea(l) && (o === "All" || l.owner === o);
 function shown() {
-  return DATA.leads.filter((l) => (state.owner === "All" || l.owner === state.owner) && (!state.product || l.products.some((x) => x.id === state.product)))
+  return DATA.leads.filter((l) => inChip(l, state.owner) && (!state.product || l.products.some((x) => x.id === state.product)))
     .sort((a, b) => b.high - a.high);
 }
 
 function renderFilters() {
   const base = DATA.leads.filter((l) => !state.product || l.products.some((x) => x.id === state.product));
-  const owners = ["All", "Buyer", "Engineer", "Service"];
+  const owners = ["All", "Buyer", "Engineer", "Service"].concat(DATA.leads.some(isIdea) ? ["Ideas"] : []);
+  const label = (o) => o === "All" ? "Everyone" : o === "Ideas" ? "Ideas to confirm" : o;
   $("filters").innerHTML = `<span class="lbl">Who acts on it</span>` + owners.map((o) =>
-    `<button class="chip" data-o="${o}" aria-pressed="${state.owner === o}">${o === "All" ? "Everyone" : o}<span class="n">${o === "All" ? base.length : base.filter((l) => l.owner === o).length} leads</span></button>`).join("") +
+    `<button class="chip" data-o="${o}" aria-pressed="${state.owner === o}">${label(o)}<span class="n">${base.filter((l) => inChip(l, o)).length} ${o === "Ideas" ? "pairs" : "leads"}</span></button>`).join("") +
     `<span class="tied"><b>${(100 * DATA.tied_share).toFixed(1)}%</b> of spend tied to a product. <b>${DATA.waiting_lines}</b> lines need a person.</span>`;
   document.querySelectorAll(".chip").forEach((b) => b.onclick = () => { state.owner = b.dataset.o; renderFilters(); renderCards(); });
 }
