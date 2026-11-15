@@ -119,18 +119,22 @@ button[kind="primary"] kbd {color: #FFFFFF !important; background: rgba(255,255,
 /* buttons are pills; the primary one is green (the theme's primary colour) */
 .stButton button, .stDownloadButton button {border-radius: 999px !important; border-width: 1.5px !important; font-weight: 600;}
 /* the Opportunities page fills the window below the tabs, so the browser page itself does not scroll */
-[data-testid="stIFrame"], [data-testid="stElementContainer"]:has(> [data-testid="stIFrame"]) {height: calc(100vh - 188px) !important; min-height: 420px; border-radius: 22px;}
+.st-key-period_pop {position: absolute !important; top: -46px; right: 0; width: auto !important; z-index: 5;}
+.st-key-period_pop button {min-height: 36px !important; padding: 2px 14px !important; background: #FFFFFF !important; border: 1.5px solid #D9DEE6 !important; white-space: nowrap;}
+.st-key-period_pop button p {font-size: 14px;}
+[data-testid="stVerticalBlock"]:has(> .st-key-period_pop) {position: relative;}
+[data-testid="stIFrame"], [data-testid="stElementContainer"]:has(> [data-testid="stIFrame"]) {height: calc(100vh - 132px) !important; min-height: 420px; border-radius: 22px;}
 [data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"], [data-testid="stExpandSidebarButton"] {display: none !important;}
 [data-testid="stPopover"] button {border-radius: 999px !important; border-width: 1.5px !important; padding: .1rem .9rem; min-height: 2rem;}
 </style>""", unsafe_allow_html=True)
 
 
-def note(text: str):
+def note(text: str, label: str = "How to read this"):
     """A caption of at most 12 words. Anything longer becomes a short label with the full text in its tooltip."""
     if len(text.split()) <= 12:
         st.caption(text)
     else:
-        st.caption("How to read this", help=text)
+        st.caption(label, help=text)
 
 
 def show_chart(chart, **kwargs):
@@ -472,7 +476,8 @@ tab_opps, tab_review, tab_cost, tab_evidence, tab_data = st.tabs(tab_labels, key
 # ------------------------------------------------------------ opportunities
 with tab_opps:
     if len(quarters) > 1:
-        with st.expander(f"Period: {q_from} to {q_to}", expanded=False, key="period_box"):
+        # Drawn out of the flow; opportunities.html moves it into the slot it keeps free in its filter row.
+        with st.popover(f"Period: {q_from} to {q_to}", key="period_pop"):
             st.select_slider("Date range", options=quarters, value=(q_from, q_to), key=period_key)
             st.caption("Narrows every tab to these quarters.")
     page = Path("opportunities.html").read_text().replace("/*DATA*/null/*END*/", json.dumps(opportunities_data()).replace("</", "<\\/"))
@@ -1119,9 +1124,6 @@ with tab_evidence:
 # ---------------------------------------------------------------- your data
 with tab_data:
     hero("Run it on your own exports", "CSV or Excel, any column names", ["1 Upload", "2 Confirm columns", "3 Run"], text=True)
-    note("CSV or Excel. Column names do not need to match ours: Claude proposes a mapping and you confirm it. This needs API keys set up for "
-               "the app. It sends the headers and 20 sample rows of each file to Claude for the mapping, then purchase descriptions and BOM parts to "
-               "the embedding model and Claude for matching.")
     if uploaded:
         st.radio("Showing in every tab", options, key="dataset", horizontal=True)
     code = settings.secret("ACCESS_CODE") if HOSTED else ""  # optional: with no code set, uploads are open to everyone
@@ -1135,10 +1137,11 @@ with tab_data:
                 up[kind] = (name, (SAMPLE_DIR / name).read_bytes())
             st.session_state.pop("up_map", None)
             st.rerun()
-        note(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each."
-                   + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
-                      f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions are visible only in your own session, are not written to disk, "
-                  "and are gone when you reload the page." if HOSTED else ""))
+        note(f"Or upload your own three files, up to {UPLOAD_LIMIT_MB} MB each. Headers and 20 sample rows of each file go to Claude for the "
+             "column mapping; purchase descriptions and BOM parts go to the embedding model and Claude for matching."
+             + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
+                f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions are visible only in your own session, are not written to disk, "
+                "and are gone when you reload the page." if HOSTED else ""), label="Limits and privacy")
         if unlocked:
             for col, kind in zip(st.columns(3), KIND_LABEL):
                 f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")

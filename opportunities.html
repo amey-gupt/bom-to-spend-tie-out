@@ -43,13 +43,13 @@ button:focus-visible { outline: 3px solid var(--buyer); outline-offset: 2px; }
 @keyframes grow { from { transform: scaleX(0); } }
 
 /* filter row */
-.filters { display: flex; align-items: center; gap: 8px; padding: 0 6px; }
-.chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-weight: 500; font-size: 14px; }
+.filters { display: flex; align-items: center; gap: 8px; padding: 0 6px; flex-wrap: wrap; }
+.chip { white-space: nowrap; border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-weight: 500; font-size: 14px; }
 .chip[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
 .chip .n { color: var(--muted); margin-left: 6px; font-weight: 400; }
 .chip[aria-pressed="true"] .n { color: #B7C2D3; }
-.lbl { font-size: 13.5px; color: var(--muted); margin-right: 2px; }
-.tied { margin-left: auto; font-size: 13.5px; color: var(--muted); }
+.lbl { font-size: 13.5px; color: var(--muted); margin-right: 2px; white-space: nowrap; }
+.tied { margin-left: auto; font-size: 13.5px; color: var(--muted); white-space: nowrap; }
 .tied b { color: var(--ink); font-weight: 600; }
 
 /* cards */
@@ -179,7 +179,8 @@ function renderFilters() {
   const label = (o) => o === "All" ? "Everyone" : o === "Ideas" ? "Ideas to confirm" : o;
   $("filters").innerHTML = `<span class="lbl">Who acts on it</span>` + owners.map((o) =>
     `<button class="chip" data-o="${o}" aria-pressed="${state.owner === o}">${label(o)}<span class="n">${base.filter((l) => inChip(l, o)).length} ${o === "Ideas" ? "pairs" : "leads"}</span></button>`).join("") +
-    `<span class="tied"><b>${(100 * DATA.tied_share).toFixed(1)}%</b> of spend tied to a product. <b>${DATA.waiting_lines}</b> lines need a person.</span>`;
+    `<span id="period-slot"></span>` +
+    `<span class="tied"><b>${(100 * DATA.tied_share).toFixed(1)}%</b> tied. <b>${DATA.waiting_lines}</b> lines in review.</span>`;
   document.querySelectorAll(".chip").forEach((b) => b.onclick = () => { state.owner = b.dataset.o; renderFilters(); renderCards(); });
 }
 
@@ -231,6 +232,22 @@ $("scrim").onclick = closeLead;
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeLead(); });
 
 renderHero(); renderProducts(); renderFilters(); renderCards();
+
+// The Period control is a Streamlit widget in the host page. Keep a slot for it in the filter row and move it there.
+function placePeriod() {
+  try {
+    const el = window.parent.document.querySelector(".st-key-period_pop"), frame = window.frameElement, slot = $("period-slot");
+    if (!el || !frame || !slot || !el.offsetParent) { if (slot) slot.style.width = "0"; return; }
+    slot.style.cssText = `display:inline-block;flex:none;width:${el.offsetWidth}px;height:${el.offsetHeight}px;margin-left:6px`;
+    const r = slot.getBoundingClientRect(), f = frame.getBoundingClientRect(), o = el.offsetParent.getBoundingClientRect();
+    el.style.setProperty("top", `${f.top + r.top - o.top}px`, "important");
+    el.style.setProperty("left", `${f.left + r.left - o.left}px`, "important");
+    el.style.setProperty("right", "auto", "important");
+    el.style.visibility = r.top < 0 || r.bottom > window.innerHeight || $("drawer").classList.contains("open") ? "hidden" : "visible";
+  } catch (e) { /* host page not reachable: the control stays where the host put it */ }
+}
+placePeriod(); setInterval(placePeriod, 300);
+window.addEventListener("resize", placePeriod); window.addEventListener("scroll", placePeriod, { passive: true });
 </script>
 </body>
 </html>

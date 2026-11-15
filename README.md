@@ -1,307 +1,124 @@
 # BOM-to-Spend Tie-Out
 
-Links a manufacturer's bills of materials (BOMs) to its purchasing records using messy CSV exports, with no system integration. Built at the Kearney PERLab x Velocity AI Hackathon (Corporate Track 3, BOM Cost Linkage).
+Ties a manufacturer's purchase lines to its bills of materials (BOMs) from messy CSV exports, with no system integration, and turns the result into savings leads a buyer can check.
 
-**All data in this repo is synthetic.** The products, parts, suppliers and prices are invented, and the true matches are planted so accuracy can be measured.
+![The Opportunities tab: a savings range, the products to fix first, and one card per lead](docs/opportunities.png)
 
-## Status
+![Filtering by product, opening a lead and marking it validated](docs/demo.gif)
 
-Steps 1 to 5 of 6 are done: the data generator, the matcher (rules, embeddings, calibrated classifier, Claude on the review band), allocation with buckets and leads, and the app.
+Built solo at the Kearney PERLab x Velocity AI Hackathon (Corporate Track 3, BOM Cost Linkage), November 2026.
 
-## Run the app
+**The data in the app is synthetic.** The products, parts, suppliers, prices and purchase lines are generated, and the true matches are planted so accuracy can be measured. Two further tests use real data; the results table says which.
+
+## What it does
+
+- **Matches each purchase line to a BOM part,** even when the part number is a supplier's or a plant's own code and the description is abbreviated, misspelled or in Spanish.
+- **Declines when unsure.** Every line ends as accepted, sent to a person, or "no match", and each match carries its evidence and a written reason.
+- **Reports the tie-out rate:** the share of spend that ties to a product, split into production, spares, warranty and unassigned.
+- **Estimates what each product really cost in parts,** next to its BOM standard cost.
+- **Surfaces savings leads as dollar ranges:** the same part at two supplier prices, spares bought at a premium, duplicate part numbers, and parts bought beyond what the builds required.
+
+## Results
+
+| Test | Data | Precision | Recall | Also |
+|---|---|---|---|---|
+| Held-out noise styles | **Synthetic.** 1,708 purchase lines ($10.1M) written in styles the matcher was never tuned on | 100.0% | 98.8% | Tie-out 97.9% against a true 98.8%; 18 lines ($55K) left for a person; $0 tied to a wrong part |
+| Abt-Buy product matching | **Real** listings from two shops, fixed public test split (710 pairs) | 0.98 | 0.91 | F1 0.94; the baselines published with the benchmark reach 0.81 and 0.85 |
+| Electronic parts, part number visible | **Real** open-hardware BOMs against a real catalog of 4.3M parts, plus 500 real public purchase-order lines that match nothing | 0.99 | 0.76 | 99.6% of the no-match lines correctly left unmatched |
+| Electronic parts, part number hidden | Same, with the manufacturer part number removed | 0.97 | 0.16 | A line like "Red LED 5mm" does not identify one catalog part, so the tool declines instead of guessing |
+
+Nothing was retrained for the real-data tests. Precision is the share of accepted matches that are right; recall is the share of lines with a true part that were accepted correctly.
+
+On the full synthetic dataset (4,487 lines, $29.7M) the app reports an 88.6% tie-out rate against a true 94.9%, with 100 lines ($1.91M) waiting for a person. That gap is deliberate: a match that only Claude vouched for and that is worth more than $25,000 goes to a reviewer. It finds 72 leads worth $446K to $893K, shown as ranges and not as booked savings.
+
+The stage-by-stage table, costs, buckets and every experiment are in [docs/results.md](docs/results.md).
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[CSV or Excel exports:<br/>BOMs, purchase lines, build volumes] --> B[Normalize<br/>part numbers, units, currency]
+    B --> C{Rules<br/>saved decisions, exact part number,<br/>supplier cross-reference}
+    C -- matched --> ACC[Accepted]
+    C -- open --> D[Embeddings<br/>top 5 candidate parts per line]
+    D --> E{Calibrated classifier<br/>two thresholds}
+    E -- sure --> ACC
+    E -- sure it is none --> NM[No match]
+    E -- uncertain --> F{Claude<br/>picks a part or none,<br/>gives a reason}
+    F -- confident --> ACC
+    F -- confident none --> NM
+    F -- unsure, or above $25,000 --> R[Review queue<br/>ranked by dollars]
+    R -- a person decides --> X[Saved decision]
+    X -. first rule on the next run .-> C
+    ACC --> G[Allocate spend to products,<br/>bucket it, find leads]
+```
+
+Cheap exact rules settle the easy lines. A small classifier, trained only on the tuning split, accepts a match only above a threshold set for at least 99% precision. Claude sees only the uncertain middle band, so cost follows how messy the data is and not how large it is: 392 calls and $3.12 for the whole dataset. Whatever is still uncertain goes to a person, largest dollars first, and each decision becomes a rule for the next run.
+
+For uploaded files the classifier is skipped (see "What I tried"), so rules, embeddings and Claude do the matching.
+
+## What I tried
+
+All on November 14, 2026, in the order it happened. Times are commit times, US Central.
+
+| When | Experiment | Result | Decision |
+|---|---|---|---|
+| 00:38 | Synthetic drill family with planted matches; five naming styles held out from tuning | Accuracy can be measured, and not only on styles the matcher was tuned on | Kept as the test bed |
+| 01:04 | Plain part-number lookup, then rules, then rules plus embeddings with one similarity cutoff | Tie-out 27.5%, then 34.2%, then 84.1%, but the last at 95.3% precision with $86,119 tied to the wrong part | A single cutoff is not safe enough; add a classifier with an option to abstain |
+| 01:23 | Calibrated classifier with accept, review and no-match outcomes | Precision back to 100%, but 328 lines ($2.35M) left in review | Kept; send the review band to Claude |
+| 01:23 | Claude on the review band only | Tie-out 97.9% at 100% precision; review queue down to 18 lines ($55K) | Kept |
+| 01:23 | Hosted embeddings against a small local model | True part ranked first for 95.7% of open lines against 90.2% | Hosted model for results; local model stays as the no-key fallback |
+| 01:35 | **A smaller Claude model** (Haiku 5.5 in place of Opus 5.5) | **Failed.** $0.10 against $3.12, but its picks never reached 99% precision on the tuning split, so none could be auto-accepted and 274 lines ($2.25M) stayed in review | Kept the larger model; $3 is small next to the review time saved |
+| 01:35 | Send Claude-only matches above $25,000 to a person | Tie-out drops from 93.9% to 88.6%; about $1.6M waits in review | Kept. A wrong match at that size would undo a savings claim |
+| 02:14 | Zero-shot test on real product listings (Abt-Buy) | F1 0.94 against 0.81 and 0.85 for the published baselines | Kept as outside evidence |
+| 02:14 | **Model transfer:** the classifier trained on synthetic drill parts, run on real electronic parts | **Failed.** With the part number hidden it accepted 1 of 208 lines. Rules and Claude carried the test | Uploaded files skip the classifier |
+| 11:42 | Upload flow where Claude maps unknown column names | All 25 columns right on a second sample; 99.7% precision, 97.5% recall | Kept, with the mapping confirmed by the user before anything runs |
+| 11:49 | **Self-training:** train the classifier on a dataset's own rule-matched lines, with no confirmed labels | **Failed.** Synthetic: precision fell to 96.5% with $75,999 tied to the wrong part. Real parts: recall moved from 0.00 to 0.02 | Dropped. The classifier needs reviewer-confirmed matches, which the saved decisions collect |
+| 12:04 | Unit conversion, scrap and multi-level BOMs; a bought-versus-required lead | All 4 lines bought in the wrong kind of unit were caught. One of two planted over-purchases found; magnet wire was missed | Kept; the miss is reported |
+| 12:04 | **Retraining side effect:** the classifier, retrained after the BOM gained units and scrap, on the real-parts test | **Got worse.** It now calls about half the hidden-part-number lines "no match" outright, and recall after Claude fell from 0.28 to 0.16 | Reported the current number; further evidence the classifier does not transfer |
+| 12:32 | **No-match rule added after seeing held-out results:** an item worth over $25,000 cannot be closed as "no match" by the classifier alone | Spend wrongly dropped fell from $43,572 to $13,536; review grew from 11 to 18 lines | Kept, but its "after" numbers are not a clean held-out measurement and are labelled so |
+| 12:32 | Do saved decisions cut review work over six quarters? | 26 review lines against 97. Item text repeats by construction in this data, so the size of the effect is not evidence about a real company | Kept the feature; the number is not a headline |
+| 12:47 | Effective-dated BOM revisions, with two engineering changes purchasing did not follow | Two new over-purchase leads, both real gaps in the data; purchase lines and matching decisions unchanged | Kept |
+| 16:53 | Similar parts to consolidate (same family, one spec within 15%) | 19 pairs worth $316K to $633K, but unmeasured, and some are plainly not interchangeable (two bearing sizes) | Shown as "Ideas to confirm", kept out of the headline total |
+
+## Limits
+
+- **Accuracy is measured on synthetic noise.** Real exports will be messy in ways the generator does not model. The real-data tests show the approach carries over; they do not show these accuracy figures do.
+- **The classifier does not transfer between companies.** It has to be trained on a company's own confirmed matches. Until those exist, matching relies on rules and Claude, and more lines go to review.
+- **"No match" is the weak spot.** On held-out lines 96.6% of no-match calls are right, and $13,536 of spend that does have a BOM part is dropped.
+- **Recall is low when a description does not identify one part.** With the part number hidden, real electronic parts reach 0.16 recall.
+- **Product cost is an estimate.** Purchases show what was bought, not what was consumed; spend is split across products by BOM quantity times units built.
+- **Leads are leads.** A price gap still needs volume, timing and qualification checks, so each is a range from half the gap to all of it.
+- **No ERP connection.** It reads exports; nothing is written back.
+- **The hosted app is capped:** 5 MB per file, 2,000 purchase lines and 150 Claude calls per run. Uploaded text is sent to OpenAI and Anthropic for matching.
+
+## Run it locally
+
+Needs Python 3.12 and [uv](https://docs.astral.sh/uv/).
 
 ```
 uv sync
 uv run streamlit run app.py
 ```
 
-Then open http://localhost:8501. The app reads the committed snapshot in `out/` only, so it needs no API keys. Every tab opens with the same dark band: one big figure, one line, up to three pills. There are five tabs:
+Then open http://localhost:8501. The app reads the committed results in `out/`, so the built-in sample and "Try the second sample" need no API keys.
 
-- **Opportunities:** a self-contained page (`opportunities.html`) that the app fills with its own data and embeds. The band shows the combined lead range, lead count and share of spend, with "Fix first" bars per product; each lead is split across products by the allocation weights, and clicking a product filters the cards. Below are owner filters (buyer, engineer, service) and one card per lead with a short action sentence, a price or quantity comparison and the range. Opening a card shows what to check before acting, the products that use the part, and the purchase lines with their source file and row; a lead can be marked validated or rejected there, and validated dollars show in the band. Similar-part ideas sit under their own filter, "Ideas to confirm", with "Engineering must confirm" as their first check; they are not in the "Everyone" or Engineer counts and are never counted in the totals. A closed "Period" control above the page narrows every tab to a range of quarters.
-- **Review:** the queue on the left, grouped so lines with identical text are one item, and the detail on the right: decision buttons, what approving would settle, the PO text and BOM description with shared words in bold, Claude's reason, price and supplier evidence, and the source file and row. Saved decisions (undo, clear, download) are at the bottom. Keyboard: A approves, X rejects, N marks not a BOM part.
-- **Products:** the product with the largest lead range, then BOM standard versus estimated actual per unit, the shared-parts network, the engineering changes, the parts driving the difference, the BOM in effect on any date, the cost trend by quarter and an estimated inventory view.
-- **Evidence:** three headline results, the stage chart from a plain part-number lookup to the full pipeline, where the spend ties (buckets, the spend-flow chart, tie-out by quarter), then the full evaluation in collapsed sections, and the limits.
-- **Your data:** run the matcher on your own CSV or Excel files in three steps (see below). Uploads are limited to 5 MB per file.
+To match your own files, set `ANTHROPIC_API_KEY` (and `OPENAI_API_KEY` for embeddings) in the environment or in `.env.local`, which is gitignored. Keys never go in the repo.
 
-There is no sidebar. Each control sits where it is used: the "Needs sign-off above" threshold in Review, the switch between the built-in sample and your files in Your data, and the period on Opportunities. The badge by the title reads "Synthetic data" for the built-in sample and "Your files" otherwise.
-
-Lead types: same part at different supplier prices, spares bought at a premium, duplicate internal part numbers, bought more than the builds required, and **similar parts to consolidate**. The last pairs BOM parts in the same family whose descriptions differ in one numeric spec by 15% or less, or in the package only. It is labelled "engineering must confirm", it is kept out of the headline range, and it is **unmeasured**: nothing was planted for it, so it has no precision or recall. It currently produces 19 pairs worth $316K to $633K; some pair parts that are plainly not interchangeable (two bearing sizes, for example). For each pair, a one-line note from Claude on what differs is committed in `out/similar_part_notes.json`.
-
-Lead status (validated or rejected) is kept inside the Opportunities page while it is open; it is not saved, and it resets when the data behind the page changes.
-
-The flow chart and the network use ECharts through the `streamlit-echarts` component, which animates changes. If that component cannot be imported, the app falls back to static Altair charts. This has been checked locally in a headless browser, not on Streamlit Community Cloud. The whole app uses one set of design tokens taken from the Opportunities page (grey background, white bordered cards, green for money, blue, violet and brown for buyer, engineer and service). Headings are Bricolage Grotesque and body text is Inter, both under the SIL Open Font License and served from `static/`, so the app needs no network for fonts. Captions are at most 12 words; longer explanations sit in a "How to read this" tooltip or a closed section. The Opportunities page is embedded with `st.components.v1.html`, which this Streamlit version (1.67, pinned) marks as deprecated.
-
-### Saved decisions
-
-Every approve, reject or not-a-BOM-part decision is written to `crosswalk.csv` (purchase text and part-number field to BOM part). It applies at once to every line with the same text, persists across sessions, and is the first rule on the next pipeline run. Undo, clear and download are at the bottom of the Review tab. The file is local working state and is gitignored. Leads and product cost also have download buttons.
-
-### Your own files
-
-The Your data tab takes a BOM, purchase lines and production volumes as CSV or Excel. Column names do not need to match: Claude reads the headers and 20 sample rows of each file and proposes a mapping with a confidence per column, which you confirm or fix before anything runs. This needs `ANTHROPIC_API_KEY` (and uses `OPENAI_API_KEY` for embeddings if present, otherwise a local model), in the environment or in `.env.local`.
-
-Uploaded data is matched with rules, embeddings and Claude only. The classifier is skipped: it has to be trained on a company's own confirmed matches, and the external tests show one trained elsewhere does not transfer. There is no ground truth for uploaded files, so the app reports how lines were decided, not accuracy.
-
-`samples/second_company/` holds a small second sample to try this with: a slice of the synthetic data exported with different column names, US dates, a different order-type vocabulary, and the purchase lines as Excel. "Try the second sample" in the Your data tab uses it. It includes the multi-level BOM columns and the continuous materials. On that slice the mapping was right for all 25 columns, and matching reached 99.7% precision and 97.5% recall against the planted truth (259 Claude calls, $2.03, about 85 seconds uncached).
-
-## Deploying to Streamlit Community Cloud
-
-I have not deployed this myself; the hosted mode below was tested locally with the same secrets.
-
-1. Push the repository to GitHub.
-2. On share.streamlit.io choose **Create app**, pick the repository and branch, and set the main file to `app.py`. Choose Python 3.12.
-3. Under **Advanced settings, Secrets**, paste:
-
-   ```toml
-   HOSTED = "true"
-   OPENAI_API_KEY = "..."
-   ANTHROPIC_API_KEY = "..."
-   ```
-
-4. Deploy.
-
-| Secret | What it does |
-|---|---|
-| `HOSTED` | Turns on hosted mode: the access code, the limits below, and no writes to disk. |
-| `ACCESS_CODE` | Optional. Leave it out and the Your data tab is open to everyone. Set it and uploading your own files asks for the code (compared in constant time); "Try the second sample" and the other tabs stay open, since they make no API calls. |
-| `DAILY_RUN_LIMIT` | Optional, default 40. Runs on uploaded files per day across all visitors, to bound API spend when there is no access code. |
-| `OPENAI_API_KEY` | Embeddings for uploaded files. The local embedding model is not installed on the host. |
-| `ANTHROPIC_API_KEY` | Column mapping and matching for uploaded files. |
-
-The second sample needs neither key: its Claude answers (`cache/llm_sample/`) and its embeddings (`cache/sample_embeddings.npz`) are committed, so "Try the second sample" makes no API calls.
-
-Keys are read from Streamlit secrets first, then from the environment or `.env.local`, and are passed straight to the API clients; they are never printed or logged. `.streamlit/secrets.toml` is gitignored.
-
-Hosted limits, each shown on the page when it is hit: 5 MB per file, 2,000 purchase lines per run, 150 Claude calls per run (the largest lines go first; the rest wait in Review), 3 runs per browser session, and 40 runs on uploaded files per day across all visitors.
-
-What is kept where on the host: each visitor gets their own session. Uploaded files, the matched results, review decisions and slider settings live in that session's memory on the server and are visible only to that visitor; a reload starts fresh. Every visitor starts from the same built-in sample, which no one can change. Nothing derived from uploaded text is written to disk, and there is no shared decisions file. Uploaded text is sent to OpenAI and Anthropic for matching, as the tab says.
-
-Dependencies: Community Cloud uses `uv.lock` when a repository has one, ahead of `requirements.txt`. The default install in both is the same small set, without torch or sentence-transformers. Those, with scikit-learn, are in the optional `local` extra, needed only to rebuild the results: `uv sync --extra local`.
-
-## Results so far (held-out noise styles, 1,708 lines, $10.1M, true tie-out rate 98.8%)
-
-| Stage | Tied-out spend | Precision of accepted matches | Recall | Review queue | Wrong-match dollars |
-|---|---|---|---|---|---|
-| Naive exact part number | 27.5% | 100.0% | 21.3% | n/a | $0 |
-| Rules only | 34.2% | 100.0% | 40.1% | n/a | $0 |
-| Rules + embeddings, fixed threshold | 84.1% | 95.3% | 86.3% | n/a | $86,119 |
-| Rules + classifier | 77.1% | 100.0% | 83.7% | 328 lines, $2.35M | $0 |
-| Rules + classifier + Claude | 97.9% | 100.0% | 98.8% | 18 lines, $55K | $0 |
-
-How the numbers are kept honest:
-
-- The classifier is trained on the tuning split only. Its accept threshold is set for at least 99% precision using leave-one-noise-style-out cross-validation, so the threshold is chosen on styles the model had not seen.
-- Claude sees only the review band (614 lines, 392 distinct items across both splits), with the five candidates. Its confidence cutoffs are set on the tuning split.
-- Claude cost: 392 calls on `claude-opus-5-5` used 543,378 input and 47,275 output tokens, $3.12 at list price. The same calls on `claude-haiku-5-5` cost $0.10, but its picks never reached 99% precision on the tuning split, so none were auto-accepted and the held-out review queue stayed at 274 lines ($2.25M).
-- "No match" calls are the weak spot: on held-out, 96.6% of them are right, and $13,536 of spend that does have a BOM part is dropped. This figure is after the item-level materiality rule below, which was added after seeing held-out results.
-- On the tuning split the full pipeline is not perfect: 99.95% precision and $18,953 of wrong-match spend.
-- All of this is measured on synthetic noise. Real exports will be messier in ways the generator does not model.
-
-Embedding backends on the same held-out lines (rules + classifier, before Claude): OpenAI `text-embedding-3-small` puts the true part first for 95.7% of open lines and auto-accepts 76.4% of lines; local `all-MiniLM-L6-v2` gets 90.2% and 74.8%. Both reach 100% precision on accepted matches. The backend for the Claude stage is chosen on the tuning split, by how often the true part is the top candidate.
-
-## Buckets, product cost and leads (all 4,487 lines, $29.7M)
-
-| Bucket | Tool | Truth |
-|---|---|---|
-| Production | 81.5% | 87.4% |
-| Spares | 6.0% | 6.1% |
-| Warranty | 1.1% | 1.3% |
-| Unassigned | 11.4% | 5.1% |
-
-The tool reports an 88.6% tie-out rate against a true 94.9%, with 100 lines ($1.91M) in review. The gap is deliberate: any match that only Claude vouched for and that is worth more than $25,000 goes to a person, which holds 20 lines and about $1.6M in the review queue. With that rule off, tie-out is 93.9% and the bucket is right for 98.6% of spend.
-
-Leads against the planted findings (the similar-parts lead is not in this list because nothing was planted for it): supplier price gaps 46 found for 45 planted (98% precision, 100% recall), duplicate part numbers 8 of 8, spares premiums 15 of 15, purchased-above-requirement 1 of 2 planted, plus 2 more on the parts with an engineering change (see below). Every lead is shown as a range, from half the gap closed to all of it, and is a lead, not a booked saving.
-
-Product cost is an estimate: matched production spend is split across products by gross BOM quantity x units built per quarter, and shown beside the BOM standard cost.
-
-## Effective-dated BOM revisions
-
-- **BOM columns:** `effective_from` and `effective_to`; blank means open-ended.
-- **Two engineering changes are in the data,** on the BOM only. From 2025-10-01 a screw on the DR-18 goes from 4 per unit to 2. From 2026-01-01 a resistor position on the DR-18H switches to another resistor already used in the same assembly. No purchase line was added, removed or altered, as if purchasing had not caught up with engineering.
-- **What uses the dates:** allocation, standard cost per unit and the purchased-versus-required lead all use the BOM rows in effect in each build month (taken as of the first of the month). Standard cost per unit is the average over the period's builds.
-- **In the app:** the Product cost tab has a date picker that shows the BOM in effect on that date, with changed rows marked and retired or future rows listed.
-
-Checked after the change: `purchases.csv`, `builds.csv`, `supplier_xref.csv` and the ground truth are byte-identical; steps 2 and 3 give identical results and `out/decisions.csv` is identical; no new Claude calls were made.
-
-What moved in step 4:
-
-| | Before | After |
-|---|---|---|
-| Tie-out rate, buckets, review queue | 88.6%, 100 lines | unchanged |
-| DR-18 standard cost per unit | $90.48 | $90.46 |
-| DR-18H standard cost per unit | $87.85 | $87.84 |
-| Allocated production spend | | DR-18 -$61, DR-18H -$805, DR-20 +$867 |
-| Purchased-above-requirement leads | 1 (grease) | 3: grease, plus the two changed parts |
-| Other leads (69) | | unchanged, same ranges |
-
-The two new leads are real gaps in this data: purchasing kept buying at the old rate. The screw shows +25% ($880 to $1,759) and the replaced resistor +18% ($1,017 to $2,034). They are not in the planted over-purchase list, so that lead's precision against the planted list reads 33%; the evaluation reports them separately as explained by an engineering change.
-
-## Materiality by item
-
-**This rule was added after seeing held-out results**, so its "after" numbers are not a clean held-out measurement. The earlier results showed the classifier closing some material items as "no match" when they did have a BOM part.
-
-Spend is summed over every line with the same item text. If the total is above the materiality threshold ($25,000), the classifier may not close the item as "no match" on its own: the lines go to Claude, and to a reviewer if Claude is not confident either way. A confident "none" from Claude still closes them.
-
-| Held-out split | Before | After |
-|---|---|---|
-| Precision of accepted matches | 100.00% | 100.00% |
-| Recall | 98.8% | 98.8% |
-| Review queue | 11 lines, $25K | 18 lines, $55K |
-| No-match calls that are right | 92.3% | 96.6% |
-| Spend with a BOM part dropped as no match | $43,572 | $13,536 |
-| Wrong-match dollars | $0 | $0 |
-
-The rule kept 80 lines open across both splits and raised the lines sent to Claude from 534 to 614 ($2.76 to $3.12). The tuning split is unchanged. The $13,536 still dropped is lines where Claude itself answered "none" with moderate confidence.
-
-## Experiment: does the crosswalk cut review work over time?
-
-Purchases are processed one quarter at a time, in date order. Each quarter the full pipeline runs with the crosswalk built so far; then a simulated reviewer clears that quarter's review queue from the truth, and those decisions are saved. The comparison is the same run with no crosswalk. Reproduce with `uv run python -m src.evaluate crosswalk`.
-
-| Quarter | Lines | Settled by crosswalk | Claude calls (with / without) | Review lines (with / without) | Review spend (with / without) | Precision (with / without) |
-|---|---|---|---|---|---|---|
-| 2025Q1 | 719 | 0 | 101 / 101 | 14 / 14 | $352K / $352K | 99.83% / 99.83% |
-| 2025Q2 | 706 | 16 | 86 / 100 | 0 / 16 | $0 / $276K | 100% / 100% |
-| 2025Q3 | 756 | 13 | 89 / 104 | 5 / 15 | $5K / $358K | 100% / 100% |
-| 2025Q4 | 770 | 16 | 77 / 94 | 4 / 19 | $36K / $514K | 100% / 100% |
-| 2026Q1 | 766 | 22 | 83 / 99 | 2 / 18 | $3K / $202K | 100% / 99.84% |
-| 2026Q2 | 770 | 20 | 69 / 84 | 1 / 15 | $18K / $202K | 100% / 100% |
-| Total | 4,487 | 87 | 505 / 582 | 26 / 97 | $414K / $1.90M | |
-
-- Review work falls by about three quarters: 26 lines against 97 over six quarters, and $414K against $1.90M.
-- Claude calls fall by 13% (505 against 582, $3.98 against $4.65). Most Claude calls are for lines Claude settles itself, which never reach a reviewer or the crosswalk.
-- All 87 lines the crosswalk settled were right.
-- **Item text repeats by construction in this data.** The generator reuses one item text per plant, supplier and part about 80% of the time, so the size of this effect says little about a real company's exports. The classifier used was also trained on tuning-split lines from all six quarters.
-
-## Units of measure, scrap and multi-level BOMs
-
-- **BOM columns:** `uom`, `scrap_pct`, `parent_part` and `make_buy`. The gearbox and motor are in-house subassemblies with their own components; the gearbox carries 1% scrap.
-- **Continuous materials:** steel sheet by area, magnet wire by length, grease and potting resin by mass, each with scrap, bought in assorted units (KG, LB, FT, FT2 and so on). 66 purchase lines.
-- **Unit conversion:** purchase quantities are converted to the BOM unit within the same dimension (713 accepted lines, including boxes to each). A line bought in another dimension, such as wire by weight against a BOM in metres, cannot be converted without a factor: it goes to review with that reason. All 4 such lines were caught and no other line was flagged. On a purchase line the unit `M` is read as "per thousand" unless the matched part is measured in length.
-- **Flattening:** the BOM tree is exploded to bought parts before allocation. Gross requirement is net quantity divided by (1 - scrap), multiplied down the tree. A cycle or a parent that is not on the BOM raises an error that names the path.
-- **Purchased versus required:** a lead when production purchases over the trailing 12 months exceed the gross requirement by more than 15%. It is shown as a gap and no cause is assigned. Duplicate part numbers are pooled first, otherwise one half of each pair looks over-bought.
-- **What it found:** two materials were planted at about 1.3x their requirement. Grease is found (+30%, a $2,840 to $5,681 lead). Magnet wire is missed: two of its lines were bought by weight and are held for a unit conversion, so its counted purchases fall below the threshold.
-
-Reproduce (after `uv sync --extra local`) with `uv run python -m src.evaluate step2` and `uv run python -m src.evaluate step3` and `uv run python -m src.evaluate step4`. To rebuild `out/` from scratch, step 3 needs `OPENAI_API_KEY` for the embeddings (in the environment or in `.env.local`); the embedding cache is not committed. Claude's responses are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
-
-## External tests (real data, zero-shot)
-
-Nothing is retrained for these: the classifier and all cutoffs come from the synthetic tuning split. The downloaded data is not committed.
+To rebuild the results:
 
 ```
-python3 -m src.external.fetch                 # about 400 MB download, 2.6 GB on disk, into data/external/
-uv run python -m src.external.abt_buy         # needs OPENAI_API_KEY and ANTHROPIC_API_KEY
-uv run python -m src.external.kitspace_jlc
+uv sync --extra local
+python3 -m src.generate               # the synthetic data, fixed seed
+uv run python -m src.evaluate step2   # rules and embeddings
+uv run python -m src.evaluate step3   # classifier and Claude; needs OPENAI_API_KEY
+uv run python -m src.evaluate step4   # buckets, allocation, leads
 ```
 
-**A. Abt-Buy product matching**, fixed test split from the University of Mannheim benchmark page (710 pairs, 109 matches):
+Claude's answers are committed under `cache/llm/`, so no Anthropic key is needed unless the data or prompts change.
 
-| Method | Precision | Recall | F1 |
-|---|---|---|---|
-| Rules only | 0.97 | 0.68 | 0.80 |
-| Rules + embeddings | 0.95 | 0.81 | 0.87 |
-| Rules + embeddings + Claude | 0.98 | 0.91 | 0.94 |
-| SVM (published on the page) | 0.96 | 0.71 | 0.81 |
-| Random Forest (published on the page) | 0.95 | 0.77 | 0.85 |
+## More
 
-The benchmark's validation split was used only to check the model-code rule and to set two similarity cutoffs. Claude judged 229 pairs ($1.04).
-
-**B. Real electronic parts.** 250 BOM parts from 14 open-hardware Kitspace BOMs (24 were fetched; 14 have both a description and an MPN). 208 of their 354 MPNs are in the JLCPCB catalog (4.3M parts), and each becomes a purchase line with the LCSC number, catalog description and price. Truth is MPN equality. 500 State of California purchase-order lines are added as true no-match cases.
-
-| Condition | Stage | Right | Same-spec alternate | Wrong | In review | Called no match | Precision | Recall | No-match lines right |
-|---|---|---|---|---|---|---|---|---|---|
-| MPN visible | Rules + classifier | 145 | 0 | 0 | 54 | 9 | 1.00 | 0.70 | 54.8% |
-| MPN visible | + Claude | 159 | 0 | 1 | 5 | 43 | 0.99 | 0.76 | 99.6% |
-| MPN hidden | Rules + classifier | 1 | 0 | 0 | 104 | 103 | 1.00 | 0.00 | 37.0% |
-| MPN hidden | + Claude | 34 | 0 | 1 | 13 | 160 | 0.97 | 0.16 | 99.4% |
-
-What this shows: the classifier, trained on synthetic drill parts, does not transfer; rules and Claude carry the test. How it fails depends on the training run: an earlier classifier sent nearly every real line to review, while the current one calls about half the hidden-MPN lines "no match" outright, which cut recall after Claude from 0.28 to 0.16. With the MPN hidden, recall is low because a BOM line like "Red LED 5mm" does not identify one catalog part, and the tool declines instead of guessing. Two or three no-match lines were wrongly accepted, all by the classifier.
-
-Data sources and their terms, as checked on 2026-11-14:
-
-| Source | What is used | License or terms found |
-|---|---|---|
-| [Mannheim Benchmark Matching Tasks](http://data.dws.informatik.uni-mannheim.de/benchmarkmatchingtasks/index.html) | Abt-Buy records and fixed splits | No license is stated on the page. The data originates from the Leipzig database group's benchmark. |
-| Kitspace `1-click-bom.tsv` files on GitHub | BOM lines from 24 repositories (listed in `src/external/fetch.py`) | Varies by repository. Among those GitHub reported: MIT, GPL-2.0, GPL-3.0; several have no detected license, and 12 lookups failed. |
-| JLCPCB parts catalog via [yaqwsx/jlcparts](https://github.com/yaqwsx/jlcparts) | Catalog rows for the matched MPNs | The mirror's code is MIT. The catalog content is JLCPCB's and carries no open license that I found. |
-| [California Purchase Order Data 2012-2015](https://data.ca.gov/dataset/purchase-order-data) | 500 sampled lines | The dataset's license field on data.ca.gov is empty. |
-
-Because several of these have no clear license, none of the downloaded data, and none of Claude's cached answers about it, is committed. Only aggregate results are.
-
-## Experiment: self-training without truth labels
-
-Can the classifier be trained on a dataset's own rule-matched lines, with no confirmed labels? Positives are the lines a rule matched, negatives are their other top-5 candidates, the part-number features are hidden, and the matched number is stripped from the text. A line's own price and supplier are also left out of the evidence for its own part.
-
-```
-uv run python -m src.evaluate selftrain
-uv run python -m src.external.selftrain_parts     # needs the external data
-```
-
-**(a) Synthetic data, held-out split** (self-trained on 2,254 rule-matched lines from the whole dataset):
-
-| Classifier | Stage | Precision | Recall | Review queue | Wrong-match dollars |
-|---|---|---|---|---|---|
-| Truth-trained | Rules + classifier | 100.00% | 83.7% | 328 lines, $2.35M | $0 |
-| Truth-trained | + Claude | 100.00% | 98.8% | 18 lines, $55K | $0 |
-| Self-trained | Rules + classifier | 96.51% | 95.8% | 145 lines, $1.01M | $75,999 |
-| Self-trained | + Claude | 96.60% | 98.4% | 16 lines, $37K | $75,999 |
-
-**(b) Real parts** (trained on 70 rule-matched lines from half the parts, of which 24 gave a usable positive; tested on 97 lines from the other half with the part number hidden, plus 500 no-match lines):
-
-| Classifier | Stage | Right | Wrong | Precision | Recall | Review queue | No-match lines wrongly accepted |
-|---|---|---|---|---|---|---|---|
-| Transferred from synthetic | Rules + classifier | 0 | 0 | n/a | 0.00 | 361 lines | 3 |
-| Transferred from synthetic | + Claude | 17 | 0 | 1.00 | 0.18 | 8 lines | 3 |
-| Self-trained | Rules + classifier | 2 | 0 | 1.00 | 0.02 | 595 lines | 0 |
-| Self-trained | + Claude | 26 | 1 | 0.96 | 0.27 | 10 lines | 0 |
-
-The catalog has no quantities, so wrong-match dollars cannot be computed for (b).
-
-Self-training is not a shortcut. On the synthetic data it accepts more lines but loses the 99% precision guarantee: rule-matched lines always have a true part, so the model never sees a line that should stay unmatched, and its own cross-validated precision estimate (99.3%) is optimistic. On real parts the training set is too small and too weak, the accept threshold collapses to 1.0, and recall moves from 0.00 to 0.02. The classifier needs reviewer-confirmed matches, which is what the crosswalk collects.
-
-## Generate the data
-
-```
-python3 -m src.generate
-```
-
-The generator uses the standard library only, with a fixed seed, and gives the same output every run. The matcher needs `uv sync` first (pandas, sentence-transformers on CPU); embeddings are cached in `cache/`.
-
-| File | Contents |
-|---|---|
-| `data/boms.csv` | 4 cordless drill models, 8 assemblies each, parts shared across models; standard cost, unit of measure, scrap, parent part, make/buy and effective dates |
-| `data/builds.csv` | units built per product per month, Jan 2025 to Jun 2026 |
-| `data/purchases.csv` | purchase lines with noisy part numbers, descriptions, units and supplier names |
-| `data/supplier_xref.csv` | partial supplier-part-number crosswalk (about 40% coverage) |
-| `data/fx_rates.csv` | currency conversion to USD |
-| `data/truth/ground_truth.csv` | per purchase line: true part, true bucket, noise style, tune/held-out split |
-| `data/truth/duplicate_parts.csv` | internal part numbers that are the same physical part |
-| `data/truth/planted_findings.csv` | planted supplier price gaps, duplicate parts and spares premiums |
-
-The matcher may read `data/*.csv` only. `data/truth/` is for evaluation.
-
-## Noise and the held-out split
-
-Each purchase line gets an ID style (exact, revision/punctuation variant, supplier part number, plant-specific code, blank, typo) and a description style (exact, reordered, abbreviated, truncated, alternate units, supplier catalog wording, typo, Spanish). Lines whose style is plant code, ID typo, catalog wording, description typo or Spanish are marked `heldout` and must not be used for tuning, so accuracy on them is not just a measure of this generator.
-
-Purchases also include lines that correctly match no BOM: service-only items, parts of a product line whose BOMs were not supplied, and indirect items.
-
-## Layout
-
-```
-src/catalog.py   products, part categories, suppliers
-src/noise.py     noise layer (independent of the backbone)
-src/generate.py  backbone, purchase lines, ground truth
-src/normalize.py load exports; normalize part numbers, units, currency, text
-src/match.py     naive baseline, rules, embedding candidates (top 5)
-src/score.py     pair features, calibrated classifier, accept / review / no match
-src/adjudicate.py Claude on the review band: part or "none", confidence, one-sentence reason
-src/allocate.py  buckets, materiality rule, allocation to products, leads
-src/evaluate.py  trains and scores against data/truth/ (the only module that reads it)
-src/pipeline.py  rules + embeddings + Claude for uploaded files (no classifier)
-src/mapping.py   Claude column mapping and value cleaning for uploaded files
-src/crosswalk.py reviewer decisions, reused as the first rule
-src/make_sample.py writes samples/second_company/
-src/external/    fetch script and two zero-shot tests on real data
-app.py           Streamlit app; reads out/ only
-out/             committed snapshot of results the app reads
-data/            generated CSVs
-```
+- [docs/app.md](docs/app.md): each tab with a screenshot
+- [docs/results.md](docs/results.md): every table, experiment and data source, with licenses
+- [docs/deploy.md](docs/deploy.md): hosting on Streamlit Community Cloud, secrets and limits
