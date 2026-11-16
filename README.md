@@ -4,6 +4,7 @@
 >
 > - **Track:** Corporate Track 3, BOM Cost Linkage
 > - 🔗 [View my Devpost submission](https://devpost.com/software/bom-to-spend-tie-out)
+> - [Pitch deck (PDF)](docs/pitch-deck.pdf) · [Demo video](https://youtu.be/KjpzUfGSU5I)
 
 Ties a manufacturer's purchase lines to its bills of materials (BOMs) from messy CSV exports, with no system integration, and turns the result into savings leads a buyer can check.
 
