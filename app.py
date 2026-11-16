@@ -1194,6 +1194,16 @@ with tab_data:
              + (f" On this hosted copy: at most {HOSTED_MAX_LINES:,} purchase lines, {HOSTED_MAX_CALLS} Claude calls per run and "
                 f"{HOSTED_MAX_RUNS} runs per session. Your files and decisions are visible only in your own session, are not written to disk, "
                 "and are gone when you reload the page." if HOSTED else ""), label="Limits and privacy")
+        # Bring your own keys: on a hosted copy with no API keys of its own, the visitor's keys are used for their session only.
+        # They live in this session's memory, are handed to the API clients for the length of a call, and go nowhere else.
+        missing_keys = [name for name in settings.API_KEYS if not settings.server_secret(name)] if HOSTED else []
+        visitor_keys = {}
+        if missing_keys and unlocked:
+            st.caption("To run your own files, add your own API keys. They are used for this session only and are not stored.")
+            for col, name in zip(st.columns(2), missing_keys):
+                typed = col.text_input(f"{settings.API_KEYS[name]} API key", type="password", key=f"byo_{name}", autocomplete="off")
+                visitor_keys[name] = (typed or "").strip()
+        need_keys = any(not visitor_keys.get(name) for name in missing_keys)  # the samples never need them
         if unlocked:
             for col, kind in zip(st.columns(3), KIND_LABEL):
                 f = col.file_uploader(KIND_LABEL[kind], type=["csv", "xlsx", "xls"], key=f"file_{kind}")
@@ -1234,12 +1244,15 @@ with tab_data:
             for message in blocked:
                 st.error(message)
             st.markdown("#### 2. Confirm columns")
-            if st.button("Ask Claude to map the columns", type="secondary" if "up_map" in st.session_state else "primary"):
+            if st.button("Ask Claude to map the columns", type="secondary" if "up_map" in st.session_state else "primary",
+                         disabled=need_keys and not is_demo):
                 try:
-                    with st.spinner("Claude is reading the headers and 20 sample rows of each file"):
+                    with st.spinner("Claude is reading the headers and 20 sample rows of each file"), settings.session_keys(visitor_keys):
                         proposals = {kind: mapping.propose(kind, raw[kind], cache=llm_cache)[0] for kind in KIND_LABEL}
+                except settings.ApiKeyError as e:  # names the provider, never the key
+                    st.error(str(e))
                 except Exception as e:  # most often a missing API key
-                    st.error(f"Could not get a mapping from Claude: {e}")
+                    st.error(f"Could not get a mapping from Claude: {settings.redact(e)}")
                 else:
                     st.session_state["up_map"] = proposals
                     for kind, prop in proposals.items():
@@ -1271,9 +1284,10 @@ with tab_data:
                 st.markdown("#### 3. Run")
                 st.info("On your own data the matcher uses rules, nearest descriptions and Claude only. The trained model is skipped until this company "
                         "has confirmed matches to train it on. Saved decisions are applied first.")
-                if st.button("Run the pipeline", type="primary", disabled=bool(problems or blocked)):
+                if st.button("Run the pipeline", type="primary", disabled=bool(problems or blocked or (need_keys and not is_demo))):
                     try:
-                        with st.spinner("Matching: rules, then nearest descriptions, then Claude on the open lines. A minute or two the first time."):
+                        with (st.spinner("Matching: rules, then nearest descriptions, then Claude on the open lines. A minute or two the first time."),
+                              settings.session_keys(visitor_keys)):
                             canon, notes = {}, []
                             for kind in KIND_LABEL:
                                 canon[kind], kind_notes = mapping.apply_mapping(kind, raw[kind], chosen_map[kind])
@@ -1289,8 +1303,10 @@ with tab_data:
                                 lines=allocate.build_lines(inp, dec), bom=inp.boms, builds=inp.builds, stats=stats, notes=notes,
                                 files=[up[kind][0] for kind in KIND_LABEL], demo_sample=is_demo)
                             st.session_state["_switch_to_uploaded"] = True
+                    except settings.ApiKeyError as e:  # names the provider, never the key
+                        st.error(str(e))
                     except Exception as e:
-                        st.error(f"The run failed: {e}")
+                        st.error(f"The run failed: {settings.redact(e)}")
                     else:
                         st.rerun()
         if uploaded:

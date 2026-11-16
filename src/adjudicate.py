@@ -15,7 +15,7 @@ import anthropic
 import pandas as pd
 from pydantic import BaseModel
 
-from .settings import secret
+from .settings import ApiKeyError, secret
 from .normalize import Inputs
 
 MODEL = "claude-opus-5-5"
@@ -90,6 +90,8 @@ def _ask(client: anthropic.Anthropic, prompt: str, model: str, system: str = SYS
     try:
         resp = client.messages.parse(model=model, max_tokens=4000, system=system, output_config={"effort": "low"},
                                      messages=[{"role": "user", "content": prompt}], output_format=schema)
+    except (anthropic.AuthenticationError, anthropic.PermissionDeniedError):
+        raise ApiKeyError("Anthropic") from None  # a bad key fails every call: say so instead of returning no answers
     except anthropic.RateLimitError:
         return None  # the SDK already retried; leave uncached so a rerun picks it up
     except anthropic.APIStatusError as e:

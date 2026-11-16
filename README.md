@@ -3,6 +3,7 @@
 > **Kearney PERLab x Velocity AI Hackathon 2026**
 >
 > - **Track:** Corporate Track 3, BOM Cost Linkage
+> - 🌐 [Live app](https://bom-to-spend.streamlit.app)
 > - 🔗 [View my Devpost submission](https://devpost.com/software/bom-to-spend-tie-out)
 > - [Pitch deck (PDF)](docs/pitch-deck.pdf) · [Demo video](https://youtu.be/KjpzUfGSU5I)
 

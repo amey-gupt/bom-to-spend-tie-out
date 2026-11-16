@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 
 from .normalize import Inputs, load_inputs, norm_desc, norm_pn
-from .settings import secret
+from .settings import ApiKeyError, secret
 
 BACKENDS = {"local": "sentence-transformers/all-MiniLM-L6-v2", "openai": "text-embedding-3-small"}
 CACHE_DIR = Path("cache")
@@ -91,10 +91,13 @@ def _encode(texts: list[str], backend: str) -> np.ndarray:
     if backend == "local":
         from sentence_transformers import SentenceTransformer  # imported late: slow to load, not needed on a warm cache
         return SentenceTransformer(BACKENDS[backend]).encode(texts, batch_size=128, normalize_embeddings=True, show_progress_bar=False)
-    from openai import OpenAI
+    from openai import AuthenticationError, OpenAI, PermissionDeniedError
     client, rows = OpenAI(api_key=secret("OPENAI_API_KEY") or None), []
-    for i in range(0, len(texts), 500):
-        rows += [d.embedding for d in client.embeddings.create(model=BACKENDS[backend], input=texts[i:i + 500]).data]
+    try:
+        for i in range(0, len(texts), 500):
+            rows += [d.embedding for d in client.embeddings.create(model=BACKENDS[backend], input=texts[i:i + 500]).data]
+    except (AuthenticationError, PermissionDeniedError):
+        raise ApiKeyError("OpenAI") from None  # OpenAI's own message quotes part of the key, so it is not passed on
     vectors = np.asarray(rows)
     return vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
 

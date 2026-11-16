@@ -19,8 +19,10 @@ The app runs on Streamlit Community Cloud from the `main` branch; every push red
 | `HOSTED` | Turns on hosted mode: the access code, the limits below, and no writes to disk. |
 | `ACCESS_CODE` | Optional. Leave it out and the Your data tab is open to everyone. Set it and uploading your own files asks for the code (compared in constant time); "Try the second sample" and the other tabs stay open, since they make no API calls. |
 | `DAILY_RUN_LIMIT` | Optional, default 40. Runs on uploaded files per day across all visitors, to bound API spend when there is no access code. |
-| `OPENAI_API_KEY` | Embeddings for uploaded files. The local embedding model is not installed on the host. |
-| `ANTHROPIC_API_KEY` | Column mapping and matching for uploaded files. |
+| `OPENAI_API_KEY` | Optional. Embeddings for uploaded files. The local embedding model is not installed on the host. |
+| `ANTHROPIC_API_KEY` | Optional. Column mapping and matching for uploaded files. |
+
+**Bring your own keys.** If either key is left out of the secrets, the Your data tab shows a password field for it, with the line "To run your own files, add your own API keys. They are used for this session only and are not stored." A visitor's keys are kept in their own session's memory, handed to the API client for the length of a call, and never written to disk, logged, put in the URL or shown in a message. A rejected key gives a message that names the provider ("The OpenAI API key was rejected…") and not the key. Both built-in samples work with no keys from either source, and the hosted limits below apply whichever keys are used.
 
 The second sample needs neither key: its Claude answers (`cache/llm_sample/`) and its embeddings (`cache/sample_embeddings.npz`) are committed, so "Try the second sample" makes no API calls.
 
