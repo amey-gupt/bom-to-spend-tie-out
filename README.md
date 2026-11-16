@@ -1,10 +1,13 @@
 # BOM-to-Spend Tie-Out
 
+> **Kearney PERLab x Velocity AI Hackathon 2026**
+>
+> - **Track:** Corporate Track 3, BOM Cost Linkage
+> - 🔗 [View my Devpost submission](https://devpost.com/software/bom-to-spend-tie-out)
+
 Ties a manufacturer's purchase lines to its bills of materials (BOMs) from messy CSV exports, with no system integration, and turns the result into savings leads a buyer can check.
 
 ![Filtering by product, opening a lead and marking it validated](docs/demo.gif)
-
-Built solo at the Kearney PERLab x Velocity AI Hackathon (Corporate Track 3, BOM Cost Linkage), November 2026.
 
 I directed the design, experiments and decisions, and used Claude Code to write the code.
 
